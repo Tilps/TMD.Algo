@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "TestRunner\TestRunner.csproj", "{23F6617C-B0C4-4C84-A33E-8DDA0E329D01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TMD.Algo", "TMD.Algo\TMD.Algo.csproj", "{7893B397-55A8-42F5-8740-2B671CA8C98F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TMD.AlgoTest", "TMD.AlgoTest\TMD.AlgoTest.csproj", "{12106953-550A-4CFA-A1CB-563266A4F2F7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23F6617C-B0C4-4C84-A33E-8DDA0E329D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23F6617C-B0C4-4C84-A33E-8DDA0E329D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23F6617C-B0C4-4C84-A33E-8DDA0E329D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23F6617C-B0C4-4C84-A33E-8DDA0E329D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7893B397-55A8-42F5-8740-2B671CA8C98F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7893B397-55A8-42F5-8740-2B671CA8C98F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7893B397-55A8-42F5-8740-2B671CA8C98F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7893B397-55A8-42F5-8740-2B671CA8C98F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12106953-550A-4CFA-A1CB-563266A4F2F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12106953-550A-4CFA-A1CB-563266A4F2F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12106953-550A-4CFA-A1CB-563266A4F2F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12106953-550A-4CFA-A1CB-563266A4F2F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
