@@ -1,13 +1,13 @@
 ﻿#region License
 /*
-Copyright (c) 2008, Gareth Pearce (www.themissingdocs.net)
+Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the www.themissingdocs.net nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    * Neither the name of TMD.Algo nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
@@ -16,7 +16,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace TMD.Algo.Collections.Generic
 {
@@ -378,6 +377,57 @@ namespace TMD.Algo.Collections.Generic
                 }
                 size <<= 1;
             }
+        }
+
+        /// <summary>
+        /// Given a list of input values, returns an array of integers that have the same sorting characteristics but have minimal range.  Smallest element in return set will be 0.
+        /// </summary>
+        /// <param name="input">
+        /// Input list to be relabeled.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of element in the input, must be comparable and equality comparable.
+        /// </typeparam>
+        /// <returns>
+        /// An array of integers with the same sorting characteristics as the input.
+        /// </returns>
+        public static int[] Relabel<T>(this IEnumerable<T> input)
+        {
+            return Relabel(input, null, null);
+        }
+
+        /// <summary>
+        /// Given a list of input values, returns an array of integers that have the same sorting characteristics but have minimal range.  Smallest element in return set will be 0.
+        /// </summary>
+        /// <param name="input">
+        /// Input list to be relabeled.
+        /// </param>
+        /// <param name="comparer">
+        /// Comparer used to determine sorting characteristics of the input.
+        /// </param>
+        /// <param name="equalityComparer">
+        /// Equality comparer used for quick look up when relabeling.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of element in the input.
+        /// </typeparam>
+        /// <returns>
+        /// An array of integers with the same sorting characteristics as the input.
+        /// </returns>
+        public static int[] Relabel<T>(this IEnumerable<T> input, IComparer<T> comparer, IEqualityComparer<T> equalityComparer)
+        {
+            if (comparer == null)
+                comparer = Comparer<T>.Default;
+            if (equalityComparer == null)
+                equalityComparer = EqualityComparer<T>.Default;
+            T[] sorted = input.Distinct(equalityComparer).ToArray();
+            Array.Sort(sorted, comparer);
+            Dictionary<T, int> indexes = new Dictionary<T, int>(equalityComparer);
+            for (int i = 0; i < sorted.Length; i++)
+            {
+                indexes.Add(sorted[i], i);
+            }
+            return input.Select(a => indexes[a]).ToArray();
         }
     }
 

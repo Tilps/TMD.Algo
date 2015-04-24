@@ -1,13 +1,13 @@
 ﻿#region License
 /*
-Copyright (c) 2008, Gareth Pearce (www.themissingdocs.net)
+Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the www.themissingdocs.net nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    * Neither the name of TMD.Algo nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
@@ -16,8 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -138,6 +137,104 @@ namespace TMD.Algo.Algorithms
         /// <remarks>
         /// Ratio of consecutive fibonacci numbers converges to this value with exponentially decaying erf.
         /// </remarks>
-        public static double GoldenRatio = (1.0 + Math.Sqrt(5)) / 2.0;
+        public static readonly double GoldenRatio = (1.0 + Math.Sqrt(5)) / 2.0;
+
+        /// <summary>
+        /// Quickly determines a positive integer power of a value.
+        /// Can be used to calculate the result of any repeated binary operation where the same value is used repeatedly 
+        /// so long as the binary operation is associative.
+        /// Effectively creates a binary tree and only evaluates equivalent subtrees once.
+        /// </summary>
+        /// <remarks>
+        /// There is no specialization for integer or BigInteger because BigInteger.Pow/ModPow are almost certainly a better option.
+        /// This is mostly useful for 'unusual' scenarios like complex numbers/matricies/strange basis vectors with a modulus to avoid
+        /// values exploding to infinity.
+        /// </remarks>
+        /// <param name="value">
+        /// Basic value.
+        /// </param>
+        /// <param name="power">
+        /// Number of times to apply the multiplyFunc using the basic value.
+        /// Must be greater than 0.
+        /// </param>
+        /// <param name="multiplyFunc">
+        /// Function which takes 2 values and returns their multiple.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type being multiplied.
+        /// </typeparam>
+        /// <returns>
+        /// The result of the repeated multiplication.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the power is non-positive or the multiply func is missing.
+        /// </exception>
+        public static T FastExponent<T>(T value, long power, Func<T,T,T> multiplyFunc)
+        {
+            if (power <= 0) throw new ArgumentException("Power must be positive.", "power");
+            if (multiplyFunc == null) throw new ArgumentNullException("multiplyFunc");
+            long bit = 1;
+            T current = value;
+            T result = default(T);
+            bool resultSet = false;
+            for (int i = 0; i < 64; i++)
+            {
+                if ((ulong)bit > (ulong)power) break;
+                if ((bit & power) != 0)
+                {
+                    if (resultSet) result = multiplyFunc(result, current);
+                    else
+                    {
+                        resultSet = true;
+                        result = current;
+                    }
+                }
+                bit <<= 1;
+                current = multiplyFunc(current, current);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns an array containing all primes less than k.
+        /// </summary>
+        /// <param name="k">
+        /// Exclusive upper bound for set of primes to return.
+        /// </param>
+        /// <returns>
+        /// Array containing all primes less than k.
+        /// </returns>
+        public static int[] PrimesLessThan(int k)
+        {
+            bool[] composites = new bool[k];
+            if (k > 0)
+            {
+                composites[0] = true;
+            }
+            if (k > 1)
+            {
+                composites[1] = true;
+            }
+            for (int i = 2; i*i < k; i++)
+            {
+                if (composites[i]) continue;
+                for (int j = i*i; j < k; j += i)
+                {
+                    composites[j] = true;
+                }
+            }
+            int size = composites.Count(a => !a);
+            int[] result = new int[size];
+            int index = 0;
+            for (int i = 2; i < k; i++)
+            {
+                if (!composites[i])
+                {
+                    result[index] = i;
+                    index++;
+                }
+            }
+            return result;
+        }
     }
 }

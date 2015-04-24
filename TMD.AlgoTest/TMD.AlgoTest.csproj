@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TMD.AlgoTest</RootNamespace>
     <AssemblyName>TMD.AlgoTest</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>
@@ -46,6 +46,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -55,6 +56,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
@@ -62,6 +64,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -72,9 +75,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseGCJTest.cs" />
+    <Compile Include="GCJ2008\QRTest.cs" />
     <Compile Include="AccumulatorTreeListTest.cs" />
     <Compile Include="BinomialHeapTest.cs" />
     <Compile Include="BitTricksTest.cs" />
+    <Compile Include="GCJ2008\R1ATest.cs" />
+    <Compile Include="GCJ2008\R2Test.cs" />
+    <Compile Include="GCJ2008\R1CTest.cs" />
+    <Compile Include="GCJ2008\R1BTest.cs" />
     <Compile Include="OrderedSplittableDisjointTrackerTest.cs" />
     <Compile Include="FractionTest.cs" />
     <Compile Include="GraphTest.cs" />
@@ -112,6 +121,177 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q3LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\QR\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\QR\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1A\Q1Large.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q1LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q1Small.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1A\Q2Large.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q2LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q2Small.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1A\Q3Large.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q3LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q3Small.txt" />
+    <EmbeddedResource Include="GCJ2008\R1A\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q3LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1B\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q3LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R1C\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q3LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q1Sample.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q1SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q2Sample.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q2SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q3Sample.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q3SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R2\Q4Large.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q4LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q4Sample.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q4SampleOutput.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q4Small.txt" />
+    <EmbeddedResource Include="GCJ2008\R2\Q4SmallOutput.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
