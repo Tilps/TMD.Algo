@@ -74,7 +74,7 @@ namespace TMD.Algo.Algorithms
                 {
                     if (!seen.ContainsKey(next))
                     {
-                        if (equalityComparer.Equals(cur, last))
+                        if (equalityComparer.Equals(next, last))
                         {
                             if (pathObserver != null)
                             {
