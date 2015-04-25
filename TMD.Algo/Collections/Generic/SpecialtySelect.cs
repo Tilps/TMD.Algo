@@ -20,7 +20,7 @@ using System.Diagnostics;
 namespace TMD.Algo.Collections.Generic
 {
     /// <summary>
-    /// Provides helper methods for selecting the nth smallest item in an unordered list.
+    /// Provides helper methods for selecting a value from a collection or range.
     /// </summary>
     public static class SpecialtySelect
     {
@@ -306,7 +306,7 @@ namespace TMD.Algo.Collections.Generic
             long origMin = min;
             while (min <= max)
             {
-                long mid = min + (max - min) / 2;
+                long mid = LongMid(min, max);
                 int comparison = comparer(mid);
                 if (comparison == 0)
                     return mid;
@@ -320,6 +320,15 @@ namespace TMD.Algo.Collections.Generic
                 }
             }
             return origMin - 1;
+        }
+
+        private static long LongMid(long min, long max)
+        {
+            if (min < 0 && min + long.MaxValue < max)
+            {
+                return (min + max) / 2;
+            }
+            return min + (max - min) / 2;
         }
 
         /// <summary>
@@ -373,7 +382,7 @@ namespace TMD.Algo.Collections.Generic
             earlyOut = false;
             while (min <= max)
             {
-                double mid = min + (max - min) / 2;
+                double mid = DoubleMid(min, max);
                 maxDepth--;
                 if (maxDepth < 0)
                 {
@@ -417,6 +426,37 @@ namespace TMD.Algo.Collections.Generic
         }
 
         /// <summary>
+        /// Selects a value between min and max which minimizes the number of calls to find the closest value to a target.
+        /// </summary>
+        private static double DoubleMid(double min, double max)
+        {
+            // Negative values have to be reversed before performing mid point calculation as floating point sorts like one's complement where long sorts like 2's complement.
+            long minValue = BitConverter.DoubleToInt64Bits(min);
+            minValue = ReverseNegative(minValue);
+            long maxValue = BitConverter.DoubleToInt64Bits(max);
+            maxValue = ReverseNegative(maxValue);
+            long midValue = LongMid(minValue, maxValue);
+            // Undo the reverse of negative values if the result is also negative.
+            midValue = ReverseNegative(midValue);
+            double mid = BitConverter.Int64BitsToDouble(midValue);
+            // Check to make sure LongMid method didn't produce a dodgy result.
+            if (mid >= min && mid <= max) return mid;
+            // LongMid in combination with the reversal of negative process should always work.
+            Debug.Assert(false);
+            // If it doesn't, fall back to basics.
+            return min + (max - min) / 2;
+        }
+
+        /// <summary>
+        /// Reverses the ordering of negative values.
+        /// </summary>
+        private static long ReverseNegative(long value)
+        {
+            if (value < 0) return long.MinValue - value - 1;
+            return value;
+        }
+
+        /// <summary>
         /// Performs a generic binary search over a real function.
         /// </summary>
         /// <param name="min">
@@ -439,7 +479,7 @@ namespace TMD.Algo.Collections.Generic
         {
             while (min <= max)
             {
-                double mid = min + (max - min) / 2;
+                double mid = DoubleMid(min, max);
                 int comparison = comparer(mid);
                 if (comparison == 0)
                     return mid;
@@ -545,7 +585,7 @@ namespace TMD.Algo.Collections.Generic
             if (start == end) throw new ArgumentException("Step function is flat, or has multiple transitions.");
             while (min < max)
             {
-                double mid = min + (max - min) / 2;
+                double mid = DoubleMid(min, max);
                 if (mid == min || mid == max) return min;
                 bool midValue = stepFunc(mid);
                 if (midValue == end) max = mid;
