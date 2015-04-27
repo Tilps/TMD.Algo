@@ -81,6 +81,7 @@
     <Compile Include="BinomialHeapTest.cs" />
     <Compile Include="BitTricksTest.cs" />
     <Compile Include="GCJ2008\R1ATest.cs" />
+    <Compile Include="GCJ2008\R3Test.cs" />
     <Compile Include="GCJ2008\R2Test.cs" />
     <Compile Include="GCJ2008\R1CTest.cs" />
     <Compile Include="GCJ2008\R1BTest.cs" />
@@ -292,6 +293,78 @@
     <EmbeddedResource Include="GCJ2008\R2\Q4SampleOutput.txt" />
     <EmbeddedResource Include="GCJ2008\R2\Q4Small.txt" />
     <EmbeddedResource Include="GCJ2008\R2\Q4SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2008\R3\Q4SmallOutput.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
