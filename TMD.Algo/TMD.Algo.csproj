@@ -95,6 +95,7 @@
     <Compile Include="Algorithms\Pattern.cs" />
     <Compile Include="Collections\Generic\AccumulatorTreeList.cs" />
     <Compile Include="Collections\Generic\BinomialHeap.cs" />
+    <Compile Include="Collections\Generic\Pair.cs" />
     <Compile Include="Collections\Generic\OrderedSplittableDisjointTracker.cs" />
     <Compile Include="Collections\Generic\RevertibleDisjointTracker.cs" />
     <Compile Include="Collections\Generic\LookupQueue.cs" />

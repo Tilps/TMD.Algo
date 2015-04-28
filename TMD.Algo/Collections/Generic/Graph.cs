@@ -434,28 +434,28 @@ namespace TMD.Algo.Collections.Generic
             }
             distances[startVertexId] = edgeSummer.Zero;
 
-            LookupHeap<KeyValuePair<TEdge, int>> priorityQueue = new LookupHeap<KeyValuePair<TEdge, int>>(new ReverseComparer<KeyValuePair<TEdge, int>>(new KeyComparer<TEdge, int>(edgeComparer)));
+            LookupHeap<Pair<TEdge, int>> priorityQueue = new LookupHeap<Pair<TEdge, int>>(new ReverseComparer<Pair<TEdge, int>>(new Item1Comparer<TEdge, int>(edgeComparer)));
             for (int i = 0; i < vertices.Count; i++)
             {
-                priorityQueue.Add(new KeyValuePair<TEdge, int>(distances[i], i));
+                priorityQueue.Add(new Pair<TEdge, int>(distances[i], i));
             }
             while (priorityQueue.Count > 0)
             {
-                KeyValuePair<TEdge, int> currentVertex = priorityQueue.PopFront();
+                Pair<TEdge, int> currentVertex = priorityQueue.PopFront();
                 // If distance is max value then all remaining nodes are unreachable from the source.
-                if (edgeComparer.Compare(currentVertex.Key, edgeSummer.MaxValue) == 0)
+                if (edgeComparer.Compare(currentVertex.Item1, edgeSummer.MaxValue) == 0)
                     break;
-                foreach (KeyValuePair<int, int> edge in adjacencyList[currentVertex.Value])
+                foreach (KeyValuePair<int, int> edge in adjacencyList[currentVertex.Item2])
                 {
-                    TEdge sum = edgeSummer.Add(currentVertex.Key, edges[edge.Value]);
+                    TEdge sum = edgeSummer.Add(currentVertex.Item1, edges[edge.Value]);
                     if (edgeComparer.Compare(distances[edge.Key], sum) > 0)
                     {
-                        predecesors[edge.Key] = currentVertex.Value;
+                        predecesors[edge.Key] = currentVertex.Item2;
                         // TODO: change to 'update entry' once there is such a method.
-                        if (priorityQueue.Remove(new KeyValuePair<TEdge, int>(distances[edge.Key], edge.Key)))
+                        if (priorityQueue.Remove(new Pair<TEdge, int>(distances[edge.Key], edge.Key)))
                         {
                             distances[edge.Key] = sum;
-                            priorityQueue.Add(new KeyValuePair<TEdge, int>(distances[edge.Key], edge.Key));
+                            priorityQueue.Add(new Pair<TEdge, int>(distances[edge.Key], edge.Key));
                         }
                         else
                         {
@@ -784,7 +784,8 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public TEdge MaximumFlowFordFulkersonBfs(int source, int sink, IComparer<TEdge> flowComparer, IAdder<TEdge> flowSummer)
         {
-            Dictionary<KeyValuePair<int, int>, int> edgeLookup = new Dictionary<KeyValuePair<int, int>, int>();
+            // TODO: use a custom int32Pair for even better performance.
+            Dictionary<Pair<int, int>, int> edgeLookup = new Dictionary<Pair<int, int>, int>();
             Graph<TVertex, TEdge> residualGraph = new Graph<TVertex, TEdge>();
             for (int i = 0; i < vertices.Count; i++)
             {
@@ -795,7 +796,7 @@ namespace TMD.Algo.Collections.Generic
                 foreach (KeyValuePair<int, int> edge in adjacencyList[i])
                 {
                     int edgeIndex;
-                    KeyValuePair<int, int> edgeEndPoints = new KeyValuePair<int, int>(i, edge.Key);
+                    Pair<int, int> edgeEndPoints = new Pair<int, int>(i, edge.Key);
                     if (!edgeLookup.TryGetValue(edgeEndPoints, out edgeIndex))
                     {
                         edgeIndex = residualGraph.AddDirectedEdge(i, edge.Key, edges[edge.Value]);
@@ -806,7 +807,7 @@ namespace TMD.Algo.Collections.Generic
                         residualGraph.edges[edgeIndex] = flowSummer.Add(residualGraph.edges[edgeIndex], edges[edge.Value]);
                     }
                     int reverseEdgeIndex;
-                    KeyValuePair<int, int> reverseEndPoints = new KeyValuePair<int, int>(edge.Key, i);
+                    Pair<int, int> reverseEndPoints = new Pair<int, int>(edge.Key, i);
                     if (!edgeLookup.TryGetValue(reverseEndPoints, out reverseEdgeIndex))
                     {
                         reverseEdgeIndex = residualGraph.AddDirectedEdge(edge.Key, i, flowSummer.Zero);
@@ -856,7 +857,7 @@ namespace TMD.Algo.Collections.Generic
                     int nextVertex = comeFrom[curVertex];
                     while (nextVertex != -1)
                     {
-                        int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                        int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                         TEdge flowSegment = residualGraph.edges[edgeIndex];
                         if (flowComparer.Compare(flowSegment, flow) < 0)
                             flow = flowSegment;
@@ -870,11 +871,11 @@ namespace TMD.Algo.Collections.Generic
                     nextVertex = comeFrom[curVertex];
                     while (nextVertex != -1)
                     {
-                        int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                        int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                         TEdge flowSegment = residualGraph.edges[edgeIndex];
                         residualGraph.edges[edgeIndex] = flowSummer.Subtract(flowSegment, flow);
 
-                        int reverseEdgeIndex = edgeLookup[new KeyValuePair<int, int>(curVertex, nextVertex)];
+                        int reverseEdgeIndex = edgeLookup[new Pair<int, int>(curVertex, nextVertex)];
                         TEdge reverseFlowSegment = residualGraph.edges[reverseEdgeIndex];
                         residualGraph.edges[reverseEdgeIndex] = flowSummer.Add(reverseFlowSegment, flow);
 
@@ -943,8 +944,9 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public TCapacity MaximumFlowMinCost<TCapacity, TCost>(int source, int sink, IComparer<TCapacity> flowComparer, IAdder<TCapacity> flowSummer, IComparer<TCost> costComparer, IAdder<TCost> costSummer, Func<TCost, TCapacity, TCost> costProduct, Func<TEdge, TCapacity> capGetter, Func<TEdge, TCost> costGetter, Action<TEdge, TCapacity> capSetter, Action<TEdge, TCost> costSetter, Func<TEdge> edgeCreator, out TCost minCost, out bool successful)
         {
-            Dictionary<KeyValuePair<int, int>, int> edgeLookup = new Dictionary<KeyValuePair<int, int>, int>();
-            Dictionary<KeyValuePair<int, int>, int> originalEdge = new Dictionary<KeyValuePair<int, int>, int>();
+            // TODO: use a custom int32Pair for even better performance.
+            Dictionary<Pair<int, int>, int> edgeLookup = new Dictionary<Pair<int, int>, int>();
+            Dictionary<Pair<int, int>, int> originalEdge = new Dictionary<Pair<int, int>, int>();
             Graph<TVertex, TEdge> residualGraph = new Graph<TVertex, TEdge>();
             for (int i = 0; i < vertices.Count; i++)
             {
@@ -955,7 +957,7 @@ namespace TMD.Algo.Collections.Generic
                 foreach (KeyValuePair<int, int> edge in adjacencyList[i])
                 {
                     int edgeIndex;
-                    KeyValuePair<int, int> edgeEndPoints = new KeyValuePair<int, int>(i, edge.Key);
+                    Pair<int, int> edgeEndPoints = new Pair<int, int>(i, edge.Key);
                     if (!edgeLookup.TryGetValue(edgeEndPoints, out edgeIndex))
                     {
                         TEdge e = edgeCreator();
@@ -970,7 +972,7 @@ namespace TMD.Algo.Collections.Generic
                         capSetter(residualGraph.edges[edgeIndex], flowSummer.Add(capGetter(residualGraph.edges[edgeIndex]), capGetter(edges[edge.Value])));
                     }
                     int reverseEdgeIndex;
-                    KeyValuePair<int, int> reverseEndPoints = new KeyValuePair<int, int>(edge.Key, i);
+                    Pair<int, int> reverseEndPoints = new Pair<int, int>(edge.Key, i);
                     if (!edgeLookup.TryGetValue(reverseEndPoints, out reverseEdgeIndex))
                     {
                         reverseEdgeIndex = residualGraph.AddDirectedEdge(edge.Key, i, edgeCreator());
@@ -1002,7 +1004,7 @@ namespace TMD.Algo.Collections.Generic
                     TCost sum = costSummer.Add(distances[vertex], costGetter(residualGraph.edges[edgeList[j].Key]));
                     if (costComparer.Compare(distances[destVertex], sum) > 0)
                     {
-                        TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new KeyValuePair<int, int>(vertex, destVertex)]]);
+                        TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
                         if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                         {
                             predecesors[destVertex] = vertex;
@@ -1021,7 +1023,7 @@ namespace TMD.Algo.Collections.Generic
                 TCost sum = costSummer.Add(distances[vertex], costGetter(residualGraph.edges[edgeList[j].Key]));
                 if (costComparer.Compare(distances[destVertex], sum) > 0)
                 {
-                    TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new KeyValuePair<int, int>(vertex, destVertex)]]);
+                    TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
                     if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                     {
                         successful = false;
@@ -1041,7 +1043,7 @@ namespace TMD.Algo.Collections.Generic
                 int nextVertex = predecesors[curVertex];
                 while (nextVertex != -1)
                 {
-                    int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                    int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                     TCapacity flowSegment = capGetter(residualGraph.edges[edgeIndex]);
                     if (flowComparer.Compare(flowSegment, flow) < 0)
                         flow = flowSegment;
@@ -1055,11 +1057,11 @@ namespace TMD.Algo.Collections.Generic
                 nextVertex = predecesors[curVertex];
                 while (nextVertex != -1)
                 {
-                    int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                    int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                     TCapacity flowSegment = capGetter(residualGraph.edges[edgeIndex]);
                     capSetter(residualGraph.edges[edgeIndex], flowSummer.Subtract(flowSegment, flow));
                     minCost = costSummer.Add(minCost, costProduct(costGetter(residualGraph.edges[edgeIndex]), flow));
-                    int reverseEdgeIndex = edgeLookup[new KeyValuePair<int, int>(curVertex, nextVertex)];
+                    int reverseEdgeIndex = edgeLookup[new Pair<int, int>(curVertex, nextVertex)];
                     TCapacity reverseFlowSegment = capGetter(residualGraph.edges[reverseEdgeIndex]);
                     capSetter(residualGraph.edges[reverseEdgeIndex], flowSummer.Add(reverseFlowSegment, flow));
 
@@ -1088,34 +1090,34 @@ namespace TMD.Algo.Collections.Generic
                 }
                 distances[source] = costSummer.Zero;
 
-                LookupHeap<KeyValuePair<TCost, int>> priorityQueue = new LookupHeap<KeyValuePair<TCost, int>>(new ReverseComparer<KeyValuePair<TCost, int>>(new KeyComparer<TCost, int>(costComparer)));
+                LookupHeap<Pair<TCost, int>> priorityQueue = new LookupHeap<Pair<TCost, int>>(new ReverseComparer<Pair<TCost, int>>(new Item1Comparer<TCost, int>(costComparer)));
                 for (int i = 0; i < vertices.Count; i++)
                 {
-                    priorityQueue.Add(new KeyValuePair<TCost, int>(distances[i], i));
+                    priorityQueue.Add(new Pair<TCost, int>(distances[i], i));
                 }
                 while (priorityQueue.Count > 0)
                 {
-                    KeyValuePair<TCost, int> currentVertex = priorityQueue.PopFront();
+                    Pair<TCost, int> currentVertex = priorityQueue.PopFront();
                     // If distance is max value then all remaining nodes are unreachable from the source.
-                    if (costComparer.Compare(currentVertex.Key, costSummer.MaxValue) == 0)
+                    if (costComparer.Compare(currentVertex.Item1, costSummer.MaxValue) == 0)
                         break;
-                    foreach (KeyValuePair<int, int> edge in residualGraph.adjacencyList[currentVertex.Value])
+                    foreach (KeyValuePair<int, int> edge in residualGraph.adjacencyList[currentVertex.Item2])
                     {
                         int destVertex = edge.Key;
                         // If it makes the destination closer.
-                        TCost sum = costSummer.Add(currentVertex.Key, costGetter(residualGraph.edges[edge.Value]));
+                        TCost sum = costSummer.Add(currentVertex.Item1, costGetter(residualGraph.edges[edge.Value]));
                         if (costComparer.Compare(distances[edge.Key], sum) > 0)
                         {
                             // And we have available flow.
-                            TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new KeyValuePair<int, int>(currentVertex.Value, destVertex)]]);
+                            TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(currentVertex.Item2, destVertex)]]);
                             if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                             {
-                                predecesors[edge.Key] = currentVertex.Value;
+                                predecesors[edge.Key] = currentVertex.Item2;
                                 // TODO: change to 'update entry' once there is such a method.
-                                if (priorityQueue.Remove(new KeyValuePair<TCost, int>(distances[edge.Key], edge.Key)))
+                                if (priorityQueue.Remove(new Pair<TCost, int>(distances[edge.Key], edge.Key)))
                                 {
                                     distances[edge.Key] = sum;
-                                    priorityQueue.Add(new KeyValuePair<TCost, int>(distances[edge.Key], edge.Key));
+                                    priorityQueue.Add(new Pair<TCost, int>(distances[edge.Key], edge.Key));
                                 }
                                 else
                                 {
@@ -1139,7 +1141,7 @@ namespace TMD.Algo.Collections.Generic
                     int nextVertex = predecesors[curVertex];
                     while (nextVertex != -1)
                     {
-                        int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                        int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                         TCapacity flowSegment = capGetter(residualGraph.edges[edgeIndex]);
                         if (flowComparer.Compare(flowSegment, flow) < 0)
                             flow = flowSegment;
@@ -1153,21 +1155,21 @@ namespace TMD.Algo.Collections.Generic
                     nextVertex = predecesors[curVertex];
                     while (nextVertex != -1)
                     {
-                        int edgeIndex = edgeLookup[new KeyValuePair<int, int>(nextVertex, curVertex)];
+                        int edgeIndex = edgeLookup[new Pair<int, int>(nextVertex, curVertex)];
                         TCapacity flowSegment = capGetter(residualGraph.edges[edgeIndex]);
                         capSetter(residualGraph.edges[edgeIndex], flowSummer.Subtract(flowSegment, flow));
                         TCost edgeCost;
                         int origEdgeIndex;
-                        if (originalEdge.TryGetValue(new KeyValuePair<int, int>(nextVertex, curVertex), out origEdgeIndex))
+                        if (originalEdge.TryGetValue(new Pair<int, int>(nextVertex, curVertex), out origEdgeIndex))
                         {
                             edgeCost = costGetter(edges[origEdgeIndex]);
                         }
                         else
                         {
-                            edgeCost = costSummer.Subtract(costSummer.Zero, costGetter(edges[originalEdge[new KeyValuePair<int,int>(curVertex, nextVertex)]]));
+                            edgeCost = costSummer.Subtract(costSummer.Zero, costGetter(edges[originalEdge[new Pair<int,int>(curVertex, nextVertex)]]));
                         }
                         minCost = costSummer.Add(minCost, costProduct(edgeCost, flow));
-                        int reverseEdgeIndex = edgeLookup[new KeyValuePair<int, int>(curVertex, nextVertex)];
+                        int reverseEdgeIndex = edgeLookup[new Pair<int, int>(curVertex, nextVertex)];
                         TCapacity reverseFlowSegment = capGetter(residualGraph.edges[reverseEdgeIndex]);
                         capSetter(residualGraph.edges[reverseEdgeIndex], flowSummer.Add(reverseFlowSegment, flow));
 
