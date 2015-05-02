@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 namespace TMD.Algo.Collections.Generic
@@ -26,7 +28,6 @@ namespace TMD.Algo.Collections.Generic
     /// </typeparam>
     public class MappedDisjointTracker<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -38,10 +39,10 @@ namespace TMD.Algo.Collections.Generic
             this.map = map;
         }
 
-        private T[] tracker;
-        private int[] ranker;
-        private IntMapFunction<T> map;
-        private int min;
+        private readonly T[] tracker;
+        private readonly int[] ranker;
+        private readonly IntMapFunction<T> map;
+        private readonly int min;
 
         /// <summary>
         /// Adds a new item to be tracked.  Initially it is in a set of its own.
@@ -109,6 +110,5 @@ namespace TMD.Algo.Collections.Generic
                 tracker[firstPoint] = second;
             }
         }
-
     }
 }

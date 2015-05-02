@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2010, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -23,7 +25,6 @@ namespace TMD.Algo.Algorithms
     /// </summary>
     public static class Pattern
     {
-
         /// <summary>
         /// Determines the sum of the first 'sumTo' values in a sequence containing a pattern.
         /// Runs in O(n) where n is the length of the pattern cycle plus any lead-in.
@@ -69,14 +70,14 @@ namespace TMD.Algo.Algorithms
                 return sumSoFar;
             int pos = indicies[current];
             long length = seen.Count - pos;
-            long loops = (sumTo - seen.Count) / length;
+            long loops = (sumTo - seen.Count)/length;
             double loopSum = 0.0;
             for (int i = pos; i < seen.Count; i++)
             {
                 loopSum += values[seen[i]];
             }
-            sumSoFar += loops * loopSum;
-            long leftOvers = (sumTo - seen.Count) % length;
+            sumSoFar += loops*loopSum;
+            long leftOvers = (sumTo - seen.Count)%length;
             for (int i = 0; i < leftOvers; i++)
             {
                 sumSoFar += values[seen[i + pos]];
@@ -121,7 +122,7 @@ namespace TMD.Algo.Algorithms
                 return current;
             int pos = indicies[current];
             long length = seen.Count - pos;
-            int leftOvers = (int)((findAt - seen.Count) % length);
+            int leftOvers = (int)((findAt - seen.Count)%length);
             return seen[pos + leftOvers];
         }
     }

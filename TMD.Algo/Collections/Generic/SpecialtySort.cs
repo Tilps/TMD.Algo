@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -24,7 +26,6 @@ namespace TMD.Algo.Collections.Generic
     /// </summary>
     public static class SpecialtySort
     {
-
         /// <summary>
         /// Provides a bucket sort, an expected O(n) time sort assuming the input is uniformly distributed by the partitioning function.
         /// This sort is not in-place, it is stable.
@@ -69,7 +70,7 @@ namespace TMD.Algo.Collections.Generic
         {
             int count = input.Count();
             List<T>[] parts = new List<T>[count];
-            for (int i=0; i < count; i++) 
+            for (int i = 0; i < count; i++)
                 parts[i] = new List<T>();
             foreach (T value in input)
             {
@@ -196,14 +197,15 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// An array containing the items in sorted order.
         /// </returns>
-        public static T[] RadixSort<T>(this IEnumerable<T> input, RadixFunction<T> radixMap, int min, int max, int radixCount)
+        public static T[] RadixSort<T>(this IEnumerable<T> input, RadixFunction<T> radixMap, int min, int max,
+            int radixCount)
         {
             if (radixCount <= 0)
-                throw new ArgumentException("Value must be greater than zero.", "radixCount");
+                throw new ArgumentException("Value must be greater than zero.", nameof(radixCount));
             IEnumerable<T> current = input;
             for (int i = 0; i < radixCount; i++)
             {
-                current = CountingSort(current, delegate(T value) { return radixMap(value, i); }, min, max);
+                current = CountingSort(current, value => radixMap(value, i), min, max);
             }
             return (T[])current;
         }
@@ -282,8 +284,9 @@ namespace TMD.Algo.Collections.Generic
             if (comparer == null)
                 comparer = Comparer<T>.Default;
             T[] tmp = new T[input.Count];
-            MergeSortInner(input, comparer, 0, input.Count-1, tmp);
+            MergeSortInner(input, comparer, 0, input.Count - 1, tmp);
         }
+
         private static void MergeSortInner<T>(IList<T> input, IComparer<T> comparer, int first, int last, T[] tmp)
         {
             if (first < last)
@@ -294,6 +297,7 @@ namespace TMD.Algo.Collections.Generic
                 Merge(input, comparer, first, mid, last, tmp);
             }
         }
+
         private static void Merge<T>(IList<T> input, IComparer<T> comparer, int first, int mid, int last, T[] tmp)
         {
             int i = first;
@@ -364,14 +368,14 @@ namespace TMD.Algo.Collections.Generic
                 comparer = Comparer<T>.Default;
             T[] tmp = new T[input.Count];
             int size = 2;
-            while ((size>>1) < input.Count)
+            while ((size >> 1) < input.Count)
             {
                 int start = 0;
                 while (start < input.Count)
                 {
                     int end = Math.Min(start + size - 1, input.Count - 1);
                     int mid = start + (size >> 1) - 1;
-                    if (end > mid) 
+                    if (end > mid)
                         Merge(input, comparer, start, mid, end, tmp);
                     start += size;
                 }
@@ -414,7 +418,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// An array of integers with the same sorting characteristics as the input.
         /// </returns>
-        public static int[] Relabel<T>(this IEnumerable<T> input, IComparer<T> comparer, IEqualityComparer<T> equalityComparer)
+        public static int[] Relabel<T>(this IEnumerable<T> input, IComparer<T> comparer,
+            IEqualityComparer<T> equalityComparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;

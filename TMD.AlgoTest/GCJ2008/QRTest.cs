@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2014, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -97,6 +99,7 @@ Googol
 ";
 
             #endregion
+
             string expectedOutput = @"Case #1: 1
 Case #2: 0";
 
@@ -222,9 +225,9 @@ Case #20: 2";
         public void Q2Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 5
 3 2
 09:00 12:00
@@ -238,6 +241,7 @@ Case #20: 2";
 12:00 12:02";
 
             #endregion
+
             string expectedOutput = @"Case #1: 2 2
 Case #2: 2 0";
 
@@ -250,9 +254,9 @@ Case #2: 2 0";
         {
             string input = Load("Q2Small.txt");
             string expectedOutput =
-            #region SmallOutputFile
+                #region SmallOutputFile
 
- @"Case #1: 0 2
+                @"Case #1: 0 2
 Case #2: 1 0
 Case #3: 2 0
 Case #4: 4 2
@@ -278,6 +282,7 @@ Case #20: 8 4";
             var result = GCJ.___TESTRunTestsTEST(input, Q2Solver);
             Validate(expectedOutput, result);
         }
+
         [Test]
         public void Q2Large()
         {
@@ -293,40 +298,40 @@ Case #20: 8 4";
 
         private static double Q3Solver(double f, double R, double t, double r, double g)
         {
-            if (2 * f >= g || R - t - f <= 0)
+            if (2*f >= g || R - t - f <= 0)
             {
                 return 1.0;
             }
-            double basis = Math.PI * R * R / 4.0;
+            double basis = Math.PI*R*R/4.0;
             double accumulator = 0.0;
             // we do have holes.
             // fudge numbers to make it simpler.
             t += f;
             r += f;
-            g -= 2 * f;
+            g -= 2*f;
             double innerRadius = R - t;
-            double innerRadiusSq = innerRadius * innerRadius;
-            double step = 2 * r + g;
-            double gSq = g * g;
+            double innerRadiusSq = innerRadius*innerRadius;
+            double step = 2*r + g;
+            double gSq = g*g;
             for (double lx = r; lx <= innerRadius; lx += step)
             {
                 double rx = lx + g;
                 double rxIntercept = Math.Sqrt(innerRadiusSq - rx*rx);
                 // Accelerate the loop by jumping ahead a clearly safe amount.
-                int yStepsBeforeRxIntercept = Math.Max(0, (int) (Math.Floor((rxIntercept - g - r)/step) - 1));
+                int yStepsBeforeRxIntercept = Math.Max(0, (int)(Math.Floor((rxIntercept - g - r)/step) - 1));
                 accumulator += gSq*yStepsBeforeRxIntercept;
                 for (double by = r + step*yStepsBeforeRxIntercept; by <= innerRadius; by += step)
                 {
-                    if (lx * lx + by * by > innerRadiusSq)
+                    if (lx*lx + by*by > innerRadiusSq)
                         break;
                     double ty = by + g;
-                    if (rx * rx + ty * ty <= innerRadiusSq)
+                    if (rx*rx + ty*ty <= innerRadiusSq)
                     {
                         accumulator += gSq;
                         continue;
                     }
-                    bool tlIn = lx * lx + ty * ty <= innerRadiusSq;
-                    bool brIn = rx * rx + by * by <= innerRadiusSq;
+                    bool tlIn = lx*lx + ty*ty <= innerRadiusSq;
+                    bool brIn = rx*rx + by*by <= innerRadiusSq;
                     double xc1;
                     double xc2;
                     double yc1;
@@ -337,12 +342,12 @@ Case #20: 8 4";
                     if (tlIn)
                     {
                         yc1 = ty;
-                        xc1 = Math.Sqrt(innerRadiusSq - yc1 * yc1);
+                        xc1 = Math.Sqrt(innerRadiusSq - yc1*yc1);
                     }
                     else
                     {
                         xc1 = lx;
-                        yc1 = Math.Sqrt(innerRadiusSq - xc1 * xc1);
+                        yc1 = Math.Sqrt(innerRadiusSq - xc1*xc1);
                     }
                     if (brIn)
                     {
@@ -352,50 +357,50 @@ Case #20: 8 4";
                     else
                     {
                         yc2 = by;
-                        xc2 = Math.Sqrt(innerRadiusSq - yc2 * yc2);
+                        xc2 = Math.Sqrt(innerRadiusSq - yc2*yc2);
                     }
                     if (tlIn)
                     {
                         if (brIn)
                         {
-                            accumulator += gSq - (rx - xc1) * (ty - yc2) / 2.0;
+                            accumulator += gSq - (rx - xc1)*(ty - yc2)/2.0;
                         }
                         else
                         {
-                            accumulator += g * (xc1 - lx) + (xc2 - xc1) * g / 2.0;
+                            accumulator += g*(xc1 - lx) + (xc2 - xc1)*g/2.0;
                         }
                     }
                     else
                     {
                         if (brIn)
                         {
-                            accumulator += g * (yc2 - by) + (yc1 - yc2) * g / 2.0;
+                            accumulator += g*(yc2 - by) + (yc1 - yc2)*g/2.0;
                         }
                         else
                         {
-                            accumulator += (yc1 - by) * (xc2 - lx) / 2.0;
+                            accumulator += (yc1 - by)*(xc2 - lx)/2.0;
                         }
                     }
                     // add area of arc to cord of the triangle.
                     // arc to cord is r2[theta-sin(theta)]/2 where theta = 2 arcsin(c/[2r]) where c is the cord length
                     double a = xc2 - xc1;
                     double b = yc1 - yc2;
-                    double c = Math.Sqrt(a * a + b * b);
-                    double theta = 2.0 * Math.Asin(c / 2.0 / innerRadius);
-                    double area = innerRadiusSq * (theta - Math.Sin(theta)) / 2.0;
+                    double c = Math.Sqrt(a*a + b*b);
+                    double theta = 2.0*Math.Asin(c/2.0/innerRadius);
+                    double area = innerRadiusSq*(theta - Math.Sin(theta))/2.0;
                     accumulator += area;
                 }
             }
-            return (basis - accumulator) / basis;
+            return (basis - accumulator)/basis;
         }
 
         [Test]
         public void Q3Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"5
+                @"5
 0.25 1.0 0.1 0.01 0.5
 0.25 1.0 0.1 0.01 0.9
 0.00001 10000 0.00001 0.00001 1000
@@ -403,6 +408,7 @@ Case #20: 8 4";
 1 100 1 1 10";
 
             #endregion
+
             string expectedOutput = @"Case #1: 1.000000
 Case #2: 0.910015
 Case #3: 0.000000
@@ -418,9 +424,9 @@ Case #5: 0.573972";
         {
             string input = Load("Q3Small.txt");
             string expectedOutput =
-            #region SmallOutputFile
+                #region SmallOutputFile
 
- @"Case #1: 0.0150736670270347
+                @"Case #1: 0.0150736670270347
 Case #2: 0.00594685009102022
 Case #3: 0.0357107768138673
 Case #4: 0.00299429113384212

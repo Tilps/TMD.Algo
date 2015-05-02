@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,10 +12,12 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TMD.Algo.Collections.Generic
@@ -26,9 +29,8 @@ namespace TMD.Algo.Collections.Generic
     /// Performs similar to SortedDictionary but provides O(log n) Get Enumerator for equal or prev.
     /// </remarks>
     [SuppressMessage("Microsoft.Naming", "CA1710")]
-    public class SortedDictionary2<K, V> : IDictionary<K,V>
+    public class SortedDictionary2<K, V> : IDictionary<K, V>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -37,7 +39,8 @@ namespace TMD.Algo.Collections.Generic
             treeRoot = sentinal;
             comparer = Comparer<K>.Default;
         }
-        IComparer<K> comparer;
+
+        private readonly IComparer<K> comparer;
 
         /// <summary>
         /// Constructor.
@@ -45,12 +48,12 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="initialList">
         /// Initial values to populate the list with.
         /// </param>
-        public SortedDictionary2(IEnumerable<KeyValuePair<K,V>> initialList)
+        public SortedDictionary2(IEnumerable<KeyValuePair<K, V>> initialList)
             : this()
         {
             foreach (KeyValuePair<K, V> val in initialList)
             {
-                this.Add(val.Key, val.Value);
+                Add(val.Key, val.Value);
             }
         }
 
@@ -67,7 +70,7 @@ namespace TMD.Algo.Collections.Generic
         }
 
 
-        private TreeNode sentinal = new TreeNode();
+        private readonly TreeNode sentinal = new TreeNode();
         private TreeNode treeRoot;
 
         private TreeNode TreeFind(K key)
@@ -89,6 +92,7 @@ namespace TMD.Algo.Collections.Generic
             }
             return result;
         }
+
         private TreeNode TreeFindApprox(K key)
         {
             TreeNode result = treeRoot;
@@ -132,8 +136,11 @@ namespace TMD.Algo.Collections.Generic
             else
                 return parent;
         }
+
         private void TreeInsert(TreeNode node, TreeNode newNode)
         {
+            Debug.Assert(node != null);
+            Debug.Assert(node != sentinal);
             TreeNode other = null;
             bool lastLeft = false;
             while (node != sentinal)
@@ -153,6 +160,7 @@ namespace TMD.Algo.Collections.Generic
                 else
                     throw new Exception("Duplicate key.");
             }
+            Debug.Assert(other != null);
             newNode.Parent = other;
             if (lastLeft)
                 newNode.Parent.Left = newNode;
@@ -286,7 +294,6 @@ namespace TMD.Algo.Collections.Generic
                 node.Key = other.Key;
                 node.Value = other.Value;
             }
-            TreeNode backWalk = other.Parent;
             if (!other.Red)
                 FixRedBlackDelete(other2);
             count--;
@@ -371,12 +378,10 @@ namespace TMD.Algo.Collections.Generic
             return treeNode;
         }
 
-
         #endregion
 
         private int version;
         private int count;
-
 
         #region ICollection<T> Members
 
@@ -391,29 +396,17 @@ namespace TMD.Algo.Collections.Generic
         }
 
 
-
         /// <summary>
         /// Gets the count of the number of items in the list.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return count;
-            }
-        }
+        public int Count => count;
 
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
-
+        public bool IsReadOnly => false;
 
         #endregion
-
 
         #region IEnumerable Members
 
@@ -434,9 +427,8 @@ namespace TMD.Algo.Collections.Generic
         /// Enumerator for tree lists.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1815")]
-        public struct SortedDictionary2Enumerator : IEnumerator<KeyValuePair<K,V>>
+        public struct SortedDictionary2Enumerator : IEnumerator<KeyValuePair<K, V>>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -470,8 +462,8 @@ namespace TMD.Algo.Collections.Generic
                 offEnd = false;
             }
 
-            private SortedDictionary2<K, V> parent;
-            private int origVersion;
+            private readonly SortedDictionary2<K, V> parent;
+            private readonly int origVersion;
             private TreeNode currentNode;
             private bool offEnd;
 
@@ -485,9 +477,9 @@ namespace TMD.Algo.Collections.Generic
                 get
                 {
                     if (currentNode == null)
-                        return new KeyValuePair<K,V>();
+                        return new KeyValuePair<K, V>();
                     else
-                        return new KeyValuePair<K,V>(currentNode.Key, currentNode.Value);
+                        return new KeyValuePair<K, V>(currentNode.Key, currentNode.Value);
                 }
             }
 
@@ -528,7 +520,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 if (!offEnd && currentNode == null)
                 {
                     if (parent.treeRoot == parent.sentinal)
@@ -578,7 +571,8 @@ namespace TMD.Algo.Collections.Generic
             void System.Collections.IEnumerator.Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentNode = null;
                 offEnd = false;
             }
@@ -598,13 +592,15 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void Add(K key, V value)
         {
-            TreeNode newNode = new TreeNode();
-            newNode.Key = key;
-            newNode.Value = value;
-            newNode.Red = true;
-            newNode.Parent = sentinal;
-            newNode.Left = sentinal;
-            newNode.Right = sentinal;
+            TreeNode newNode = new TreeNode
+            {
+                Key = key,
+                Value = value,
+                Red = true,
+                Parent = sentinal,
+                Left = sentinal,
+                Right = sentinal
+            };
             if (treeRoot == sentinal)
             {
                 treeRoot = newNode;
@@ -754,7 +750,7 @@ namespace TMD.Algo.Collections.Generic
         public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
             if (arrayIndex < 0 || arrayIndex + count > array.Length)
-                throw new ArgumentOutOfRangeException("arrayIndex");
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             TreeCopy(treeRoot, array, ref arrayIndex);
         }
 

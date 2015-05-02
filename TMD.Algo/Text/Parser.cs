@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2014, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -40,7 +42,7 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T>(this string value, out T result)
         {
-            if (value == null) throw new ArgumentNullException("value");
+            if (value == null) throw new ArgumentNullException(nameof(value));
             result = Parse<T>(value);
         }
 
@@ -58,7 +60,7 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T>(this string value, out T[] results)
         {
-            if (value == null) throw new ArgumentNullException("value");
+            if (value == null) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
             T[] conversion = new T[bits.Length];
             for (int i = 0; i < bits.Length; i++)
@@ -88,9 +90,9 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T1, T2>(this string value, out T1 res1, out T2 res2)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 2) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 2) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2);
         }
 
@@ -120,9 +122,9 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T1, T2, T3>(this string value, out T1 res1, out T2 res2, out T3 res3)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 3) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 3) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3);
         }
 
@@ -158,9 +160,9 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T1, T2, T3, T4>(this string value, out T1 res1, out T2 res2, out T3 res3, out T4 res4)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 4) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 4) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3, out res4);
         }
 
@@ -200,11 +202,12 @@ namespace TMD.Algo.Text
         /// <typeparam name="T5">
         /// Type of the fourth result.
         /// </typeparam>
-        public static void Parse<T1, T2, T3, T4, T5>(this string value, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5)
+        public static void Parse<T1, T2, T3, T4, T5>(this string value, out T1 res1, out T2 res2, out T3 res3,
+            out T4 res4, out T5 res5)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 5) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 5) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3, out res4, out res5);
         }
 
@@ -224,11 +227,12 @@ namespace TMD.Algo.Text
         /// <typeparam name="T4"></typeparam>
         /// <typeparam name="T5"></typeparam>
         /// <typeparam name="T6"></typeparam>
-        public static void Parse<T1, T2, T3, T4, T5, T6>(this string value, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6)
+        public static void Parse<T1, T2, T3, T4, T5, T6>(this string value, out T1 res1, out T2 res2, out T3 res3,
+            out T4 res4, out T5 res5, out T6 res6)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 6) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 6) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3, out res4, out res5, out res6);
         }
 
@@ -250,11 +254,12 @@ namespace TMD.Algo.Text
         /// <typeparam name="T5"></typeparam>
         /// <typeparam name="T6"></typeparam>
         /// <typeparam name="T7"></typeparam>
-        public static void Parse<T1, T2, T3, T4, T5, T6, T7>(this string value, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7)
+        public static void Parse<T1, T2, T3, T4, T5, T6, T7>(this string value, out T1 res1, out T2 res2, out T3 res3,
+            out T4 res4, out T5 res5, out T6 res6, out T7 res7)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 7) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 7) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3, out res4, out res5, out res6, out res7);
         }
 
@@ -278,49 +283,62 @@ namespace TMD.Algo.Text
         /// <typeparam name="T6"></typeparam>
         /// <typeparam name="T7"></typeparam>
         /// <typeparam name="T8"></typeparam>
-        public static void Parse<T1, T2, T3, T4, T5, T6, T7, T8>(this string value, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7, out T8 res8)
+        public static void Parse<T1, T2, T3, T4, T5, T6, T7, T8>(this string value, out T1 res1, out T2 res2,
+            out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7, out T8 res8)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException("value");
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
             string[] bits = value.Split(' ');
-            if (bits.Length != 8) throw new ArgumentException("Value has wrong number of components.", "value");
+            if (bits.Length != 8) throw new ArgumentException("Value has wrong number of components.", nameof(value));
             Parse(bits, 0, out res1, out res2, out res3, out res4, out res5, out res6, out res7, out res8);
         }
 
-        private static void Parse<T1, T2, T3, T4, T5, T6, T7, T8>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7, out T8 res8)
+        private static void Parse<T1, T2, T3, T4, T5, T6, T7, T8>(string[] bits, int index, out T1 res1, out T2 res2,
+            out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7, out T8 res8)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3, out res4, out res5, out res6, out res7, out res8);
         }
-        private static void Parse<T1, T2, T3, T4, T5, T6, T7>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7)
+
+        private static void Parse<T1, T2, T3, T4, T5, T6, T7>(string[] bits, int index, out T1 res1, out T2 res2,
+            out T3 res3, out T4 res4, out T5 res5, out T6 res6, out T7 res7)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3, out res4, out res5, out res6, out res7);
         }
-        private static void Parse<T1, T2, T3, T4, T5, T6>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5, out T6 res6)
+
+        private static void Parse<T1, T2, T3, T4, T5, T6>(string[] bits, int index, out T1 res1, out T2 res2,
+            out T3 res3, out T4 res4, out T5 res5, out T6 res6)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3, out res4, out res5, out res6);
         }
-        private static void Parse<T1, T2, T3, T4, T5>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3, out T4 res4, out T5 res5)
+
+        private static void Parse<T1, T2, T3, T4, T5>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3,
+            out T4 res4, out T5 res5)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3, out res4, out res5);
         }
-        private static void Parse<T1, T2, T3, T4>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3, out T4 res4)
+
+        private static void Parse<T1, T2, T3, T4>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3,
+            out T4 res4)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3, out res4);
         }
+
         private static void Parse<T1, T2, T3>(string[] bits, int index, out T1 res1, out T2 res2, out T3 res3)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2, out res3);
         }
+
         private static void Parse<T1, T2>(string[] bits, int index, out T1 res1, out T2 res2)
         {
             res1 = Parse<T1>(bits[index]);
             Parse(bits, index + 1, out res2);
         }
+
         private static void Parse<T>(string[] bits, int index, out T res1)
         {
             res1 = Parse<T>(bits[index]);
@@ -331,35 +349,35 @@ namespace TMD.Algo.Text
             Type t = typeof (T);
             if (t == typeof (int))
             {
-                return (T) (object) int.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)int.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (long))
             {
-                return (T) (object) long.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)long.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (double))
             {
-                return (T) (object) double.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)double.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (float))
             {
-                return (T) (object) float.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)float.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (string))
             {
-                return (T) (object) value;
+                return (T)(object)value;
             }
             else if (t == typeof (BigInteger))
             {
-                return (T) (object) BigInteger.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)BigInteger.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (TimeSpan))
             {
-                return (T) (object) TimeSpan.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)TimeSpan.Parse(value, CultureInfo.InvariantCulture);
             }
             else if (t == typeof (DateTime))
             {
-                return (T) (object) DateTime.Parse(value, CultureInfo.InvariantCulture);
+                return (T)(object)DateTime.Parse(value, CultureInfo.InvariantCulture);
             }
             throw new NotSupportedException("Parse type requested not supported.");
         }

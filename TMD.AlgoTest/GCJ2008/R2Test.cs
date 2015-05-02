@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2015, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -31,9 +33,9 @@ namespace TMD.AlgoTest.GCJ2008
             test.Get(out M, out V);
             int[] Gs;
             int[] Cs;
-            test.GetLines((M-1)/2, out Gs, out Cs);
+            test.GetLines((M - 1)/2, out Gs, out Cs);
             int[] Is;
-            test.GetLines((M+1)/2, out Is);
+            test.GetLines((M + 1)/2, out Is);
             return () => Q1Solver(M, V, Gs, Cs, Is);
         }
 
@@ -112,7 +114,7 @@ namespace TMD.AlgoTest.GCJ2008
             int x = (A - 1)/M + 1;
             int y = (A - 1)%M + 1;
             int[] point3 = {x, y};
-            return new int[][]
+            return new[]
             {
                 point1,
                 point2,
@@ -240,19 +242,19 @@ namespace TMD.AlgoTest.GCJ2008
                         {
                             if (j != i)
                             {
-                                if (word[m*k +j] != word[m*k+l])
+                                if (word[m*k + j] != word[m*k + l])
                                     weights[j, l]++;
                             }
                             else if (m != 0)
                             {
-                                if (word[(m-1)*k+j] != word[m*k+l])
+                                if (word[(m - 1)*k + j] != word[m*k + l])
                                     weights[j, l]++;
                             }
                         }
                     }
                 }
                 // TODO: extract this to the graph class.
-                int[,] dp = new int[1<<k,k];
+                int[,] dp = new int[1 << k, k];
                 for (int j = 1; j < 1 << k; j++)
                 {
                     for (int l = 0; l < k; l++)
@@ -269,7 +271,7 @@ namespace TMD.AlgoTest.GCJ2008
                             for (int m = 0; m < k; m++)
                             {
                                 if ((child & (1 << m)) == 0) continue;
-                                dp[j, l] = Math.Min(dp[j, l], dp[child, m] + weights[l,m]);
+                                dp[j, l] = Math.Min(dp[j, l], dp[child, m] + weights[l, m]);
                             }
                         }
                     }

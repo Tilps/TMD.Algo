@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using TMD.Algo.Algorithms;
 
 namespace TMD.AlgoTest
@@ -50,7 +46,6 @@ namespace TMD.AlgoTest
             Assert.IsTrue(d <= b);
             Assert.IsFalse(d > b);
             Assert.IsFalse(d < b);
-
         }
     }
 }

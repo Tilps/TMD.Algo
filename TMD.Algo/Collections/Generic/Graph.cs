@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -31,7 +33,6 @@ namespace TMD.Algo.Collections.Generic
     /// </typeparam>
     public class Graph<TVertex, TEdge>
     {
-
         /// <summary>
         /// Adds a vertex to the graph.
         /// </summary>
@@ -291,20 +292,22 @@ namespace TMD.Algo.Collections.Generic
 
         private KeyValuePair<int, KeyValuePair<int, int>>[] MakeEdgeList()
         {
-            KeyValuePair<int, KeyValuePair<int, int>>[] cons = new KeyValuePair<int, KeyValuePair<int, int>>[edges.Count];
+            KeyValuePair<int, KeyValuePair<int, int>>[] cons =
+                new KeyValuePair<int, KeyValuePair<int, int>>[edges.Count];
             for (int i = 0; i < vertices.Count; i++)
             {
                 for (int j = 0; j < adjacencyList[i].Count; j++)
                 {
                     KeyValuePair<int, int> edgeEntry = adjacencyList[i][j];
-                    cons[edgeEntry.Value] = new KeyValuePair<int, KeyValuePair<int, int>>(edgeEntry.Value, new KeyValuePair<int, int>(i, edgeEntry.Key));
+                    cons[edgeEntry.Value] = new KeyValuePair<int, KeyValuePair<int, int>>(edgeEntry.Value,
+                        new KeyValuePair<int, int>(i, edgeEntry.Key));
                 }
             }
             return cons;
         }
 
-        private List<TVertex> vertices = new List<TVertex>();
-        private List<TEdge> edges = new List<TEdge>();
+        private readonly List<TVertex> vertices = new List<TVertex>();
+        private readonly List<TEdge> edges = new List<TEdge>();
         private List<List<KeyValuePair<int, int>>> adjacencyList = new List<List<KeyValuePair<int, int>>>();
 
         [SuppressMessage("Microsoft.Performance", "CA1814")]
@@ -339,6 +342,7 @@ namespace TMD.Algo.Collections.Generic
             }
             return res;
         }
+
         // TODO: implement shortest path.
         /// <summary>
         /// Finds the shortest path info for all nodes from a single source.
@@ -357,7 +361,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A single source shortest path info capable of answering questions about the shortest paths.
         /// </returns>
-        public SingleShortestPathInfo ShortestPathDijkstra(int startVertexId, IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer)
+        public SingleShortestPathInfo ShortestPathDijkstra(int startVertexId, IComparer<TEdge> edgeComparer,
+            IAdder<TEdge> edgeSummer)
         {
             int[] predecesors = new int[vertices.Count];
             TEdge[] distances = new TEdge[vertices.Count];
@@ -423,7 +428,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A single source shortest path info capable of answering questions about the shortest paths.
         /// </returns>
-        public SingleShortestPathInfo ShortestPathModifiedDijkstra(int startVertexId, IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer)
+        public SingleShortestPathInfo ShortestPathModifiedDijkstra(int startVertexId, IComparer<TEdge> edgeComparer,
+            IAdder<TEdge> edgeSummer)
         {
             int[] predecesors = new int[vertices.Count];
             TEdge[] distances = new TEdge[vertices.Count];
@@ -434,7 +440,9 @@ namespace TMD.Algo.Collections.Generic
             }
             distances[startVertexId] = edgeSummer.Zero;
 
-            LookupHeap<Pair<TEdge, int>> priorityQueue = new LookupHeap<Pair<TEdge, int>>(new ReverseComparer<Pair<TEdge, int>>(new Item1Comparer<TEdge, int>(edgeComparer)));
+            LookupHeap<Pair<TEdge, int>> priorityQueue =
+                new LookupHeap<Pair<TEdge, int>>(
+                    new ReverseComparer<Pair<TEdge, int>>(new Item1Comparer<TEdge, int>(edgeComparer)));
             for (int i = 0; i < vertices.Count; i++)
             {
                 priorityQueue.Add(new Pair<TEdge, int>(distances[i], i));
@@ -487,7 +495,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A single source shortest path info capable of answering questions about the shortest paths.
         /// </returns>
-        public SingleShortestPathInfo ShortestPathAcyclic(int startVertexId, IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer)
+        public SingleShortestPathInfo ShortestPathAcyclic(int startVertexId, IComparer<TEdge> edgeComparer,
+            IAdder<TEdge> edgeSummer)
         {
             int[] predecesors = new int[vertices.Count];
             TEdge[] distances = new TEdge[vertices.Count];
@@ -540,7 +549,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A single source shortest path info capable of answering questions about the shortest paths.
         /// </returns>
-        public SingleShortestPathInfo ShortestPathBellmanFord(int startVertexId, IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer, out bool successful)
+        public SingleShortestPathInfo ShortestPathBellmanFord(int startVertexId, IComparer<TEdge> edgeComparer,
+            IAdder<TEdge> edgeSummer, out bool successful)
         {
             int[] predecesors = new int[vertices.Count];
             TEdge[] distances = new TEdge[vertices.Count];
@@ -585,6 +595,7 @@ namespace TMD.Algo.Collections.Generic
             SingleShortestPathInfo results = new SingleShortestPathInfo(predecesors, distances);
             return results;
         }
+
         /// <summary>
         /// Represents a provider of information about the shorest path from a single source.
         /// </summary>
@@ -621,8 +632,7 @@ namespace TMD.Algo.Collections.Generic
             /// </returns>
             public IList<int> GetPath(int destVertexId)
             {
-                List<int> results = new List<int>();
-                results.Add(destVertexId);
+                List<int> results = new List<int> {destVertexId};
                 int curVertex = destVertexId;
                 while (predecesors[curVertex] != -1)
                 {
@@ -632,8 +642,9 @@ namespace TMD.Algo.Collections.Generic
                 results.Reverse();
                 return results;
             }
-            private int[] predecesors;
-            private TEdge[] distances;
+
+            private readonly int[] predecesors;
+            private readonly TEdge[] distances;
         }
 
         /// <summary>
@@ -653,7 +664,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A single source shortest path info capable of answering questions about the shortest paths.
         /// </returns>
-        public ShortestPathInfo ShortestPathFloydWarshal(IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer, out bool successful)
+        public ShortestPathInfo ShortestPathFloydWarshal(IComparer<TEdge> edgeComparer, IAdder<TEdge> edgeSummer,
+            out bool successful)
         {
             int[,] predecesors = new int[vertices.Count, vertices.Count];
             TEdge[,] distances = new TEdge[vertices.Count, vertices.Count];
@@ -706,6 +718,7 @@ namespace TMD.Algo.Collections.Generic
             ShortestPathInfo results = new ShortestPathInfo(predecesors, distances);
             return results;
         }
+
         /// <summary>
         /// Represents a provider of information about the shorest path from all sources.
         /// </summary>
@@ -748,19 +761,19 @@ namespace TMD.Algo.Collections.Generic
             /// </returns>
             public IList<int> GetPath(int srcVertexId, int destVertexId)
             {
-                List<int> results = new List<int>();
-                results.Add(destVertexId);
+                List<int> results = new List<int> {destVertexId};
                 int curVertex = destVertexId;
-                while (predecesors[srcVertexId,curVertex] != -1)
+                while (predecesors[srcVertexId, curVertex] != -1)
                 {
-                    curVertex = predecesors[srcVertexId,curVertex];
+                    curVertex = predecesors[srcVertexId, curVertex];
                     results.Add(curVertex);
                 }
                 results.Reverse();
                 return results;
             }
-            private int[,] predecesors;
-            private TEdge[,] distances;
+
+            private readonly int[,] predecesors;
+            private readonly TEdge[,] distances;
         }
 
         /// <summary>
@@ -782,7 +795,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
         /// </returns>
-        public TEdge MaximumFlowFordFulkersonBfs(int source, int sink, IComparer<TEdge> flowComparer, IAdder<TEdge> flowSummer)
+        public TEdge MaximumFlowFordFulkersonBfs(int source, int sink, IComparer<TEdge> flowComparer,
+            IAdder<TEdge> flowSummer)
         {
             // TODO: use a custom int32Pair for even better performance.
             Dictionary<Pair<int, int>, int> edgeLookup = new Dictionary<Pair<int, int>, int>();
@@ -804,7 +818,8 @@ namespace TMD.Algo.Collections.Generic
                     }
                     else
                     {
-                        residualGraph.edges[edgeIndex] = flowSummer.Add(residualGraph.edges[edgeIndex], edges[edge.Value]);
+                        residualGraph.edges[edgeIndex] = flowSummer.Add(residualGraph.edges[edgeIndex],
+                            edges[edge.Value]);
                     }
                     int reverseEdgeIndex;
                     Pair<int, int> reverseEndPoints = new Pair<int, int>(edge.Key, i);
@@ -827,7 +842,7 @@ namespace TMD.Algo.Collections.Generic
                 for (int i = 0; i < vertices.Count; i++)
                     comeFrom[i] = -1;
                 bool foundSink = false;
-                vertexQueue.Enqueue(source);                
+                vertexQueue.Enqueue(source);
                 while (vertexQueue.Count > 0)
                 {
                     int vertex = vertexQueue.Dequeue();
@@ -890,6 +905,7 @@ namespace TMD.Algo.Collections.Generic
             }
             return sum;
         }
+
         // TODO: implement a minimum cost flow algorithm.
         // Maximum flow min cost algorithm will do instead, can be done by reimplementing the above using shortest path algorithm over costs instead of breadth first search.
 
@@ -942,7 +958,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
         /// </returns>
-        public TCapacity MaximumFlowMinCost<TCapacity, TCost>(int source, int sink, IComparer<TCapacity> flowComparer, IAdder<TCapacity> flowSummer, IComparer<TCost> costComparer, IAdder<TCost> costSummer, Func<TCost, TCapacity, TCost> costProduct, Func<TEdge, TCapacity> capGetter, Func<TEdge, TCost> costGetter, Action<TEdge, TCapacity> capSetter, Action<TEdge, TCost> costSetter, Func<TEdge> edgeCreator, out TCost minCost, out bool successful)
+        public TCapacity MaximumFlowMinCost<TCapacity, TCost>(int source, int sink, IComparer<TCapacity> flowComparer,
+            IAdder<TCapacity> flowSummer, IComparer<TCost> costComparer, IAdder<TCost> costSummer,
+            Func<TCost, TCapacity, TCost> costProduct, Func<TEdge, TCapacity> capGetter, Func<TEdge, TCost> costGetter,
+            Action<TEdge, TCapacity> capSetter, Action<TEdge, TCost> costSetter, Func<TEdge> edgeCreator,
+            out TCost minCost, out bool successful)
         {
             // TODO: use a custom int32Pair for even better performance.
             Dictionary<Pair<int, int>, int> edgeLookup = new Dictionary<Pair<int, int>, int>();
@@ -969,14 +989,16 @@ namespace TMD.Algo.Collections.Generic
                     }
                     else
                     {
-                        capSetter(residualGraph.edges[edgeIndex], flowSummer.Add(capGetter(residualGraph.edges[edgeIndex]), capGetter(edges[edge.Value])));
+                        capSetter(residualGraph.edges[edgeIndex],
+                            flowSummer.Add(capGetter(residualGraph.edges[edgeIndex]), capGetter(edges[edge.Value])));
                     }
                     int reverseEdgeIndex;
                     Pair<int, int> reverseEndPoints = new Pair<int, int>(edge.Key, i);
                     if (!edgeLookup.TryGetValue(reverseEndPoints, out reverseEdgeIndex))
                     {
                         reverseEdgeIndex = residualGraph.AddDirectedEdge(edge.Key, i, edgeCreator());
-                        costSetter(residualGraph.edges[reverseEdgeIndex], costSummer.Subtract(costSummer.Zero, costGetter(edges[edge.Value])));
+                        costSetter(residualGraph.edges[reverseEdgeIndex],
+                            costSummer.Subtract(costSummer.Zero, costGetter(edges[edge.Value])));
                         edgeLookup.Add(reverseEndPoints, reverseEdgeIndex);
                     }
                 }
@@ -1004,7 +1026,8 @@ namespace TMD.Algo.Collections.Generic
                     TCost sum = costSummer.Add(distances[vertex], costGetter(residualGraph.edges[edgeList[j].Key]));
                     if (costComparer.Compare(distances[destVertex], sum) > 0)
                     {
-                        TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
+                        TCapacity availableFlow =
+                            capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
                         if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                         {
                             predecesors[destVertex] = vertex;
@@ -1023,7 +1046,8 @@ namespace TMD.Algo.Collections.Generic
                 TCost sum = costSummer.Add(distances[vertex], costGetter(residualGraph.edges[edgeList[j].Key]));
                 if (costComparer.Compare(distances[destVertex], sum) > 0)
                 {
-                    TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
+                    TCapacity availableFlow =
+                        capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(vertex, destVertex)]]);
                     if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                     {
                         successful = false;
@@ -1078,7 +1102,9 @@ namespace TMD.Algo.Collections.Generic
             for (int j = 0; j < edgeList.Length; j++)
             {
                 TCost oldCost = costGetter(residualGraph.edges[edgeList[j].Key]);
-                costSetter(residualGraph.edges[edgeList[j].Key], costSummer.Add(oldCost, costSummer.Subtract(distances[edgeList[j].Value.Key], distances[edgeList[j].Value.Value])));
+                costSetter(residualGraph.edges[edgeList[j].Key],
+                    costSummer.Add(oldCost,
+                        costSummer.Subtract(distances[edgeList[j].Value.Key], distances[edgeList[j].Value.Value])));
             }
 
             while (true)
@@ -1090,7 +1116,9 @@ namespace TMD.Algo.Collections.Generic
                 }
                 distances[source] = costSummer.Zero;
 
-                LookupHeap<Pair<TCost, int>> priorityQueue = new LookupHeap<Pair<TCost, int>>(new ReverseComparer<Pair<TCost, int>>(new Item1Comparer<TCost, int>(costComparer)));
+                LookupHeap<Pair<TCost, int>> priorityQueue =
+                    new LookupHeap<Pair<TCost, int>>(
+                        new ReverseComparer<Pair<TCost, int>>(new Item1Comparer<TCost, int>(costComparer)));
                 for (int i = 0; i < vertices.Count; i++)
                 {
                     priorityQueue.Add(new Pair<TCost, int>(distances[i], i));
@@ -1109,7 +1137,9 @@ namespace TMD.Algo.Collections.Generic
                         if (costComparer.Compare(distances[edge.Key], sum) > 0)
                         {
                             // And we have available flow.
-                            TCapacity availableFlow = capGetter(residualGraph.edges[edgeLookup[new Pair<int, int>(currentVertex.Item2, destVertex)]]);
+                            TCapacity availableFlow =
+                                capGetter(
+                                    residualGraph.edges[edgeLookup[new Pair<int, int>(currentVertex.Item2, destVertex)]]);
                             if (flowComparer.Compare(availableFlow, flowSummer.Zero) > 0)
                             {
                                 predecesors[edge.Key] = currentVertex.Item2;
@@ -1130,7 +1160,9 @@ namespace TMD.Algo.Collections.Generic
                 for (int j = 0; j < edgeList.Length; j++)
                 {
                     TCost oldCost = costGetter(residualGraph.edges[edgeList[j].Key]);
-                    costSetter(residualGraph.edges[edgeList[j].Key], costSummer.Add(oldCost, costSummer.Subtract(distances[edgeList[j].Value.Key], distances[edgeList[j].Value.Value])));
+                    costSetter(residualGraph.edges[edgeList[j].Key],
+                        costSummer.Add(oldCost,
+                            costSummer.Subtract(distances[edgeList[j].Value.Key], distances[edgeList[j].Value.Value])));
                 }
 
                 foundSink = costComparer.Compare(distances[sink], costSummer.MaxValue) != 0;
@@ -1166,7 +1198,8 @@ namespace TMD.Algo.Collections.Generic
                         }
                         else
                         {
-                            edgeCost = costSummer.Subtract(costSummer.Zero, costGetter(edges[originalEdge[new Pair<int,int>(curVertex, nextVertex)]]));
+                            edgeCost = costSummer.Subtract(costSummer.Zero,
+                                costGetter(edges[originalEdge[new Pair<int, int>(curVertex, nextVertex)]]));
                         }
                         minCost = costSummer.Add(minCost, costProduct(edgeCost, flow));
                         int reverseEdgeIndex = edgeLookup[new Pair<int, int>(curVertex, nextVertex)];
@@ -1186,6 +1219,7 @@ namespace TMD.Algo.Collections.Generic
 
             return capSum;
         }
+
         /// <summary>
         /// Determines the maximum independent set assuming this graph is undirected and bipartite.
         /// </summary>
@@ -1194,6 +1228,7 @@ namespace TMD.Algo.Collections.Generic
         {
             return vertices.Count - MaximumBipartiteMatching();
         }
+
         /// <summary>
         /// Determines the maximum matching assuming this graph is undirected and bipartite.
         /// </summary>
@@ -1219,7 +1254,7 @@ namespace TMD.Algo.Collections.Generic
                 network.AddVertex(i);
             }
             int source = network.AddVertex(vertices.Count);
-            int sink = network.AddVertex(vertices.Count+1);
+            int sink = network.AddVertex(vertices.Count + 1);
             for (int i = 0; i < vertices.Count; i++)
             {
                 if (secondGroup[i])
@@ -1237,8 +1272,6 @@ namespace TMD.Algo.Collections.Generic
                 }
             }
             return network.MaximumFlowFordFulkersonBfs(source, sink, Comparer<int>.Default, new IntAdder());
-
-
         }
 
 
@@ -1254,20 +1287,19 @@ namespace TMD.Algo.Collections.Generic
         public static bool GraphPlausible(IEnumerable<int> degrees)
         {
             List<int> degreeList = new List<int>(degrees);
-            for (int i=0; i < degreeList.Count; i++)
+            for (int i = 0; i < degreeList.Count; i++)
             {
                 degreeList.Sort();
-                int current = degreeList[degreeList.Count-1];
+                int current = degreeList[degreeList.Count - 1];
                 degreeList[degreeList.Count - 1] = 0;
-                if (current > degreeList.Count-1)
+                if (current > degreeList.Count - 1)
                     return false;
                 for (int j = degreeList.Count - 2; j >= degreeList.Count - 1 - current; j--)
                 {
                     if (degreeList[j] <= 0)
                         return false;
-                    degreeList[j] = degreeList[j]-1;
+                    degreeList[j] = degreeList[j] - 1;
                 }
-
             }
             return true;
         }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2015, the TMD.Algo authors.
 All rights reserved.
@@ -11,14 +12,13 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 using TMD.Algo.Algorithms;
 using TMD.Algo.Algorithms.Generic;
@@ -59,7 +59,7 @@ namespace TMD.AlgoTest.GCJ2008
 
         private int Q1Solver(List<string> sList, List<int> tList)
         {
-            bool[,] vEdges = new bool[6002,6002];
+            bool[,] vEdges = new bool[6002, 6002];
             bool[,] hEdges = new bool[6002, 6002];
             bool[,] pockets = new bool[6002, 6002];
             int x = 3000;
@@ -199,14 +199,17 @@ namespace TMD.AlgoTest.GCJ2008
         {
             return x == 0 || lines[y][x - 1] == '#';
         }
+
         private bool IsUpWall(int x, int y, string[] lines)
         {
             return y == 0 || lines[y - 1][x] == '#';
         }
+
         private bool IsRightWall(int x, int y, string[] lines)
         {
             return x == lines[y].Length - 1 || lines[y][x + 1] == '#';
         }
+
         private bool IsDownWall(int x, int y, string[] lines)
         {
             return y == lines.Length - 1 || lines[y + 1][x] == '#';
@@ -214,7 +217,7 @@ namespace TMD.AlgoTest.GCJ2008
 
         private object Q2Solver(int R, int C, string[] lines)
         {
-            List<KeyValuePair<int, int>>[,] portalOptions = new List<KeyValuePair<int, int>>[R,C];
+            List<KeyValuePair<int, int>>[,] portalOptions = new List<KeyValuePair<int, int>>[R, C];
             int sy = 0;
             int sx = 0;
             int cy = 0;
@@ -239,8 +242,8 @@ namespace TMD.AlgoTest.GCJ2008
                         for (int k = j; k < C; k++)
                         {
                             if (lines[i][k] == '#') break;
-                            if (portalOptions[i,k] == null) portalOptions[i,k] = new List<KeyValuePair<int, int>>();
-                            portalOptions[i,k].Add(new KeyValuePair<int, int>(i,j));
+                            if (portalOptions[i, k] == null) portalOptions[i, k] = new List<KeyValuePair<int, int>>();
+                            portalOptions[i, k].Add(new KeyValuePair<int, int>(i, j));
                         }
                     }
                     if (IsUpWall(j, i, lines))
@@ -250,7 +253,7 @@ namespace TMD.AlgoTest.GCJ2008
                             if (lines[k][j] == '#') break;
                             if (portalOptions[k, j] == null) portalOptions[k, j] = new List<KeyValuePair<int, int>>();
                             portalOptions[k, j].Add(new KeyValuePair<int, int>(i, j));
-                        }                        
+                        }
                     }
                     if (IsRightWall(j, i, lines))
                     {
@@ -288,35 +291,67 @@ namespace TMD.AlgoTest.GCJ2008
                     // Can change portal.
                     foreach (var portal in portals)
                     {
-                        MapState next = new MapState() { x = cur.x, y= cur.y, portalx = portal.Value, portaly = portal.Key };
+                        MapState next = new MapState()
+                        {
+                            x = cur.x,
+                            y = cur.y,
+                            portalx = portal.Value,
+                            portaly = portal.Key
+                        };
                         options.Add(new KeyValuePair<MapState, int>(next, 0));
                     }
                     // Can walk through an opened portal if next to a wall.
-                    if (cur.portalx != -1 && (IsDownWall(cur.x, cur.y, lines) || IsLeftWall(cur.x, cur.y, lines) || IsUpWall(cur.x, cur.y, lines) || IsRightWall(cur.x, cur.y, lines)))
+                    if (cur.portalx != -1 &&
+                        (IsDownWall(cur.x, cur.y, lines) || IsLeftWall(cur.x, cur.y, lines) ||
+                         IsUpWall(cur.x, cur.y, lines) || IsRightWall(cur.x, cur.y, lines)))
                     {
                         // Close portal behind us, no reason to come back.
-                        MapState next = new MapState() { x = cur.portalx, y = cur.portaly, portalx = -1, portaly = -1 };
-                        options.Add(new KeyValuePair<MapState, int>(next, 1));                        
+                        MapState next = new MapState() {x = cur.portalx, y = cur.portaly, portalx = -1, portaly = -1};
+                        options.Add(new KeyValuePair<MapState, int>(next, 1));
                     }
                     // Can walk.
                     if (!IsLeftWall(cur.x, cur.y, lines))
                     {
-                        MapState next = new MapState() { x = cur.x - 1, y = cur.y, portalx = cur.portalx, portaly = cur.portaly };
-                        options.Add(new KeyValuePair<MapState, int>(next, 1));                                                
+                        MapState next = new MapState()
+                        {
+                            x = cur.x - 1,
+                            y = cur.y,
+                            portalx = cur.portalx,
+                            portaly = cur.portaly
+                        };
+                        options.Add(new KeyValuePair<MapState, int>(next, 1));
                     }
                     if (!IsUpWall(cur.x, cur.y, lines))
                     {
-                        MapState next = new MapState() { x = cur.x , y = cur.y - 1, portalx = cur.portalx, portaly = cur.portaly };
+                        MapState next = new MapState()
+                        {
+                            x = cur.x,
+                            y = cur.y - 1,
+                            portalx = cur.portalx,
+                            portaly = cur.portaly
+                        };
                         options.Add(new KeyValuePair<MapState, int>(next, 1));
                     }
                     if (!IsRightWall(cur.x, cur.y, lines))
                     {
-                        MapState next = new MapState() { x = cur.x + 1, y = cur.y, portalx = cur.portalx, portaly = cur.portaly };
+                        MapState next = new MapState()
+                        {
+                            x = cur.x + 1,
+                            y = cur.y,
+                            portalx = cur.portalx,
+                            portaly = cur.portaly
+                        };
                         options.Add(new KeyValuePair<MapState, int>(next, 1));
                     }
                     if (!IsDownWall(cur.x, cur.y, lines))
                     {
-                        MapState next = new MapState() { x = cur.x, y = cur.y + 1, portalx = cur.portalx, portaly = cur.portaly };
+                        MapState next = new MapState()
+                        {
+                            x = cur.x,
+                            y = cur.y + 1,
+                            portalx = cur.portalx,
+                            portaly = cur.portaly
+                        };
                         options.Add(new KeyValuePair<MapState, int>(next, 1));
                     }
                 }
@@ -356,7 +391,7 @@ namespace TMD.AlgoTest.GCJ2008
 
         private int Q3Solver(int M, int N, string[] brokens)
         {
-            int[,] verticies = new int[M,N];
+            int[,] verticies = new int[M, N];
             Graph<int, int> graph = new Graph<int, int>();
             for (int i = 0; i < M; i++)
             {
@@ -390,7 +425,7 @@ namespace TMD.AlgoTest.GCJ2008
                             if (brokens[i + 1][j + 1] == '.')
                             {
                                 graph.AddUndirectedEdge(verticies[i, j], verticies[i + 1, j + 1], 0);
-                            }                            
+                            }
                         }
                     }
                 }
@@ -503,18 +538,18 @@ namespace TMD.AlgoTest.GCJ2008
                 }
                 else
                 {
-                    total = mod.Subtract(total, subtotal);                    
+                    total = mod.Subtract(total, subtotal);
                 }
             }
-            if (smallTotal >= 0 && smallTotal != total) Debugger.Break();          
+            if (smallTotal >= 0 && smallTotal != total) Debugger.Break();
             return (int)total;
         }
 
         private long Q4SmallSolver(int ta, int tb, List<KeyValuePair<int, int>> stonesPos)
         {
             Modulo mod = new Modulo(10007);
-            if (((long)ta + 1) * ((long)tb + 1) > 10000) return -1;
-            long[,] dp = new long[ta+1,tb+1];
+            if (((long)ta + 1)*((long)tb + 1) > 10000) return -1;
+            long[,] dp = new long[ta + 1, tb + 1];
             dp[0, 0] = 1;
             for (int i = 0; i <= ta; i++)
             {

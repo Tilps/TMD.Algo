@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -28,30 +30,16 @@ namespace TMD.Algo.Collections.Generic
     [SuppressMessage("Microsoft.Naming", "CA1710")]
     public class Dequeue<T> : IList<T>
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public Dequeue()
-        {
-        }
-
         private int count;
         private int version;
-        private T[] array = emptyArray;
+        private T[] array = Array.Empty<T>();
         private int start;
         private int end = -1;
-        private static T[] emptyArray = new T[0];
 
         /// <summary>
         /// Gets the count of the number of members.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return count;
-            }
-        }
+        public int Count => count;
 
         /// <summary>
         /// Gets the element at the front of the queue.
@@ -92,7 +80,7 @@ namespace TMD.Algo.Collections.Generic
             {
                 Resize();
             }
-            end = (end + 1) % array.Length;
+            end = (end + 1)%array.Length;
             array[end] = value;
             count++;
             version++;
@@ -174,7 +162,7 @@ namespace TMD.Algo.Collections.Generic
                 throw new InvalidOperationException("There is no front when the dequeue is empty.");
             T result = array[start];
             array[start] = default(T);
-            start = (start + 1) % array.Length;
+            start = (start + 1)%array.Length;
             count--;
             version++;
             return result;
@@ -208,7 +196,7 @@ namespace TMD.Algo.Collections.Generic
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
-                if (comparer.Equals(array[(start + i) % array.Length], item))
+                if (comparer.Equals(array[(start + i)%array.Length], item))
                     return i;
             }
             return -1;
@@ -227,12 +215,12 @@ namespace TMD.Algo.Collections.Generic
         {
             // TODO: replace loops with array copies.
             if (index < 0 || index > count)
-                throw new ArgumentOutOfRangeException("index", "Index is out of range to insert an element.");
+                throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range to insert an element.");
             if (index == 0)
                 PushFront(item);
             else if (index == count)
                 PushBack(item);
-            else if (index < count / 2)
+            else if (index < count/2)
             {
                 PushFront(Front);
                 for (int i = 1; i < index; i++)
@@ -244,13 +232,13 @@ namespace TMD.Algo.Collections.Generic
             else
             {
                 PushBack(Back);
-                for (int i = count-2; i > index; i--)
+                for (int i = count - 2; i > index; i--)
                 {
                     this[i] = this[i - 1];
                 }
                 this[index] = item;
             }
-       }
+        }
 
         /// <summary>
         /// Removes the item at the specified index.
@@ -262,12 +250,12 @@ namespace TMD.Algo.Collections.Generic
         {
             // TODO: replace loops with array copies.
             if (index < 0 || index >= count)
-                throw new ArgumentOutOfRangeException("index", "Index is out of range to insert an element.");
+                throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range to insert an element.");
             if (index == 0)
                 PopFront();
             else if (index == count - 1)
                 PopBack();
-            else if (index < count / 2)
+            else if (index < count/2)
             {
                 for (int i = index; i > 0; i--)
                 {
@@ -277,7 +265,7 @@ namespace TMD.Algo.Collections.Generic
             }
             else
             {
-                for (int i = index; i < count-1; i++)
+                for (int i = index; i < count - 1; i++)
                 {
                     this[i] = this[i + 1];
                 }
@@ -299,14 +287,14 @@ namespace TMD.Algo.Collections.Generic
             get
             {
                 if (index < 0 || index >= count)
-                    throw new ArgumentOutOfRangeException("index", "Index must point to a position in the queue.");
-                return array[(start + index) % array.Length];
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must point to a position in the queue.");
+                return array[(start + index)%array.Length];
             }
             set
             {
                 if (index < 0 || index >= count)
-                    throw new ArgumentOutOfRangeException("index", "Index must point to a position in the queue.");
-                array[(start + index) % array.Length] = value;
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must point to a position in the queue.");
+                array[(start + index)%array.Length] = value;
             }
         }
 
@@ -340,7 +328,7 @@ namespace TMD.Algo.Collections.Generic
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
-                if (comparer.Equals(array[(start + i) % array.Length], item))
+                if (comparer.Equals(array[(start + i)%array.Length], item))
                     return true;
             }
             return false;
@@ -374,10 +362,7 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes the specified item from the list if it exists.
@@ -435,7 +420,6 @@ namespace TMD.Algo.Collections.Generic
         [SuppressMessage("Microsoft.Performance", "CA1815")]
         public struct DequeueEnumerator : IEnumerator<T>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -449,9 +433,9 @@ namespace TMD.Algo.Collections.Generic
                 origVersion = parent.version;
             }
 
-            private Dequeue<T> parent;
+            private readonly Dequeue<T> parent;
             private int currentIndex;
-            private int origVersion;
+            private readonly int origVersion;
 
             #region IEnumerator<T> Members
 
@@ -463,13 +447,14 @@ namespace TMD.Algo.Collections.Generic
                 get
                 {
                     if (origVersion != parent.version)
-                        throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                        throw new InvalidOperationException(
+                            "The collection being enumerated has been modified since enumerator was acquired.");
                     if (currentIndex >= parent.count)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == -1)
                         return default(T);
                     else
-                        return parent.array[(parent.start + currentIndex) % parent.array.Length];
+                        return parent.array[(parent.start + currentIndex)%parent.array.Length];
                 }
             }
 
@@ -510,7 +495,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentIndex++;
                 return currentIndex < parent.count;
             }
@@ -521,7 +507,8 @@ namespace TMD.Algo.Collections.Generic
             public void Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentIndex = -1;
             }
 

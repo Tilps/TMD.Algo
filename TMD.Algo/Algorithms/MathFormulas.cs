@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,12 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -38,14 +38,14 @@ namespace TMD.Algo.Algorithms
         {
             if (n > 32)
             {
-                return EulerGamma + Math.Log(n) + 0.5 / n - 1.0 / 12 / n / n + 1.0 / 120 / n / n / n / n - 1.0 / 252 / n / n / n / n / n / n;
+                return EulerGamma + Math.Log(n) + 0.5/n - 1.0/12/n/n + 1.0/120/n/n/n/n - 1.0/252/n/n/n/n/n/n;
             }
             else
             {
                 double accumulator = 0.0;
                 for (int i = 0; i < n; i++)
                 {
-                    accumulator += 1.0 / n;
+                    accumulator += 1.0/n;
                 }
                 return accumulator;
             }
@@ -74,27 +74,32 @@ namespace TMD.Algo.Algorithms
                 double beforeD = before;
                 double endD = end;
                 double accumulator;
-                if (end - before < before / 10)
-                    accumulator = Log1p((double)(end - before) / (double)before);
+                if (end - before < before/10)
+                    accumulator = Log1p((double)(end - before)/before);
                 else
-                    accumulator = Math.Log((double)end / (double)before);
-                long product = (long)before * (long)end;
+                    accumulator = Math.Log((double)end/before);
+                long product = (long)before*end;
                 if (product < (1L << 62))
-                    accumulator += (double)(one / endF - one / beforeF) / 2.0;
+                    accumulator += (double)(one/endF - one/beforeF)/2.0;
                 else
-                    accumulator += (beforeD - endD) / end / before / 2.0;
+                    accumulator += (beforeD - endD)/end/before/2.0;
                 if (product < (1L << 31))
-                    accumulator -= (double)(one / endF / endF - one / beforeF / beforeF) / 12.0;
+                    accumulator -= (double)(one/endF/endF - one/beforeF/beforeF)/12.0;
                 else
-                    accumulator -= (beforeD * beforeD - endD * endD) / end / end / before / before / 12.0;
+                    accumulator -= (beforeD*beforeD - endD*endD)/end/end/before/before/12.0;
                 if (product < (1 << 15))
-                    accumulator += (double)(one / endF / endF / endF / endF - one / beforeF / beforeF / beforeF / beforeF) / 120.0;
+                    accumulator += (double)(one/endF/endF/endF/endF - one/beforeF/beforeF/beforeF/beforeF)/120.0;
                 else
-                    accumulator += (beforeD * beforeD * beforeD * beforeD - endD * endD * endD * endD) / end / end / end / end / before / before / before / before / 120.0;
+                    accumulator += (beforeD*beforeD*beforeD*beforeD - endD*endD*endD*endD)/end/end/end/end/before/before/
+                                   before/before/120.0;
                 if (product < (1 << 10))
-                    accumulator -= (double)(one / endF / endF / endF / endF / endF / endF - one / beforeF / beforeF / beforeF / beforeF / beforeF / beforeF) / 252.0;
+                    accumulator -=
+                        (double)
+                            (one/endF/endF/endF/endF/endF/endF - one/beforeF/beforeF/beforeF/beforeF/beforeF/beforeF)/
+                        252.0;
                 else
-                    accumulator -= (beforeD * beforeD * beforeD * beforeD * beforeD * beforeD - endD * endD * endD * endD * endD * endD) / end / end / end / end / end / end / before / before / before / before / before / before / 252.0;
+                    accumulator -= (beforeD*beforeD*beforeD*beforeD*beforeD*beforeD - endD*endD*endD*endD*endD*endD)/end/
+                                   end/end/end/end/end/before/before/before/before/before/before/252.0;
                 return accumulator;
             }
             else
@@ -120,7 +125,7 @@ namespace TMD.Algo.Algorithms
             double offsetPower = -offset;
             for (int i = 1; i <= 30; i++)
             {
-                accumulator -= offsetPower / i;
+                accumulator -= offsetPower/i;
                 offsetPower *= -offset;
             }
             return accumulator;
@@ -137,7 +142,7 @@ namespace TMD.Algo.Algorithms
         /// <remarks>
         /// Ratio of consecutive fibonacci numbers converges to this value with exponentially decaying erf.
         /// </remarks>
-        public static readonly double GoldenRatio = (1.0 + Math.Sqrt(5)) / 2.0;
+        public static readonly double GoldenRatio = (1.0 + Math.Sqrt(5))/2.0;
 
         /// <summary>
         /// Quickly determines a positive integer power of a value.
@@ -169,10 +174,10 @@ namespace TMD.Algo.Algorithms
         /// <exception cref="ArgumentException">
         /// Thrown if the power is non-positive or the multiply func is missing.
         /// </exception>
-        public static T FastExponent<T>(T value, long power, Func<T,T,T> multiplyFunc)
+        public static T FastExponent<T>(T value, long power, Func<T, T, T> multiplyFunc)
         {
-            if (power <= 0) throw new ArgumentException("Power must be positive.", "power");
-            if (multiplyFunc == null) throw new ArgumentNullException("multiplyFunc");
+            if (power <= 0) throw new ArgumentException("Power must be positive.", nameof(power));
+            if (multiplyFunc == null) throw new ArgumentNullException(nameof(multiplyFunc));
             long bit = 1;
             T current = value;
             T result = default(T);

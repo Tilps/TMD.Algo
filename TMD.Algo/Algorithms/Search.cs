@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2015, the TMD.Algo authors.
 All rights reserved.
@@ -11,11 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using TMD.Algo.Algorithms.Generic;
 using TMD.Algo.Collections.Generic;
 
@@ -85,7 +86,8 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// The number of steps to get from first to last. -1 if no path exists.
         /// </returns>
-        public static int Bfs<T>(T first, Func<T, bool> lastFoundFunc, Func<T, IEnumerable<T>> neighbourFunc, Action<T> pathObserver, IEqualityComparer<T> equalityComparer)
+        public static int Bfs<T>(T first, Func<T, bool> lastFoundFunc, Func<T, IEnumerable<T>> neighbourFunc,
+            Action<T> pathObserver, IEqualityComparer<T> equalityComparer)
         {
             if (equalityComparer == null)
             {
@@ -101,8 +103,10 @@ namespace TMD.Algo.Algorithms
             }
             Queue<T> toSearch = new Queue<T>();
             toSearch.Enqueue(first);
-            Dictionary<T, KeyValuePair<T, int>> seen = new Dictionary<T, KeyValuePair<T, int>>(equalityComparer);
-            seen.Add(first, new KeyValuePair<T, int>(default(T), 0));
+            Dictionary<T, KeyValuePair<T, int>> seen = new Dictionary<T, KeyValuePair<T, int>>(equalityComparer)
+            {
+                {first, new KeyValuePair<T, int>(default(T), 0)}
+            };
             while (toSearch.Count != 0)
             {
                 T cur = toSearch.Dequeue();
@@ -115,8 +119,7 @@ namespace TMD.Algo.Algorithms
                         {
                             if (pathObserver != null)
                             {
-                                List<T> path = new List<T>();
-                                path.Add(next);
+                                List<T> path = new List<T> {next};
                                 while (true)
                                 {
                                     path.Add(cur);
@@ -217,7 +220,8 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// The distance get from first to last. distanceSummer.MinValue if no path exists.
         /// </returns>
-        public static TD Pfs<T, TD>(T first, Func<T, bool> lastFoundFunc, Func<T, IEnumerable<KeyValuePair<T, TD>>> neighbourFunc,
+        public static TD Pfs<T, TD>(T first, Func<T, bool> lastFoundFunc,
+            Func<T, IEnumerable<KeyValuePair<T, TD>>> neighbourFunc,
             Action<T> pathObserver, IEqualityComparer<T> equalityComparer, IComparer<TD> comparer,
             IAdder<TD> distanceSummer)
         {
@@ -231,10 +235,14 @@ namespace TMD.Algo.Algorithms
             }
             LookupHeap<Pair<TD, T>> priorityQueue =
                 new LookupHeap<Pair<TD, T>>(
-                    new ReverseComparer<Pair<TD, T>>(new Item1Comparer<TD, T>(comparer)));
-            priorityQueue.Add(new Pair<TD, T>(distanceSummer.Zero, first));
-            Dictionary<T, KeyValuePair<T, TD>> seen = new Dictionary<T, KeyValuePair<T, TD>>(equalityComparer);
-            seen.Add(first, new KeyValuePair<T, TD>(default(T), distanceSummer.Zero));
+                    new ReverseComparer<Pair<TD, T>>(new Item1Comparer<TD, T>(comparer)))
+                {
+                    new Pair<TD, T>(distanceSummer.Zero, first)
+                };
+            Dictionary<T, KeyValuePair<T, TD>> seen = new Dictionary<T, KeyValuePair<T, TD>>(equalityComparer)
+            {
+                {first, new KeyValuePair<T, TD>(default(T), distanceSummer.Zero)}
+            };
             while (priorityQueue.Count != 0)
             {
                 var cur = priorityQueue.PopFront();

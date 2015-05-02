@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -36,7 +38,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static long CountSumsDistinctNumbersOrderDoesNotMatter(long maximum, long numberOfNumbers)
         {
-            return CountSumsOrderDoesNotMatter(maximum - numberOfNumbers * (numberOfNumbers + 1) / 2, numberOfNumbers);
+            return CountSumsOrderDoesNotMatter(maximum - numberOfNumbers*(numberOfNumbers + 1)/2, numberOfNumbers);
         }
 
         /// <summary>
@@ -67,13 +69,13 @@ namespace TMD.Algo.Algorithms
             {
                 for (int j = 0; j <= maximum; j++)
                 {
-                    long total = cache[1 - i % 2, j];
+                    long total = cache[1 - i%2, j];
                     if (j >= i)
-                        total += cache[i % 2, j - i];
-                    cache[i % 2, j] = total;
+                        total += cache[i%2, j - i];
+                    cache[i%2, j] = total;
                 }
             }
-            return cache[numberOfNumbers % 2, maximum];
+            return cache[numberOfNumbers%2, maximum];
         }
 
         /// <summary>
@@ -101,11 +103,12 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// The number of bit patterns satisfying the restrictions.
         /// </returns>
-        public static long CountBitPatternsWithExclusions(int n, int l, bool[] exclusions, int startingMask, int startingOffset, ref long[,] cache)
+        public static long CountBitPatternsWithExclusions(int n, int l, bool[] exclusions, int startingMask,
+            int startingOffset, ref long[,] cache)
         {
             if (cache == null)
             {
-                cache = new long[n + 1, 1 << (l+1)];
+                cache = new long[n + 1, 1 << (l + 1)];
                 for (int i = 0; i <= n; i++)
                 {
                     for (int j = 0; j < 1 << (l + 1); j++)
@@ -114,11 +117,12 @@ namespace TMD.Algo.Algorithms
                     }
                 }
             }
-            startingMask &= (1 << (l+1)) - 1;
+            startingMask &= (1 << (l + 1)) - 1;
             return BitPatternRecurseCount(n, l, exclusions, startingMask, startingOffset, cache);
         }
 
-        private static long BitPatternRecurseCount(int n, int l, bool[] exclusions, int startingMask, int startingOffset, long[,] cache)
+        private static long BitPatternRecurseCount(int n, int l, bool[] exclusions, int startingMask, int startingOffset,
+            long[,] cache)
         {
             if (startingOffset >= l && exclusions[startingMask])
                 return 0;
@@ -127,7 +131,7 @@ namespace TMD.Algo.Algorithms
             if (cache[startingOffset, startingMask] == -1)
             {
                 int nextMaskBase = startingMask << 1;
-                nextMaskBase &= (1 << (l+1)) -1;
+                nextMaskBase &= (1 << (l + 1)) - 1;
                 long total = BitPatternRecurseCount(n, l, exclusions, nextMaskBase, startingOffset + 1, cache);
                 total += BitPatternRecurseCount(n, l, exclusions, nextMaskBase | 1, startingOffset + 1, cache);
                 cache[startingOffset, startingMask] = total;
@@ -153,7 +157,7 @@ namespace TMD.Algo.Algorithms
             long currentPower = p;
             while (currentPower <= n)
             {
-                count += n / currentPower;
+                count += n/currentPower;
                 currentPower *= p;
             }
             return count;
@@ -212,7 +216,7 @@ namespace TMD.Algo.Algorithms
             long res = 1;
             for (int i = 1; i <= n; i++)
                 res *= n;
-            double approx = (double)res / Math.E;
+            double approx = res/Math.E;
             return (long)Math.Round(approx);
         }
 
@@ -234,7 +238,7 @@ namespace TMD.Algo.Algorithms
                 return 1;
             if (n == k + 1)
                 return 0;
-            return Choose(n, k) * Derangements(n - k);
+            return Choose(n, k)*Derangements(n - k);
         }
 
         /// <summary>
@@ -257,7 +261,7 @@ namespace TMD.Algo.Algorithms
             for (long i = n; i >= n - k + 1; i--)
             {
                 res *= i;
-                while (currentK > 1 && res % currentK == 0)
+                while (currentK > 1 && res%currentK == 0)
                 {
                     res /= currentK;
                     currentK--;
@@ -312,7 +316,7 @@ namespace TMD.Algo.Algorithms
                 return Choose(n, k);
             if (cache == null || cache.GetLength(0) <= n)
             {
-                cache = new long[n+1, n+1];
+                cache = new long[n + 1, n + 1];
                 for (int i = 1; i <= n; i++)
                 {
                     cache[i, 1] = 1;
@@ -370,8 +374,7 @@ namespace TMD.Algo.Algorithms
                 return 1;
             if (n == k + 1)
                 return 0;
-            return Choose(n, k, ref cache) * Derangements(n - k);
+            return Choose(n, k, ref cache)*Derangements(n - k);
         }
-
     }
 }

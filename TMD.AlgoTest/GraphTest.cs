@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,12 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using TMD.Algo.Collections.Generic;
 
@@ -25,7 +25,6 @@ namespace TMD.AlgoTest
     [TestFixture]
     public class GraphTest
     {
-
         [Test]
         public void Basic()
         {
@@ -48,19 +47,23 @@ namespace TMD.AlgoTest
             {
                 for (int j = 0; j < 50; j++)
                 {
-                    if (dists[i,j] > 0)
+                    if (dists[i, j] > 0)
                         g.AddDirectedEdge(i, j, dists[i, j]);
                 }
             }
             bool success;
-            Graph<int, int>.ShortestPathInfo spi = g.ShortestPathFloydWarshal(Comparer<int>.Default, new IntAdder(), out success);
+            Graph<int, int>.ShortestPathInfo spi = g.ShortestPathFloydWarshal(Comparer<int>.Default, new IntAdder(),
+                out success);
             Assert.IsTrue(success);
             for (int i = 0; i < 50; i++)
             {
-                Graph<int, int>.SingleShortestPathInfo sspi1 = g.ShortestPathBellmanFord(i, Comparer<int>.Default, new IntAdder(), out success);
+                Graph<int, int>.SingleShortestPathInfo sspi1 = g.ShortestPathBellmanFord(i, Comparer<int>.Default,
+                    new IntAdder(), out success);
                 Assert.IsTrue(success);
-                Graph<int, int>.SingleShortestPathInfo sspi2 = g.ShortestPathDijkstra(i, Comparer<int>.Default, new IntAdder());
-                Graph<int, int>.SingleShortestPathInfo sspi3 = g.ShortestPathModifiedDijkstra(i, Comparer<int>.Default, new IntAdder());
+                Graph<int, int>.SingleShortestPathInfo sspi2 = g.ShortestPathDijkstra(i, Comparer<int>.Default,
+                    new IntAdder());
+                Graph<int, int>.SingleShortestPathInfo sspi3 = g.ShortestPathModifiedDijkstra(i, Comparer<int>.Default,
+                    new IntAdder());
                 for (int j = 0; j < 50; j++)
                 {
                     Assert.AreEqual(spi.GetDistance(i, j), sspi1.GetDistance(j));
@@ -68,7 +71,6 @@ namespace TMD.AlgoTest
                     Assert.AreEqual(spi.GetDistance(i, j), sspi3.GetDistance(j));
                 }
             }
-
         }
 
 
@@ -87,6 +89,7 @@ namespace TMD.AlgoTest
             g.AddDirectedEdge(2, 3, 1000000);
             Assert.AreEqual(2000000, g.MaximumFlowFordFulkersonBfs(0, 3, Comparer<int>.Default, new IntAdder()));
         }
+
         [Test]
         public void Flow2()
         {
@@ -125,6 +128,7 @@ namespace TMD.AlgoTest
                 Key = k;
                 Value = v;
             }
+
             public K Key;
             public V Value;
         }
@@ -147,17 +151,18 @@ namespace TMD.AlgoTest
             int result = g.MaximumFlowMinCost(0, 3,
                 Comparer<int>.Default, new IntAdder(),
                 Comparer<int>.Default, new IntAdder(),
-                delegate(int cost, int flow) { return cost * flow; },
-                delegate(Pair<int, int> kvp) { return kvp.Key; },
-                delegate(Pair<int, int> kvp) { return kvp.Value; },
-                delegate(Pair<int, int> p, int cap) { p.Key = cap; },
-                delegate(Pair<int, int> p, int cap) { p.Value = cap; },
-                delegate() { return new Pair<int, int>(0, 0); },
+                (cost, flow) => cost*flow,
+                kvp => kvp.Key,
+                kvp => kvp.Value,
+                (p, cap) => p.Key = cap,
+                (p, cap) => p.Value = cap,
+                () => new Pair<int, int>(0, 0),
                 out minCost,
                 out successful);
             Assert.AreEqual(2000000, result);
             Assert.AreEqual(10000000, minCost);
         }
+
         [Test]
         public void MaxFlowMinCost2()
         {
@@ -176,17 +181,18 @@ namespace TMD.AlgoTest
             int result = g.MaximumFlowMinCost(0, 3,
                 Comparer<int>.Default, new IntAdder(),
                 Comparer<int>.Default, new IntAdder(),
-                delegate(int cost, int flow) { return cost * flow; },
-                delegate(Pair<int, int> kvp) { return kvp.Key; },
-                delegate(Pair<int, int> kvp) { return kvp.Value; },
-                delegate(Pair<int, int> p, int cap) { p.Key = cap; },
-                delegate(Pair<int, int> p, int cap) { p.Value = cap; },
-                delegate() { return new Pair<int, int>(0, 0); },
+                (cost, flow) => cost*flow,
+                kvp => kvp.Key,
+                kvp => kvp.Value,
+                (p, cap) => p.Key = cap,
+                (p, cap) => p.Value = cap,
+                () => new Pair<int, int>(0, 0),
                 out minCost,
                 out successful);
             Assert.AreEqual(1000001, result);
-            Assert.AreEqual(1000000 + 999999 * 2 + 5 + 3 + 2 * 4, minCost);
+            Assert.AreEqual(1000000 + 999999*2 + 5 + 3 + 2*4, minCost);
         }
+
         [Test]
         public void MaxFlowMinCost3()
         {
@@ -205,12 +211,12 @@ namespace TMD.AlgoTest
             int result = g.MaximumFlowMinCost(0, 3,
                 Comparer<int>.Default, new IntAdder(),
                 Comparer<int>.Default, new IntAdder(),
-                delegate(int cost, int flow) { return cost * flow; },
-                delegate(Pair<int, int> kvp) { return kvp.Key; },
-                delegate(Pair<int, int> kvp) { return kvp.Value; },
-                delegate(Pair<int, int> p, int cap) { p.Key = cap; },
-                delegate(Pair<int, int> p, int cap) { p.Value = cap; },
-                delegate() { return new Pair<int, int>(0, 0); },
+                (cost, flow) => cost*flow,
+                kvp => kvp.Key,
+                kvp => kvp.Value,
+                (p, cap) => p.Key = cap,
+                (p, cap) => p.Value = cap,
+                () => new Pair<int, int>(0, 0),
                 out minCost,
                 out successful);
             Assert.AreEqual(1000001, result);

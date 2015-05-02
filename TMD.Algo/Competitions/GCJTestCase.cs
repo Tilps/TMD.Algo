@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2014, the TMD.Algo authors.
 All rights reserved.
@@ -11,7 +12,9 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
+
 using TMD.Algo.Text;
 
 namespace TMD.Algo.Competitions
@@ -173,7 +176,8 @@ namespace TMD.Algo.Competitions
         /// <typeparam name="T4"></typeparam>
         /// <typeparam name="T5"></typeparam>
         /// <typeparam name="T6"></typeparam>
-        public void Get<T1, T2, T3, T4, T5, T6>(out T1 value1, out T2 value2, out T3 value3, out T4 value4, out T5 value5, out T6 value6)
+        public void Get<T1, T2, T3, T4, T5, T6>(out T1 value1, out T2 value2, out T3 value3, out T4 value4,
+            out T5 value5, out T6 value6)
         {
             NextLine().Parse(out value1, out value2, out value3, out value4, out value5, out value6);
         }
@@ -195,7 +199,8 @@ namespace TMD.Algo.Competitions
         /// <typeparam name="T5"></typeparam>
         /// <typeparam name="T6"></typeparam>
         /// <typeparam name="T7"></typeparam>
-        public void Get<T1, T2, T3, T4, T5, T6, T7>(out T1 value1, out T2 value2, out T3 value3, out T4 value4, out T5 value5, out T6 value6, out T7 value7)
+        public void Get<T1, T2, T3, T4, T5, T6, T7>(out T1 value1, out T2 value2, out T3 value3, out T4 value4,
+            out T5 value5, out T6 value6, out T7 value7)
         {
             NextLine().Parse(out value1, out value2, out value3, out value4, out value5, out value6, out value7);
         }
@@ -219,9 +224,11 @@ namespace TMD.Algo.Competitions
         /// <typeparam name="T6"></typeparam>
         /// <typeparam name="T7"></typeparam>
         /// <typeparam name="T8"></typeparam>
-        public void Get<T1, T2, T3, T4, T5, T6, T7, T8>(out T1 value1, out T2 value2, out T3 value3, out T4 value4, out T5 value5, out T6 value6, out T7 value7, out T8 value8)
+        public void Get<T1, T2, T3, T4, T5, T6, T7, T8>(out T1 value1, out T2 value2, out T3 value3, out T4 value4,
+            out T5 value5, out T6 value6, out T7 value7, out T8 value8)
         {
-            NextLine().Parse(out value1, out value2, out value3, out value4, out value5, out value6, out value7, out value8);
+            NextLine()
+                .Parse(out value1, out value2, out value3, out value4, out value5, out value6, out value7, out value8);
         }
 
         /// <summary>
@@ -328,6 +335,6 @@ namespace TMD.Algo.Competitions
         }
 
         private int index;
-        private string[] lines;
+        private readonly string[] lines;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2014, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -42,16 +44,16 @@ namespace TMD.AlgoTest.GCJ2008
             Array.Sort(a);
             Array.Sort(b);
             Array.Reverse(b);
-            return a.Zip(b, (ai, bi) => ai*bi).Sum(); 
+            return a.Zip(b, (ai, bi) => ai*bi).Sum();
         }
 
         [Test]
         public void Q1Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
-@"2
+                @"2
 3
 1 3 -5
 -2 4 1
@@ -60,6 +62,7 @@ namespace TMD.AlgoTest.GCJ2008
 1 0 1 0 1";
 
             #endregion
+
             string expectedOutput = @"Case #1: -25
 Case #2: 6";
 
@@ -87,7 +90,7 @@ Case #2: 6";
             test.Get(out m);
             int[][] custInts;
             test.GetMatrix(m, out custInts);
-            bool[,,] likes = new bool[n,m,2];
+            bool[,,] likes = new bool[n, m, 2];
             for (int c = 0; c < m; c++)
             {
                 for (int i = 1; i < custInts[c].Length; i += 2)
@@ -156,9 +159,9 @@ Case #2: 6";
         public void Q2Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 5
 3
 1 1 1
@@ -170,6 +173,7 @@ Case #2: 6";
 1 1 1";
 
             #endregion
+
             string expectedOutput = @"Case #1: 1 0 0 0 0
 Case #2: IMPOSSIBLE";
 
@@ -207,9 +211,10 @@ Case #2: IMPOSSIBLE";
         private class Root5Pair
         {
             public int[] Value;
+
             public override bool Equals(object obj)
             {
-                Root5Pair other = (Root5Pair) obj;
+                Root5Pair other = (Root5Pair)obj;
                 return Value[0] == other.Value[0] && Value[1] == other.Value[1];
             }
 
@@ -227,13 +232,14 @@ Case #2: IMPOSSIBLE";
         private string Q3Solver(int n)
         {
             // Fast log (n) multiplies implementation.
-            int[] result = MathFormulas.FastExponent(new []{3, 1}, n, Multiply);
+            int[] result = MathFormulas.FastExponent(new[] {3, 1}, n, Multiply);
             // Slower mod size squared implementation O(1) multiplies, but with larger constant than log(n) will ever give in practice.
             // Interestingly it isn't that much worse because the cycle length is only ~500, well short of the maximum cycle length of 1 million.
             Root5Pair value = new Root5Pair() {Value = new[] {3, 1}};
             Root5Pair result2 = Pattern.FindInPattern(value, pair => Multiply(value, pair), n - 1);
-            if (result2.Value[0] != result[0] || result2.Value[1] != result[1]) throw new InvalidOperationException("Fast Exponent and find in pattern disagree.");
-            return string.Format("{0:000}", (result[0] * 2 - 1) % 1000);
+            if (result2.Value[0] != result[0] || result2.Value[1] != result[1])
+                throw new InvalidOperationException("Fast Exponent and find in pattern disagree.");
+            return $"{(result[0]*2 - 1)%1000:000}";
         }
 
 
@@ -241,13 +247,14 @@ Case #2: IMPOSSIBLE";
         public void Q3Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 5
 2";
 
             #endregion
+
             string expectedOutput = @"Case #1: 935
 Case #2: 027";
 

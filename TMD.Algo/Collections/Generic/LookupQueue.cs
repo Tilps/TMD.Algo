@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2011, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -36,12 +38,13 @@ namespace TMD.Algo.Collections.Generic
             public int Prev;
             public T Value;
         }
+
         private LinkListNode[] linkList;
         private int linkListHead;
         private int linkListTail;
         private int freeListHead;
         private int linkListSize;
-        private Dictionary<T, int> lookup;
+        private readonly Dictionary<T, int> lookup;
         private int size;
 
         private int version;
@@ -63,7 +66,7 @@ namespace TMD.Algo.Collections.Generic
             linkListSize = 0;
         }
 
-        #endregion 
+        #endregion
 
         /// <summary>
         /// Adds an entry to the end of the queue.
@@ -105,7 +108,7 @@ namespace TMD.Algo.Collections.Generic
         {
             if (Count == 0)
             {
-                value = default (T);
+                value = default(T);
                 return false;
             }
             value = Dequeue();
@@ -152,7 +155,7 @@ namespace TMD.Algo.Collections.Generic
         public void Add(T item)
         {
             if (lookup.ContainsKey(item))
-                throw new ArgumentException("Provided item already exists in the queue.", "item");
+                throw new ArgumentException("Provided item already exists in the queue.", nameof(item));
             int loc = GetNextSpot();
             linkList[loc].Value = item;
             lookup[item] = loc;
@@ -178,7 +181,7 @@ namespace TMD.Algo.Collections.Generic
             {
                 if (linkListSize >= linkList.Length)
                 {
-                    LinkListNode[] newArray = new LinkListNode[linkList.Length * 2];
+                    LinkListNode[] newArray = new LinkListNode[linkList.Length*2];
                     Array.Copy(linkList, newArray, linkList.Length);
                     linkList = newArray;
                 }
@@ -242,12 +245,12 @@ namespace TMD.Algo.Collections.Generic
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException("arrayIndex");
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             // TODO: check for arrayIndex + size overflow?
             if (array.Length < arrayIndex + size)
-                throw new ArgumentException("Insufficient size in provided array.", "array");            
+                throw new ArgumentException("Insufficient size in provided array.", nameof(array));
             foreach (T val in this)
             {
                 array[arrayIndex] = val;
@@ -258,18 +261,12 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the count of the queued entries.
         /// </summary>
-        public int Count
-        {
-            get { return size; }
-        }
+        public int Count => size;
 
         /// <summary>
         /// Returns false.  ReadOnly mode not supported.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes the specific item from the queue.
@@ -337,7 +334,6 @@ namespace TMD.Algo.Collections.Generic
         [SuppressMessage("Microsoft.Performance", "CA1815")]
         public struct LookupQueueEnumerator : IEnumerator<T>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -351,8 +347,8 @@ namespace TMD.Algo.Collections.Generic
                 currentIndex = -2;
             }
 
-            private LookupQueue<T> parent;
-            private int origVersion;
+            private readonly LookupQueue<T> parent;
+            private readonly int origVersion;
             private int currentIndex;
 
             #region IEnumerator<T> Members
@@ -365,7 +361,8 @@ namespace TMD.Algo.Collections.Generic
                 get
                 {
                     if (origVersion != parent.version)
-                        throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                        throw new InvalidOperationException(
+                            "The collection being enumerated has been modified since enumerator was acquired.");
                     if (currentIndex == -1)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == -2)
@@ -412,7 +409,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 if (currentIndex == -2)
                     currentIndex = parent.linkListHead;
                 else if (currentIndex >= 0)
@@ -428,12 +426,14 @@ namespace TMD.Algo.Collections.Generic
             void System.Collections.IEnumerator.Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentIndex = -2;
             }
 
             #endregion
         }
+
         #endregion
     }
 }

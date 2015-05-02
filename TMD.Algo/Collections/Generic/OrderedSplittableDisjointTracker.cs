@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2012, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -33,7 +35,6 @@ namespace TMD.Algo.Collections.Generic
     /// </typeparam>
     public class OrderedSplittableDisjointTracker<TElement, TRep>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -50,7 +51,8 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="orderingComparer">
         /// Ordering comparer to order the elements for splitting/joining.
         /// </param>
-        public OrderedSplittableDisjointTracker(IEqualityComparer<TElement> comparer, IComparer<TElement> orderingComparer)
+        public OrderedSplittableDisjointTracker(IEqualityComparer<TElement> comparer,
+            IComparer<TElement> orderingComparer)
         {
             if (comparer == null)
                 comparer = EqualityComparer<TElement>.Default;
@@ -59,7 +61,7 @@ namespace TMD.Algo.Collections.Generic
             this.comparer = comparer;
             this.orderingComparer = orderingComparer;
 
-            this.tracker = new Dictionary<TElement, int>(comparer);
+            tracker = new Dictionary<TElement, int>(comparer);
             reps = new Dictionary<TRep, int>();
             nodes = new List<Node>();
         }
@@ -75,6 +77,7 @@ namespace TMD.Algo.Collections.Generic
                 Red = false;
                 Representative = represenative;
             }
+
             public TElement Value;
             public int Left;
             public int Right;
@@ -83,12 +86,12 @@ namespace TMD.Algo.Collections.Generic
             public TRep Representative;
         }
 
-        private Dictionary<TElement, int> tracker;
-        private Dictionary<TRep, int> reps;
-        private List<Node> nodes;
+        private readonly Dictionary<TElement, int> tracker;
+        private readonly Dictionary<TRep, int> reps;
+        private readonly List<Node> nodes;
         private int firstFree = -1;
         private IEqualityComparer<TElement> comparer;
-        private IComparer<TElement> orderingComparer;
+        private readonly IComparer<TElement> orderingComparer;
 
 
         /// <summary>
@@ -106,7 +109,7 @@ namespace TMD.Algo.Collections.Generic
             if (firstFree < 0)
             {
                 nodes.Add(new Node(value, representative));
-                newSpot = nodes.Count-1;
+                newSpot = nodes.Count - 1;
             }
             else
             {
@@ -186,36 +189,43 @@ namespace TMD.Algo.Collections.Generic
             newNodeNodeValue.Parent = other;
             nodes[newNode] = newNodeNodeValue;
         }
+
         private void SetLeft(int newNode, int other)
         {
             Node newNodeNodeValue = nodes[newNode];
             newNodeNodeValue.Left = other;
             nodes[newNode] = newNodeNodeValue;
         }
+
         private void SetRight(int newNode, int other)
         {
             Node newNodeNodeValue = nodes[newNode];
             newNodeNodeValue.Right = other;
             nodes[newNode] = newNodeNodeValue;
         }
+
         private void SetRed(int newNode, bool other)
         {
             Node newNodeNodeValue = nodes[newNode];
             newNodeNodeValue.Red = other;
             nodes[newNode] = newNodeNodeValue;
         }
+
         private int GetParent(int node)
         {
             return nodes[node].Parent;
         }
+
         private int GetLeft(int node)
         {
             return nodes[node].Left;
         }
+
         private int GetRight(int node)
         {
             return nodes[node].Right;
         }
+
         private bool GetRed(int node)
         {
             if (node < 0)
@@ -524,7 +534,7 @@ namespace TMD.Algo.Collections.Generic
             SetRep(splitRoot, default(TRep));
 
             int splitRootHeight = 0;
-            
+
             int newFirstRoot = -1;
             int firstPivot = -1;
             int firstPosHeight = -1;
@@ -697,7 +707,7 @@ namespace TMD.Algo.Collections.Generic
                         else
                             TNR(AddToTree(firstPos, firstPivot), ref newFirstRoot);
                     }
-                    
+
                     newTree = GetRight(splitRoot);
                     if (newTree != -1)
                     {
@@ -757,7 +767,7 @@ namespace TMD.Algo.Collections.Generic
                     newFirstRoot = firstPivot;
                     SetRed(newFirstRoot, false);
                 }
-                else 
+                else
                     TNR(AddToTree(newFirstRoot, firstPivot), ref newFirstRoot);
             }
             if (secondPivot != -1)
@@ -833,7 +843,6 @@ namespace TMD.Algo.Collections.Generic
             }
             CheckOrdering(GetLeft(root), comparePoint, right);
             CheckOrdering(GetRight(root), comparePoint, right);
-
         }
 
         private void CheckDistinct(int root, HashSet<int> seen)
@@ -841,11 +850,11 @@ namespace TMD.Algo.Collections.Generic
             if (root == -1)
                 return;
             if (seen.Contains(root))
-                throw new InvalidOperationException("Every node must be in only one tree, and only appear in that tree once.");
+                throw new InvalidOperationException(
+                    "Every node must be in only one tree, and only appear in that tree once.");
             seen.Add(root);
             CheckDistinct(GetLeft(root), seen);
             CheckDistinct(GetRight(root), seen);
-
         }
 
         private void CheckDepthMatch(int root, int depth)
@@ -853,7 +862,8 @@ namespace TMD.Algo.Collections.Generic
             if (root == -1)
                 return;
             if ((GetLeft(root) == -1 || GetRight(root) == -1) && GetBlackDepthUp(root) != depth)
-                throw new InvalidOperationException("All parent path black depths from nodes without 2 children must match the left most path black depth.");
+                throw new InvalidOperationException(
+                    "All parent path black depths from nodes without 2 children must match the left most path black depth.");
             CheckDepthMatch(GetLeft(root), depth);
             CheckDepthMatch(GetRight(root), depth);
         }
@@ -1043,7 +1053,6 @@ namespace TMD.Algo.Collections.Generic
                     root = newRoot2;
                 return root;
             }
-
         }
 
         private int SplitConcat(int leftEqualPos, int rightEqualPos, int pivot, int parent, bool leftOfParent)

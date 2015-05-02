@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2012, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -30,7 +32,6 @@ namespace TMD.Algo.Collections.Generic
     /// </typeparam>
     public class RevertibleDisjointTracker<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -49,18 +50,17 @@ namespace TMD.Algo.Collections.Generic
             if (comparer == null)
                 comparer = EqualityComparer<T>.Default;
             this.comparer = comparer;
-            this.tracker = new Dictionary<T, T>(comparer);
-            this.ranker = new Dictionary<T, int>(comparer);
+            tracker = new Dictionary<T, T>(comparer);
+            ranker = new Dictionary<T, int>(comparer);
         }
 
 
+        private readonly Dictionary<T, T> tracker;
+        private readonly Dictionary<T, int> ranker;
+        private readonly IEqualityComparer<T> comparer;
+        private readonly List<List<Action>> undoLists = new List<List<Action>>();
 
-        private Dictionary<T, T> tracker;
-        private Dictionary<T, int> ranker;
-        private IEqualityComparer<T> comparer;
-        private List<List<Action>> undoLists = new List<List<Action>>();
-
-        private List<Action> CurrentUndo { get { return undoLists[undoLists.Count - 1]; } }
+        private List<Action> CurrentUndo => undoLists[undoLists.Count - 1];
 
         /// <summary>
         /// Undoes all changes to this data structure since the start of the last call to Add or Link.
@@ -85,7 +85,11 @@ namespace TMD.Algo.Collections.Generic
             CurrentUndo.Add(() => { undoLists.RemoveAt(undoLists.Count - 1); });
             tracker[value] = value;
             ranker[value] = 0;
-            CurrentUndo.Add(() => { tracker.Remove(value); ranker.Remove(value); }); 
+            CurrentUndo.Add(() =>
+            {
+                tracker.Remove(value);
+                ranker.Remove(value);
+            });
         }
 
         /// <summary>
@@ -138,7 +142,11 @@ namespace TMD.Algo.Collections.Generic
                 T oldTracker;
                 bool exists = tracker.TryGetValue(second, out oldTracker);
                 tracker[second] = first;
-                CurrentUndo.Add(() => { if (exists) tracker[second] = oldTracker; else tracker.Remove(second); });
+                CurrentUndo.Add(() =>
+                {
+                    if (exists) tracker[second] = oldTracker;
+                    else tracker.Remove(second);
+                });
             }
             else
             {
@@ -150,7 +158,11 @@ namespace TMD.Algo.Collections.Generic
                 T oldTracker;
                 bool exists = tracker.TryGetValue(first, out oldTracker);
                 tracker[first] = second;
-                CurrentUndo.Add(() => { if (exists) tracker[first] = oldTracker; else tracker.Remove(first); });
+                CurrentUndo.Add(() =>
+                {
+                    if (exists) tracker[first] = oldTracker;
+                    else tracker.Remove(first);
+                });
             }
         }
     }

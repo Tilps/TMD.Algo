@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System.Collections.Generic;
@@ -25,7 +27,6 @@ namespace TMD.Algo.Algorithms.Generic
     /// </typeparam>
     public class ReverseComparer<T> : IComparer<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -41,11 +42,7 @@ namespace TMD.Algo.Algorithms.Generic
         /// <summary>
         /// Returns a reverse comparer for the default comparer.
         /// </summary>
-        public static ReverseComparer<T> Default
-        {
-            get { return defaultComparer; }
-        }
-        private static readonly ReverseComparer<T> defaultComparer = new ReverseComparer<T>(Comparer<T>.Default);
+        public static ReverseComparer<T> Default { get; } = new ReverseComparer<T>(Comparer<T>.Default);
 
         private readonly IComparer<T> comparer;
 
@@ -64,7 +61,7 @@ namespace TMD.Algo.Algorithms.Generic
         /// A number indicating the relative order of the two values.
         /// </returns>
         public int Compare(T x, T y)
-        {           
+        {
             return comparer.Compare(y, x);
         }
 

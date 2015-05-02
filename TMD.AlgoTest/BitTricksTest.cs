@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,12 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using TMD.Algo.Algorithms;
 
@@ -25,14 +25,17 @@ namespace TMD.AlgoTest
     [TestFixture]
     public class BitTricksTest
     {
-
         [Test]
         public void Basic()
         {
             unchecked
             {
                 Random rnd = new Random();
-                int[] cornerCases = new[] { 0, 1, -1, int.MaxValue, int.MinValue, 0x33333333, 0x55555555, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF, (int)0xAAAAAAAA, (int)0xCCCCCCCC, (int)0xF0F0F0F0, (int)0xFF00FF00, (int)0xFFFF0000 };
+                int[] cornerCases = new[]
+                {
+                    0, 1, -1, int.MaxValue, int.MinValue, 0x33333333, 0x55555555, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF,
+                    (int)0xAAAAAAAA, (int)0xCCCCCCCC, (int)0xF0F0F0F0, (int)0xFF00FF00, (int)0xFFFF0000
+                };
                 List<int> testCases = new List<int>(cornerCases);
                 for (int i = 0; i < 1000; i++)
                 {
@@ -67,7 +70,6 @@ namespace TMD.AlgoTest
             }
             Assert.AreEqual(BitTricks.PopulationCount(p), BitTricks.PopulationCount(BitTricks.NextCombination(p)));
             Assert.AreNotEqual(p, BitTricks.NextCombination(p));
-
         }
 
         private void VerifyLowbitPos(int p)

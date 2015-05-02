@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -24,7 +26,6 @@ namespace TMD.Algo.Collections.Generic
     /// </summary>
     public static class SpecialtySelect
     {
-
         /// <summary>
         /// Finds the minimum element in the input.
         /// </summary>
@@ -74,7 +75,7 @@ namespace TMD.Algo.Collections.Generic
                     result = value;
             }
             if (first)
-                throw new ArgumentException("'this' must not be an empty list.", "input");
+                throw new ArgumentException("'this' must not be an empty list.", nameof(input));
             return result;
         }
 
@@ -127,7 +128,7 @@ namespace TMD.Algo.Collections.Generic
                     result = value;
             }
             if (first)
-                throw new ArgumentException("'this' must not be an empty list.", "input");
+                throw new ArgumentException("'this' must not be an empty list.", nameof(input));
             return result;
         }
 
@@ -174,7 +175,8 @@ namespace TMD.Algo.Collections.Generic
         public static T SelectRandomizedInPlace<T>(this IList<T> input, int selection, IComparer<T> comparer)
         {
             if (selection < 0 || selection >= input.Count)
-                throw new ArgumentOutOfRangeException("selection", "Selection must be non-negative and less than the size of the input.");
+                throw new ArgumentOutOfRangeException(nameof(selection),
+                    "Selection must be non-negative and less than the size of the input.");
             if (comparer == null)
                 comparer = Comparer<T>.Default;
             Random rnd = new Random();
@@ -182,23 +184,24 @@ namespace TMD.Algo.Collections.Generic
             int currentEnd = input.Count - 1;
             while (currentStart < currentEnd)
             {
-                int endPoint = RandomizedPartition<T>(input, comparer, rnd, currentStart, currentEnd);
-                int pivotOffset = endPoint-currentStart+1;
+                int endPoint = RandomizedPartition(input, comparer, rnd, currentStart, currentEnd);
+                int pivotOffset = endPoint - currentStart + 1;
                 if (selection < pivotOffset)
                 {
                     currentEnd = endPoint;
                 }
-                else 
+                else
                 {
-                    currentStart = endPoint+1;
+                    currentStart = endPoint + 1;
                     selection -= pivotOffset;
                 }
             }
 
-            return input[currentStart+selection];
+            return input[currentStart + selection];
         }
 
-        private static int RandomizedPartition<T>(IList<T> input, IComparer<T> comparer, Random rnd, int currentStart, int currentEnd)
+        private static int RandomizedPartition<T>(IList<T> input, IComparer<T> comparer, Random rnd, int currentStart,
+            int currentEnd)
         {
             int randomPos = currentStart + rnd.Next(currentEnd - currentStart + 1);
             T tmp = input[randomPos];
@@ -256,9 +259,9 @@ namespace TMD.Algo.Collections.Generic
         public static int Partition<T>(IList<T> input, IComparer<T> comparer, int currentStart, int currentEnd)
         {
             if (currentStart < 0 || currentStart >= input.Count)
-                throw new ArgumentOutOfRangeException("currentStart", "Start index must be in the input.");
+                throw new ArgumentOutOfRangeException(nameof(currentStart), "Start index must be in the input.");
             if (currentEnd < 0 || currentEnd >= input.Count)
-                throw new ArgumentOutOfRangeException("currentEnd", "End index must be in the input.");
+                throw new ArgumentOutOfRangeException(nameof(currentEnd), "End index must be in the input.");
             T tmp = input[currentStart];
             int startPoint = currentStart - 1;
             int endPoint = currentEnd + 1;
@@ -326,9 +329,9 @@ namespace TMD.Algo.Collections.Generic
         {
             if (min < 0 && min + long.MaxValue < max)
             {
-                return (min + max) / 2;
+                return (min + max)/2;
             }
-            return min + (max - min) / 2;
+            return min + (max - min)/2;
         }
 
         /// <summary>
@@ -377,7 +380,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The value which satisfies comparer, NaN if none exists, or the current range midpoint if maxDepth is reached.
         /// </returns>
-        public static double BinarySearch(double min, double max, Func<double, int> comparer, int maxDepth, out bool earlyOut)
+        public static double BinarySearch(double min, double max, Func<double, int> comparer, int maxDepth,
+            out bool earlyOut)
         {
             earlyOut = false;
             while (min <= max)
@@ -444,7 +448,7 @@ namespace TMD.Algo.Collections.Generic
             // LongMid in combination with the reversal of negative process should always work.
             Debug.Assert(false);
             // If it doesn't, fall back to basics.
-            return min + (max - min) / 2;
+            return min + (max - min)/2;
         }
 
         /// <summary>
@@ -619,11 +623,13 @@ namespace TMD.Algo.Collections.Generic
         {
             long origMin = min;
             long origMax = max;
-            double bestEdge = findMax ? Math.Max(evaluator(min), evaluator(max)) : Math.Min(evaluator(min), evaluator(max));
-            while (min +3 <= max)
+            double bestEdge = findMax
+                ? Math.Max(evaluator(min), evaluator(max))
+                : Math.Min(evaluator(min), evaluator(max));
+            while (min + 3 <= max)
             {
-                long mid1 = min + (max - min) / 3;
-                long mid2 = min + (max - min) * 2 / 3;
+                long mid1 = min + (max - min)/3;
+                long mid2 = min + (max - min)*2/3;
                 double first = evaluator(mid1);
                 double second = evaluator(mid2);
                 if (findMax)
@@ -727,17 +733,20 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The location of the minimum or maximum if one exists, otherwise NaN.
         /// </returns>
-        public static double TernarySearch(double min, double max, Func<double, double> evaluator, bool findMax, int maxDepth, out bool reachedLimit)
+        public static double TernarySearch(double min, double max, Func<double, double> evaluator, bool findMax,
+            int maxDepth, out bool reachedLimit)
         {
             reachedLimit = false;
             double origMin = min;
             double origMax = max;
-            double bestEdge = findMax ? Math.Max(evaluator(min), evaluator(max)) : Math.Min(evaluator(min), evaluator(max));
+            double bestEdge = findMax
+                ? Math.Max(evaluator(min), evaluator(max))
+                : Math.Min(evaluator(min), evaluator(max));
             while (min < max && maxDepth > 0)
             {
                 maxDepth--;
-                double mid1 = min + (max - min) / 3;
-                double mid2 = min + (max - min) * 2 / 3;
+                double mid1 = min + (max - min)/3;
+                double mid2 = min + (max - min)*2/3;
                 double first = evaluator(mid1);
                 double second = evaluator(mid2);
                 if (findMax)
@@ -792,7 +801,7 @@ namespace TMD.Algo.Collections.Generic
                 }
             }
             reachedLimit = min != max;
-            return min + (max - min) / 2;
+            return min + (max - min)/2;
         }
     }
 }

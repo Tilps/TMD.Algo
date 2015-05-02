@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System.Collections.Generic;
@@ -23,7 +25,6 @@ namespace TMD.Algo.Algorithms
     /// </summary>
     public static class OptimalFinding
     {
-
         /// <summary>
         /// Finds the set of items which has minimal cost but reaches target value.
         /// </summary>
@@ -42,7 +43,7 @@ namespace TMD.Algo.Algorithms
             // break in to half to allow us to double the number of things we can process.
             // we can easily generate all combinations to work out what is best, but if number of items exceeds ~26, that is going to be slow.
             // This hack lets us go to almost double that in theory.
-            int firstHalf = costs.Length / 2 + 1;
+            int firstHalf = costs.Length/2 + 1;
             int rest = costs.Length - firstHalf;
             List<KeyValuePair<int, int>> firstCombinationTotals = new List<KeyValuePair<int, int>>();
             List<KeyValuePair<int, int>> secondCombinationTotals = new List<KeyValuePair<int, int>>();
@@ -58,7 +59,7 @@ namespace TMD.Algo.Algorithms
                         totalValue += values[j];
                     }
                 }
-                firstCombinationTotals.Add(new KeyValuePair<int,int>(totalValue, totalCost));
+                firstCombinationTotals.Add(new KeyValuePair<int, int>(totalValue, totalCost));
                 totalCost = 0;
                 totalValue = 0;
                 if (i < (1 << (rest + 1)))
@@ -67,8 +68,8 @@ namespace TMD.Algo.Algorithms
                     {
                         if ((i & (1 << j)) != 0)
                         {
-                            totalCost += costs[firstHalf+j];
-                            totalValue += values[firstHalf+j];
+                            totalCost += costs[firstHalf + j];
+                            totalValue += values[firstHalf + j];
                         }
                     }
                     secondCombinationTotals.Add(new KeyValuePair<int, int>(totalValue, totalCost));

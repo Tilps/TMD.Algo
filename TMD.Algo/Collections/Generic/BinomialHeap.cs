@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -28,7 +30,6 @@ namespace TMD.Algo.Collections.Generic
     [SuppressMessage("Microsoft.Naming", "CA1710")]
     public class BinomialHeap<T> : IHeap<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -279,7 +280,7 @@ namespace TMD.Algo.Collections.Generic
         public void UnionWith(BinomialHeap<T> other)
         {
             if (other == null) return;
-            this.count += other.count;
+            count += other.count;
             version++;
             BinomialNode otherHead = other.head;
             other.Clear();
@@ -288,7 +289,7 @@ namespace TMD.Algo.Collections.Generic
 
         private void UnionWith(BinomialNode otherHead)
         {
-            head = MergeTopLevels(this.head, otherHead);
+            head = MergeTopLevels(head, otherHead);
             if (head == null)
                 return;
             BinomialNode prevX = null;
@@ -398,9 +399,8 @@ namespace TMD.Algo.Collections.Generic
 
         private int version;
         private int count;
-        private IComparer<T> comparer;
+        private readonly IComparer<T> comparer;
         private BinomialNode head;
-
 
         #region ICollection<T> Members
 
@@ -412,8 +412,7 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void Add(T item)
         {
-            BinomialNode newNode = new BinomialNode();
-            newNode.Value = item;
+            BinomialNode newNode = new BinomialNode {Value = item};
             UnionWith(newNode);
             count++;
             version++;
@@ -459,9 +458,10 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException("array");
+            if (array == null) throw new ArgumentNullException(nameof(array));
             if (arrayIndex < 0 || arrayIndex + count > array.Length)
-                throw new ArgumentOutOfRangeException("arrayIndex", "Specified array index is either negative or does not allow for enough space to store the data.");
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Specified array index is either negative or does not allow for enough space to store the data.");
             foreach (T value in this)
             {
                 array[arrayIndex] = value;
@@ -472,18 +472,12 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the count of the number of elements in the heap.
         /// </summary>
-        public int Count
-        {
-            get { return count; }
-        }
+        public int Count => count;
 
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes the specified item from the heap if it exists.
@@ -554,7 +548,6 @@ namespace TMD.Algo.Collections.Generic
                 if (comparer.Compare(currentNode.Value, item) == 0)
                     return currentNode;
             }
-
         }
 
         #endregion
@@ -595,7 +588,6 @@ namespace TMD.Algo.Collections.Generic
         [SuppressMessage("Microsoft.Performance", "CA1815")]
         public struct BinomialHeapEnumerator : IEnumerator<T>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -611,8 +603,8 @@ namespace TMD.Algo.Collections.Generic
                 lastWasChild = false;
             }
 
-            private BinomialHeap<T> parent;
-            private int origVersion;
+            private readonly BinomialHeap<T> parent;
+            private readonly int origVersion;
             private BinomialNode currentNode;
             private bool finished;
             private bool lastWasChild;
@@ -625,9 +617,10 @@ namespace TMD.Algo.Collections.Generic
             public T Current
             {
                 get
-                { 
+                {
                     if (origVersion != parent.version)
-                        throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                        throw new InvalidOperationException(
+                            "The collection being enumerated has been modified since enumerator was acquired.");
                     if (currentNode == null)
                         throw new InvalidOperationException("The enumerator is currently not pointing to a valid node.");
                     return currentNode.Value;
@@ -652,13 +645,7 @@ namespace TMD.Algo.Collections.Generic
             /// <summary>
             /// Gets the current object this enumerator is pointing at.
             /// </summary>
-            object System.Collections.IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object System.Collections.IEnumerator.Current => this.Current;
 
             /// <summary>
             /// Moves to the next entry in the heap, if available.
@@ -669,7 +656,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 if (finished)
                     return false;
                 if (currentNode == null)
@@ -715,7 +703,8 @@ namespace TMD.Algo.Collections.Generic
             void System.Collections.IEnumerator.Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentNode = null;
                 finished = false;
                 lastWasChild = false;

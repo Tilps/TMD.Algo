@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System.Collections.Generic;
@@ -28,18 +30,10 @@ namespace TMD.Algo.Algorithms.Generic
     /// </typeparam>
     public class KeyComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>>
     {
-
         /// <summary>
         /// Gets a static instance of the default KvpComparer.
         /// </summary>
-        public static KvpComparer<TKey, TValue> Default
-        {
-            get
-            {
-                return instance;
-            }
-        }
-        private static KvpComparer<TKey, TValue> instance = new KvpComparer<TKey, TValue>();
+        public static KvpComparer<TKey, TValue> Default { get; } = new KvpComparer<TKey, TValue>();
 
         /// <summary>
         /// Constructor.
@@ -60,7 +54,7 @@ namespace TMD.Algo.Algorithms.Generic
             kComparer = keyComparer;
         }
 
-        private IComparer<TKey> kComparer;
+        private readonly IComparer<TKey> kComparer;
 
         #region IComparer<KeyValuePair<K,V>> Members
 

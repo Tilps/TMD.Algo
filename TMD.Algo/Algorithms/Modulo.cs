@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -35,7 +37,7 @@ namespace TMD.Algo.Algorithms
         public Modulo(long basis)
         {
             if (basis <= 0)
-                throw new ArgumentException("Basis must be positive.", "basis");
+                throw new ArgumentException("Basis must be positive.", nameof(basis));
             this.basis = basis;
             basisIsPrime = IsPrime(basis);
         }
@@ -46,18 +48,18 @@ namespace TMD.Algo.Algorithms
                 return false;
             if (basis == 2)
                 return true;
-            if (basis % 2 == 0)
+            if (basis%2 == 0)
                 return false;
-            for (int i = 3; i * i <= basis; i+=2)
+            for (int i = 3; i*i <= basis; i += 2)
             {
-                if (basis % i == 0)
+                if (basis%i == 0)
                     return false;
             }
             return true;
         }
 
-        private long basis;
-        private bool basisIsPrime;
+        private readonly long basis;
+        private readonly bool basisIsPrime;
 
         /// <summary>
         /// Adds two numbers togeather modulo the basis.
@@ -105,7 +107,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public long Mod(long number)
         {
-            return ((number % basis) + basis) % basis;
+            return ((number%basis) + basis)%basis;
         }
 
         /// <summary>
@@ -129,11 +131,12 @@ namespace TMD.Algo.Algorithms
                 factCache[1] = 1;
                 for (long i = 2; i < basis; i++)
                 {
-                    factCache[i] = (factCache[i-1] * i) % basis;
+                    factCache[i] = (factCache[i - 1]*i)%basis;
                 }
             }
             return factCache[number];
         }
+
         private long[] factCache;
 
         /// <summary>
@@ -149,7 +152,7 @@ namespace TMD.Algo.Algorithms
         /// <returns></returns>
         public long Multiply(long first, long second)
         {
-            return Mod(first * second);
+            return Mod(first*second);
         }
 
         /// <summary>
@@ -173,7 +176,8 @@ namespace TMD.Algo.Algorithms
                 return Invert(second);
             List<long> results = SolveLinearEquation(second, first);
             if (results.Count == 0)
-                throw new ArgumentException("There exists no number which multiplied by the second is equal to the first modulo the basis.");
+                throw new ArgumentException(
+                    "There exists no number which multiplied by the second is equal to the first modulo the basis.");
             return results[0];
         }
 
@@ -192,7 +196,7 @@ namespace TMD.Algo.Algorithms
         {
             number = Mod(number);
             if (number == 0)
-                throw new ArgumentException("Zero has no inverse.", "number");
+                throw new ArgumentException("Zero has no inverse.", nameof(number));
             if (invertCache == null)
             {
                 invertCache = new long[basis];
@@ -208,9 +212,11 @@ namespace TMD.Algo.Algorithms
                     invertCache[number] = -1;
             }
             if (invertCache[number] == -1)
-                throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.", "number");
+                throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.",
+                    nameof(number));
             return invertCache[number];
         }
+
         private long[] invertCache;
 
         /// <summary>
@@ -232,12 +238,12 @@ namespace TMD.Algo.Algorithms
             long secondProudct;
             long d = ExtendedGcd(Mod(multiplier), basis, out firstProduct, out secondProudct);
             result = Mod(result);
-            if (result % d == 0)
+            if (result%d == 0)
             {
-                long firstResult = Mod(firstProduct * (result / d));
+                long firstResult = Mod(firstProduct*(result/d));
                 for (int i = 0; i < d; i++)
                 {
-                    results.Add(Mod(firstResult + i * (basis / d)));
+                    results.Add(Mod(firstResult + i*(basis/d)));
                 }
             }
             return results;
@@ -253,9 +259,9 @@ namespace TMD.Algo.Algorithms
             }
             long firstTemp;
             long secondTemp;
-            long divisor = ExtendedGcd(second, first % second, out firstTemp, out secondTemp);
+            long divisor = ExtendedGcd(second, first%second, out firstTemp, out secondTemp);
             firstProduct = secondTemp;
-            secondProduct = firstTemp - (first / second) * secondTemp;
+            secondProduct = firstTemp - (first/second)*secondTemp;
             return divisor;
         }
 
@@ -291,7 +297,7 @@ namespace TMD.Algo.Algorithms
                 return first;
             if (basisIsPrime)
             {
-                return Mod(Factorial(last) * Invert(Factorial(first - 1)));
+                return Mod(Factorial(last)*Invert(Factorial(first - 1)));
             }
             else
             {
@@ -299,7 +305,7 @@ namespace TMD.Algo.Algorithms
                 long result = 1;
                 for (long i = first; i <= last; i++)
                 {
-                    result = Mod(result * i);
+                    result = Mod(result*i);
                 }
                 return result;
             }
@@ -339,7 +345,7 @@ namespace TMD.Algo.Algorithms
 
         private long ChooseInternal(long n, long k)
         {
-            return Mod(Permutations(n, k) * Invert(Factorial(k)));
+            return Mod(Permutations(n, k)*Invert(Factorial(k)));
         }
     }
 }

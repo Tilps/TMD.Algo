@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,12 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using TMD.Algo.Collections.Generic;
 
@@ -25,7 +25,6 @@ namespace TMD.AlgoTest
     [TestFixture]
     public class DequeueTest
     {
-
         [Test]
         public void Simple()
         {
@@ -37,18 +36,18 @@ namespace TMD.AlgoTest
                 switch (rnd.Next(5))
                 {
                     case 0:
-                        {
-                            int val = rnd.Next(10000);
-                            baseline.Add(val);
-                            dequeue.PushBack(val);
-                        }
+                    {
+                        int val = rnd.Next(10000);
+                        baseline.Add(val);
+                        dequeue.PushBack(val);
+                    }
                         break;
                     case 1:
-                        {
-                            int val = rnd.Next(10000);
-                            baseline.Insert(0, val);
-                            dequeue.PushFront(val);
-                        }
+                    {
+                        int val = rnd.Next(10000);
+                        baseline.Insert(0, val);
+                        dequeue.PushFront(val);
+                    }
                         break;
                     case 2:
                         if (baseline.Count > 0)
@@ -63,7 +62,7 @@ namespace TMD.AlgoTest
                         {
                             Assert.AreEqual(baseline[baseline.Count - 1], dequeue.Back);
                             Assert.AreEqual(baseline[baseline.Count - 1], dequeue.PopBack());
-                            baseline.RemoveAt(baseline.Count-1);
+                            baseline.RemoveAt(baseline.Count - 1);
                         }
                         break;
                     case 4:

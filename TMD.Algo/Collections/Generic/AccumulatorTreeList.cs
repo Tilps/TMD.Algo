@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,10 +12,12 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TMD.Algo.Collections.Generic
@@ -69,8 +72,6 @@ namespace TMD.Algo.Collections.Generic
         /// Gets the largest value.  The result of an addition or subtraction will never compare greater than this value.
         /// </summary>
         T MaxValue { get; }
-
-
     }
 
     /// <summary>
@@ -117,26 +118,17 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the additive zero.  Adding this value will make no difference.
         /// </summary>
-        public long Zero
-        {
-            get { return 0; }
-        }
+        public long Zero => 0;
 
         /// <summary>
         /// Gets the largest value.  The result of an addition or subtraction will never compare greater than this value.
         /// </summary>
-        public long MaxValue
-        {
-            get { return long.MaxValue; }
-        }
+        public long MaxValue => long.MaxValue;
 
         /// <summary>
         /// Gets the smallest value.  The result of an addition or subtraction will never compare smaller than this value.
         /// </summary>
-        public long MinValue
-        {
-            get { return long.MinValue; }
-        }
+        public long MinValue => long.MinValue;
 
         #endregion
     }
@@ -185,26 +177,17 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the additive zero.  Adding this value will make no difference.
         /// </summary>
-        public int Zero
-        {
-            get { return 0; }
-        }
+        public int Zero => 0;
 
         /// <summary>
         /// Gets the largest value.  The result of an addition or subtraction will never compare greater than this value.
         /// </summary>
-        public int MaxValue
-        {
-            get { return int.MaxValue; }
-        }
+        public int MaxValue => int.MaxValue;
 
         /// <summary>
         /// Gets the smallest value.  The result of an addition or subtraction will never compare smaller than this value.
         /// </summary>
-        public int MinValue
-        {
-            get { return int.MinValue; }
-        }
+        public int MinValue => int.MinValue;
 
         #endregion
     }
@@ -219,7 +202,6 @@ namespace TMD.Algo.Collections.Generic
     [SuppressMessage("Microsoft.Naming", "CA1710")]
     public class AccumulatorTreeList<T> : IList<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -246,7 +228,7 @@ namespace TMD.Algo.Collections.Generic
             if (initialList == null) return;
             foreach (T val in initialList)
             {
-                this.Add(val);
+                Add(val);
             }
         }
 
@@ -264,7 +246,7 @@ namespace TMD.Algo.Collections.Generic
         }
 
 
-        private TreeNode sentinal = new TreeNode();
+        private readonly TreeNode sentinal = new TreeNode();
         private TreeNode treeRoot;
 
         private void UpdateCount(TreeNode newNode)
@@ -294,6 +276,8 @@ namespace TMD.Algo.Collections.Generic
 
         private void TreeInsert(TreeNode node, TreeNode newNode, int index)
         {
+            Debug.Assert(node != null);
+            Debug.Assert(node != sentinal);
             TreeNode other = null;
             bool lastLeft = false;
             while (node != sentinal)
@@ -311,6 +295,7 @@ namespace TMD.Algo.Collections.Generic
                     lastLeft = false;
                 }
             }
+            Debug.Assert(other != null);
             newNode.Parent = other;
             if (lastLeft)
                 newNode.Parent.Left = newNode;
@@ -580,7 +565,7 @@ namespace TMD.Algo.Collections.Generic
 
         private int version;
 
-        private IAdder<T> adder;
+        private readonly IAdder<T> adder;
 
         #region IList<T> Members
 
@@ -612,15 +597,17 @@ namespace TMD.Algo.Collections.Generic
             if (index < 0)
                 throw new ArgumentException("Index is less than zero.");
             if (index > Count)
-               throw new ArgumentException("Index is greater than the size of the list.");
-            TreeNode newNode = new TreeNode();
-            newNode.Count = 1;
-            newNode.Value = item;
-            newNode.Sum = item;
-            newNode.Red = true;
-            newNode.Parent = sentinal;
-            newNode.Left = sentinal;
-            newNode.Right = sentinal;
+                throw new ArgumentException("Index is greater than the size of the list.");
+            TreeNode newNode = new TreeNode
+            {
+                Count = 1,
+                Value = item,
+                Sum = item,
+                Red = true,
+                Parent = sentinal,
+                Left = sentinal,
+                Right = sentinal
+            };
             if (treeRoot == sentinal)
                 treeRoot = newNode;
             else
@@ -747,7 +734,7 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException("array");
+            if (array == null) throw new ArgumentNullException(nameof(array));
             if (Count + arrayIndex > array.Length)
                 throw new ArgumentException("Specified array and array index not sufficient to contain this list.");
             TreeCopy(treeRoot, array, ref arrayIndex);
@@ -766,21 +753,12 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the count of the number of items in the list.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return treeRoot.Count;
-            }
-        }
+        public int Count => treeRoot.Count;
 
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes the specified item from the list if it exists.
@@ -839,7 +817,6 @@ namespace TMD.Algo.Collections.Generic
         [SuppressMessage("Microsoft.Performance", "CA1815")]
         public struct TreeListEnumerator : IEnumerator<T>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -854,8 +831,8 @@ namespace TMD.Algo.Collections.Generic
                 offEnd = false;
             }
 
-            private AccumulatorTreeList<T> parent;
-            private int origVersion;
+            private readonly AccumulatorTreeList<T> parent;
+            private readonly int origVersion;
             private TreeNode currentNode;
             private bool offEnd;
 
@@ -912,7 +889,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 if (!offEnd && currentNode == null)
                 {
                     if (parent.treeRoot == parent.sentinal)
@@ -962,13 +940,13 @@ namespace TMD.Algo.Collections.Generic
             void System.Collections.IEnumerator.Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentNode = null;
                 offEnd = false;
             }
 
             #endregion
         }
-
     }
 }

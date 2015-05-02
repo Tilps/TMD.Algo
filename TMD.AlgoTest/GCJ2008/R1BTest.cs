@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2015, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -35,7 +37,7 @@ namespace TMD.AlgoTest.GCJ2008
 
         private long Q1Solver(long n, long A, long B, long C, long D, long x0, long y0, long M)
         {
-            long[,] counts = new long[3,3];
+            long[,] counts = new long[3, 3];
             long X = x0, Y = y0;
             for (int i = 0; i < n; i++)
             {
@@ -52,8 +54,8 @@ namespace TMD.AlgoTest.GCJ2008
                 {
                     int c = j/3;
                     int d = j%3;
-                    int e = (6  - a - c) % 3;
-                    int f = (6 - b - d) % 3;
+                    int e = (6 - a - c)%3;
+                    int f = (6 - b - d)%3;
                     long count1 = counts[a, b];
                     long count2 = counts[c, d];
                     long count3 = counts[e, f];
@@ -74,20 +76,21 @@ namespace TMD.AlgoTest.GCJ2008
                 }
             }
             // every triangle is counted 6 ways.
-            return total / 6;
+            return total/6;
         }
 
         [Test]
         public void Q1Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 4 10 7 1 2 0 1 20
 6 2 0 2 1 1 2 11";
 
             #endregion
+
             string expectedOutput = @"Case #1: 1
 Case #2: 2";
 
@@ -148,13 +151,14 @@ Case #2: 2";
         public void Q2Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 10 20 5
 10 20 3";
 
             #endregion
+
             string expectedOutput = @"Case #1: 9
 Case #2: 7";
 
@@ -206,15 +210,16 @@ Case #2: 7";
         public void Q3Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 5
 5 1 2 3 4 5
 15
 4 3 4 7 10";
 
             #endregion
+
             string expectedOutput = @"Case #1: 1 3 2 5 4
 Case #2: 2 8 13 4";
 

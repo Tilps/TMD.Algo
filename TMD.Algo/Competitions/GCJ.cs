@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2014, the TMD.Algo authors.
 All rights reserved.
@@ -11,12 +12,14 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -42,7 +45,7 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, Func<GCJTestCase, T> testCaseHandler)
         {
-            if (args == null) throw new ArgumentNullException("args");
+            if (args == null) throw new ArgumentNullException(nameof(args));
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             string[] lines = File.ReadAllLines(inputFile);
@@ -69,7 +72,7 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, int threads, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            if (args == null) throw new ArgumentNullException("args");
+            if (args == null) throw new ArgumentNullException(nameof(args));
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             if (threads < 1) threads = Environment.ProcessorCount;
@@ -86,13 +89,14 @@ namespace TMD.Algo.Competitions
 
         internal static List<string> ___TESTRunTestsTEST<T>(string lines, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            string[] bits = lines.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] bits = lines.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             return RunTestsParallel(1, bits, testCaseHandler);
         }
 
-        internal static List<string> ___TESTRunParallelTestsTEST<T>(string lines, Func<GCJTestCase, Func<T>> testCaseHandler)
+        internal static List<string> ___TESTRunParallelTestsTEST<T>(string lines,
+            Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            string[] bits = lines.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] bits = lines.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             return RunTestsParallel(Environment.ProcessorCount, bits, testCaseHandler);
         }
 
@@ -104,12 +108,13 @@ namespace TMD.Algo.Competitions
             for (int i = 0; i < testCount; i++)
             {
                 T result = testCaseHandler(test);
-                output.Add(string.Format("Case #{0}: {1}", i + 1, Format(result)));
+                output.Add($"Case #{i + 1}: {Format(result)}");
             }
             return output;
         }
 
-        private static List<string> RunTestsParallel<T>(int threads, string[] lines, Func<GCJTestCase, Func<T>> testCaseHandler)
+        private static List<string> RunTestsParallel<T>(int threads, string[] lines,
+            Func<GCJTestCase, Func<T>> testCaseHandler)
         {
             int testCount = int.Parse(lines[0]);
             string[] output = new string[testCount];
@@ -122,7 +127,8 @@ namespace TMD.Algo.Competitions
             {
                 int localI = i;
                 Func<T> toRun = testCaseHandler(test);
-                while (true) {
+                while (true)
+                {
                     lock (dispatchLock)
                     {
                         if (dispatched < threads)
@@ -136,7 +142,7 @@ namespace TMD.Algo.Competitions
                 ThreadPool.QueueUserWorkItem(a =>
                 {
                     T result = toRun();
-                    output[localI] = string.Format("Case #{0}: {1}", localI + 1, Format(result));
+                    output[localI] = $"Case #{localI + 1}: {Format(result)}";
                     lock (dispatchLock)
                     {
                         dispatched--;
@@ -182,12 +188,7 @@ namespace TMD.Algo.Competitions
             var enumerable = input as IEnumerable;
             if (enumerable != null)
             {
-                List<string> parts = new List<string>();
-                foreach (object i in enumerable)
-                {
-                    parts.Add(Format(i));
-                }
-                return string.Join(" ", parts);
+                return string.Join(" ", enumerable.Cast<object>().Select(Format));
             }
             return input.ToString();
         }

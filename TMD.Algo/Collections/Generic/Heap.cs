@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -29,7 +31,6 @@ namespace TMD.Algo.Collections.Generic
     [SuppressMessage("Microsoft.Naming", "CA1710")]
     public class Heap<T> : IHeap<T>
     {
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -58,7 +59,7 @@ namespace TMD.Algo.Collections.Generic
             if (comparer == null)
                 comparer = Comparer<T>.Default;
             this.comparer = comparer;
-            array = emptyArray;
+            array = emptyHeapArray;
         }
 
         /// <summary>
@@ -182,8 +183,8 @@ namespace TMD.Algo.Collections.Generic
         private int version;
         private T[] array;
         private int count;
-        private IComparer<T> comparer;
-        private static T[] emptyArray = new T[1];
+        private readonly IComparer<T> comparer;
+        private static readonly T[] emptyHeapArray = new T[1];
 
         private static int Parent(int index)
         {
@@ -202,7 +203,7 @@ namespace TMD.Algo.Collections.Generic
 
         private void Heapify(int index)
         {
-            bool done = true;
+            bool done;
             do
             {
                 done = true;
@@ -302,18 +303,12 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Gets the count of the number of elements in the heap.
         /// </summary>
-        public int Count
-        {
-            get { return count; }
-        }
+        public int Count => count;
 
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes the specified item from the heap if it exists.
@@ -393,7 +388,6 @@ namespace TMD.Algo.Collections.Generic
         [SuppressMessage("Microsoft.Performance", "CA1815")]
         public struct HeapEnumerator : IEnumerator<T>
         {
-
             /// <summary>
             /// Internal constructor.
             /// </summary>
@@ -407,8 +401,8 @@ namespace TMD.Algo.Collections.Generic
                 currentIndex = 0;
             }
 
-            private Heap<T> parent;
-            private int origVersion;
+            private readonly Heap<T> parent;
+            private readonly int origVersion;
             private int currentIndex;
 
             #region IEnumerator<T> Members
@@ -421,7 +415,8 @@ namespace TMD.Algo.Collections.Generic
                 get
                 {
                     if (origVersion != parent.version)
-                        throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                        throw new InvalidOperationException(
+                            "The collection being enumerated has been modified since enumerator was acquired.");
                     if (currentIndex > parent.count)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == 0)
@@ -468,7 +463,8 @@ namespace TMD.Algo.Collections.Generic
             public bool MoveNext()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentIndex++;
                 if (currentIndex > parent.count)
                     return false;
@@ -481,7 +477,8 @@ namespace TMD.Algo.Collections.Generic
             void System.Collections.IEnumerator.Reset()
             {
                 if (origVersion != parent.version)
-                    throw new InvalidOperationException("The collection being enumerated has been modified since enumerator was acquired.");
+                    throw new InvalidOperationException(
+                        "The collection being enumerated has been modified since enumerator was acquired.");
                 currentIndex = 0;
             }
 

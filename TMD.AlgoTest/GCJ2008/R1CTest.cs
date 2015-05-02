@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2015, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -51,15 +53,16 @@ namespace TMD.AlgoTest.GCJ2008
         public void Q1Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 3 2 6
 8 2 5 2 4 9
 3 9 26
 1 1 1 100 100 1 1 1 1 1 1 1 1 1 1 1 1 10 11 11 11 11 1 1 1 100";
 
             #endregion
+
             string expectedOutput = @"Case #1: 47
 Case #2: 397";
 
@@ -83,7 +86,7 @@ Case #2: 397";
         {
             string digits;
             test.Get(out digits);
-            return () => Q2Solver(digits.Select(c=>int.Parse(""+c)).ToArray());
+            return () => Q2Solver(digits.Select(c => int.Parse("" + c)).ToArray());
         }
 
         private long Q2Solver(int[] digits)
@@ -100,7 +103,7 @@ Case #2: 397";
                         value *= 10;
                         value += digits[k];
                     }
-                    int mod = (int) (value%210);
+                    int mod = (int)(value%210);
                     for (int k = 0; k < 210; k++)
                     {
                         int net = (mod + k)%210;
@@ -113,22 +116,26 @@ Case #2: 397";
                     }
                 }
             }
-            return Enumerable.Range(0, 210).Where(a=>(a%2 == 0||a%3==0 || a%5 == 0 ||a%7 == 0)).Sum(i => counts[digits.Length, i]);
+            return
+                Enumerable.Range(0, 210)
+                    .Where(a => (a%2 == 0 || a%3 == 0 || a%5 == 0 || a%7 == 0))
+                    .Sum(i => counts[digits.Length, i]);
         }
 
         [Test]
         public void Q2Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"4
+                @"4
 1
 9
 011
 12345";
 
             #endregion
+
             string expectedOutput = @"Case #1: 0
 Case #2: 1
 Case #3: 6
@@ -178,9 +185,9 @@ Case #4: 64";
             {
                 int x = newValues[i];
                 long miniTotal = sums.GetSum(x);
-                sums[x] = (miniTotal + 1) % 1000000007;
+                sums[x] = (miniTotal + 1)%1000000007;
             }
-            return sums.GetSum(sums.Count - 1) % 1000000007;
+            return sums.GetSum(sums.Count - 1)%1000000007;
         }
 
 
@@ -188,9 +195,9 @@ Case #4: 64";
         public void Q3Sample()
         {
             string input =
-            #region SampleInput
+                #region SampleInput
 
- @"2
+                @"2
 5 5 0 0 5
 1
 2
@@ -202,6 +209,7 @@ Case #4: 64";
 2";
 
             #endregion
+
             string expectedOutput = @"Case #1: 15
 Case #2: 13";
 

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2010, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -28,10 +30,10 @@ namespace TMD.Algo.Algorithms
         /// Input function must be state-free.
         /// Uses a dictionary as storage.
         /// </summary>
-        /// <typeparam name="T">
-        /// Input type.
+        /// <typeparam name="TState">
+        /// Input type.  Must have a useful default equality comparer.
         /// </typeparam>
-        /// <typeparam name="K">
+        /// <typeparam name="TResult">
         /// Result type.
         /// </typeparam>
         /// <param name="inputFunction">
@@ -40,13 +42,13 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// A memotized version of the input function.
         /// </returns>
-        public static Func<T, K> CreateMemotized<T, K>(this Func<T, K> inputFunction)
+        public static Func<TState, TResult> CreateMemotized<TState, TResult>(this Func<TState, TResult> inputFunction)
         {
-            Dictionary<T, K> lookup = new Dictionary<T, K>();
-            return delegate(T input)
+            Dictionary<TState, TResult> lookup = new Dictionary<TState, TResult>();
+            return input =>
             {
-                K result; 
-                if (lookup.TryGetValue(input, out result)) 
+                TResult result;
+                if (lookup.TryGetValue(input, out result))
                     return result;
                 result = inputFunction(input);
                 lookup[input] = result;
@@ -59,7 +61,7 @@ namespace TMD.Algo.Algorithms
         /// Input function must be state-free.
         /// Uses a flat array as storage.
         /// </summary>
-        /// <typeparam name="K">
+        /// <typeparam name="TResult">
         /// Result type.
         /// </typeparam>
         /// <param name="inputFunction">
@@ -74,14 +76,14 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// A memotized version of the input function.
         /// </returns>
-        public static Func<long, K> CreateMemotized<K>(this Func<long, K> inputFunction, long min, long max)
+        public static Func<long, TResult> CreateMemotized<TResult>(this Func<long, TResult> inputFunction, long min, long max)
         {
             bool[] set = new bool[max - min + 1];
-            K[] lookup = new K[max - min + 1];
-            return delegate(long input)
+            TResult[] lookup = new TResult[max - min + 1];
+            return input =>
             {
-                long loc = input - min; 
-                if (set[loc]) 
+                long loc = input - min;
+                if (set[loc])
                     return lookup[loc];
                 lookup[loc] = inputFunction(input);
                 set[loc] = true;

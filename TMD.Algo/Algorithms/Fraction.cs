@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -23,7 +25,6 @@ namespace TMD.Algo.Algorithms
     /// </summary>
     public struct Fraction : IComparable<Fraction>, IEquatable<Fraction>
     {
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -43,26 +44,16 @@ namespace TMD.Algo.Algorithms
         /// <summary>
         /// Gets or sets the numerator of the fraction.
         /// </summary>
-        public long Numerator
-        {
-            get
-            {
-                return numerator;
-            }
-        }
+        public long Numerator => numerator;
+
         private long numerator;
 
 
         /// <summary>
         /// Gets or sets the denominator of the function.
         /// </summary>
-        public long Denominator
-        {
-            get
-            {
-                return denominator;
-            }
-        }
+        public long Denominator => denominator;
+
         private long denominator;
 
         /// <summary>
@@ -78,7 +69,7 @@ namespace TMD.Algo.Algorithms
         {
             // return LCM numerators / GCD denominators.
             // TODO:
-            return new Fraction(0,0);
+            return new Fraction(0, 0);
         }
 
         /// <summary>
@@ -107,7 +98,7 @@ namespace TMD.Algo.Algorithms
         {
             if (q == 0)
                 return p;
-            return Gcd(q, p % q);
+            return Gcd(q, p%q);
         }
 
         /// <summary>
@@ -121,7 +112,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public Fraction Add(Fraction other)
         {
-            return new Fraction(numerator * other.denominator + other.numerator * denominator, denominator * other.denominator);
+            return new Fraction(numerator*other.denominator + other.numerator*denominator, denominator*other.denominator);
         }
 
         /// <summary>
@@ -152,7 +143,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public Fraction Subtract(Fraction other)
         {
-            return new Fraction(numerator * other.denominator - other.numerator * denominator, denominator * other.denominator);
+            return new Fraction(numerator*other.denominator - other.numerator*denominator, denominator*other.denominator);
         }
 
         /// <summary>
@@ -183,7 +174,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public Fraction Multiply(Fraction other)
         {
-            return new Fraction(numerator * other.numerator, denominator * other.denominator);
+            return new Fraction(numerator*other.numerator, denominator*other.denominator);
         }
 
         /// <summary>
@@ -214,7 +205,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public Fraction Divide(Fraction other)
         {
-            return new Fraction(numerator * other.denominator, denominator * other.numerator);
+            return new Fraction(numerator*other.denominator, denominator*other.numerator);
         }
 
         /// <summary>
@@ -251,7 +242,7 @@ namespace TMD.Algo.Algorithms
         /// </summary>
         public long Truncate()
         {
-            return numerator / denominator;
+            return numerator/denominator;
         }
 
         /// <summary>k
@@ -265,7 +256,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static explicit operator double(Fraction a)
         {
-            return (double)a.numerator / (double)a.denominator;
+            return (double)a.numerator/a.denominator;
         }
 
         /// <summary>
@@ -290,7 +281,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public double ToDouble()
         {
-            return (double)numerator / (double)denominator;
+            return (double)numerator/denominator;
         }
 
         #region IComparable<Fraction> Members
@@ -306,10 +297,10 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public int CompareTo(Fraction other)
         {
-            long res = numerator * other.denominator - other.numerator * denominator;
+            long res = numerator*other.denominator - other.numerator*denominator;
             if (res > 0)
-                return 1; 
-            if(res < 0)
+                return 1;
+            if (res < 0)
                 return -1;
             return 0;
         }
@@ -414,12 +405,9 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
-                return false;
             if (!(obj is Fraction))
                 return false;
             return Equals((Fraction)obj);
-
         }
 
         /// <summary>

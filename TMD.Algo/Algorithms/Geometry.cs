@@ -1,4 +1,5 @@
 ﻿#region License
+
 /*
 Copyright (c) 2008, the TMD.Algo authors.
 All rights reserved.
@@ -11,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #endregion
 
 using System;
@@ -43,8 +45,9 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static long CrossProduct(long x1, long y1, long x2, long y2)
         {
-            return x1 * y2 - x2 * y1;
+            return x1*y2 - x2*y1;
         }
+
         // right hand rule - two consecutive segments turn clockwise if seg1 cross seg2 is negative.
 
 
@@ -60,7 +63,7 @@ namespace TMD.Algo.Algorithms
         public static List<KeyValuePair<long, long>> ConvexHull(List<KeyValuePair<long, long>> points)
         {
             if (points.Count < 3)
-                throw new ArgumentException("Points were insufficient to form a polygon", "points");
+                throw new ArgumentException("Points were insufficient to form a polygon", nameof(points));
 
             KeyValuePair<long, long> p0 = points[0];
             for (int i = 1; i < points.Count; i++)
@@ -100,18 +103,22 @@ namespace TMD.Algo.Algorithms
             }
             equalityFilteredPoints.Add(cur);
             if (equalityFilteredPoints.Count < 2)
-                throw new ArgumentException("Points were colinear and/or coincident.", "points");
+                throw new ArgumentException("Points were colinear and/or coincident.", nameof(points));
 
-            List<KeyValuePair<long, long>> stack = new List<KeyValuePair<long, long>>();
-            stack.Add(p0);
-            stack.Add(equalityFilteredPoints[0]);
-            stack.Add(equalityFilteredPoints[1]);
+            List<KeyValuePair<long, long>> stack = new List<KeyValuePair<long, long>>
+            {
+                p0,
+                equalityFilteredPoints[0],
+                equalityFilteredPoints[1]
+            };
             for (int i = 2; i < equalityFilteredPoints.Count; i++)
             {
-                KeyValuePair<long, long> top = stack[stack.Count-1];
-                KeyValuePair<long, long> nextToTop = stack[stack.Count-2];
+                KeyValuePair<long, long> top = stack[stack.Count - 1];
+                KeyValuePair<long, long> nextToTop = stack[stack.Count - 2];
                 KeyValuePair<long, long> trial = equalityFilteredPoints[i];
-                while (CrossProduct(top.Key - nextToTop.Key, top.Value - nextToTop.Value, trial.Key - top.Key, trial.Value - top.Value) < 0)
+                while (
+                    CrossProduct(top.Key - nextToTop.Key, top.Value - nextToTop.Value, trial.Key - top.Key,
+                        trial.Value - top.Value) < 0)
                 {
                     stack.RemoveAt(stack.Count - 1);
                     top = stack[stack.Count - 1];
@@ -126,7 +133,7 @@ namespace TMD.Algo.Algorithms
         {
             long dx = x1 - x2;
             long dy = y1 - y2;
-            return dx * dx + dy * dy;
+            return dx*dx + dy*dy;
         }
     }
 
@@ -145,6 +152,7 @@ namespace TMD.Algo.Algorithms
         {
             this.centre = centre;
         }
+
         private KeyValuePair<long, long> centre;
 
         #region IComparer<KeyValuePair<long,long>> Members
@@ -163,7 +171,8 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public int Compare(KeyValuePair<long, long> x, KeyValuePair<long, long> y)
         {
-            long res = Geometry.CrossProduct(x.Key - centre.Key, x.Value - centre.Value, y.Key - centre.Key, y.Value - centre.Value);
+            long res = Geometry.CrossProduct(x.Key - centre.Key, x.Value - centre.Value, y.Key - centre.Key,
+                y.Value - centre.Value);
             if (res > 0)
                 return -1;
             else if (res < 0)
