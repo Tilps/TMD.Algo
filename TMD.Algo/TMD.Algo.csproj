@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Algorithms\BitTricks.cs" />
     <Compile Include="Algorithms\Combinatorics.cs" />
+    <Compile Include="Algorithms\Digits.cs" />
     <Compile Include="Algorithms\MathFormulas.cs" />
     <Compile Include="Algorithms\Fraction.cs" />
     <Compile Include="Algorithms\Generic\ReverseComparer.cs" />

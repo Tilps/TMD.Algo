@@ -82,7 +82,13 @@ namespace TMD.AlgoTest
         {
             DebugPoint(expectedOutput, result);
             string[] bits = expectedOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            Validate(bits, result);
+            List<string> resultSplat = new List<string>();
+            // Each test might have multiple lines of output, expand it out.
+            foreach (var resultPart in result)
+            {
+                resultSplat.AddRange(resultPart.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+            }
+            Validate(bits, resultSplat);
         }
 
         protected static void Validate(string expectedOutput, List<string> result, double error)

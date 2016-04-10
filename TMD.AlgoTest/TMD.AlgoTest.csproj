@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseGCJTest.cs" />
+    <Compile Include="DigitsTest.cs" />
     <Compile Include="GCJ2008\QRTest.cs" />
     <Compile Include="AccumulatorTreeListTest.cs" />
     <Compile Include="BinomialHeapTest.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="GCJ2008\R2Test.cs" />
     <Compile Include="GCJ2008\R1CTest.cs" />
     <Compile Include="GCJ2008\R1BTest.cs" />
+    <Compile Include="GCJ2016\QRTest.cs" />
     <Compile Include="OrderedSplittableDisjointTrackerTest.cs" />
     <Compile Include="FractionTest.cs" />
     <Compile Include="GraphTest.cs" />
@@ -365,6 +367,32 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GCJ2008\R3\Q4SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\QR\Q1Large.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q1LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q1Sample.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q1SampleOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q1Small.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q1SmallOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2Large.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2Sample.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2SampleOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2Small.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q2SmallOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3Large.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3Sample.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3SampleOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3Small.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q3SmallOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4Large.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4LargeOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4Sample.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4SampleOutput.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4Small.txt" />
+    <EmbeddedResource Include="GCJ2016\QR\Q4SmallOutput.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
