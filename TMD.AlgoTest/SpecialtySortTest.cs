@@ -75,6 +75,11 @@ namespace TMD.AlgoTest
             {
                 Assert.AreEqual(baseline[i], merge2[i]);
             }
+            int[] sortedArray = values.ToSortedArray();
+            for (int i = 0; i < baseline.Count; i++)
+            {
+                Assert.AreEqual(baseline[i], sortedArray[i]);
+            }
         }
 
         [Test]
@@ -126,6 +131,11 @@ namespace TMD.AlgoTest
             for (int i = 0; i < baseline.Count; i++)
             {
                 Assert.AreEqual(baseline[i], merge2[i]);
+            }
+            int[] sortedArray = values.ToSortedArray();
+            for (int i = 0; i < baseline.Count; i++)
+            {
+                Assert.AreEqual(baseline[i], sortedArray[i]);
             }
         }
 

@@ -434,6 +434,45 @@ namespace TMD.Algo.Collections.Generic
             }
             return input.Select(a => indexes[a]).ToArray();
         }
+
+        /// <summary>
+        /// Converts the input to an array, then sorts that array and returns it.
+        /// </summary>
+        /// <param name="input">
+        /// Input to be sorted.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of elements in the input.
+        /// </typeparam>
+        /// <returns>
+        /// An array containing the input in sorted order.
+        /// </returns>
+        public static T[] ToSortedArray<T>(this IEnumerable<T> input)
+        {
+            return ToSortedArray<T>(input, null);
+        }
+
+        /// <summary>
+        /// Converts the input to an array, then sorts that array and returns it.
+        /// </summary>
+        /// <param name="input">
+        /// Input to be sorted.
+        /// </param>
+        /// <param name="comparer">
+        /// Comparer to use to sort the input, or null for default comparison.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of elements in the input.
+        /// </typeparam>
+        /// <returns>
+        /// An array containing the input in sorted order.
+        /// </returns>
+        public static T[] ToSortedArray<T>(this IEnumerable<T> input, IComparer<T> comparer)
+        {
+            T[] result = input.ToArray();
+            Array.Sort(result, comparer);
+            return result;
+        }
     }
 
     /// <summary>
