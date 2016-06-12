@@ -101,6 +101,7 @@
     <Compile Include="Collections\Generic\OrderedSplittableDisjointTracker.cs" />
     <Compile Include="Collections\Generic\RevertibleDisjointTracker.cs" />
     <Compile Include="Collections\Generic\LookupQueue.cs" />
+    <Compile Include="Collections\Generic\RangeSentinalDictionary.cs" />
     <Compile Include="Collections\Generic\SortedDictionary2.cs" />
     <Compile Include="Collections\Generic\MappedDisjointTracker.cs" />
     <Compile Include="Collections\Generic\DisjointTracker.cs" />
