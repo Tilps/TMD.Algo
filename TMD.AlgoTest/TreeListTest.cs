@@ -34,7 +34,7 @@ namespace TMD.AlgoTest
             Random rnd = new Random();
             for (int i = 0; i < 1000; i++)
             {
-                switch (rnd.Next(4))
+                switch (rnd.Next(5))
                 {
                     case 0:
                     {
