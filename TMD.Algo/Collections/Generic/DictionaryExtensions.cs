@@ -53,5 +53,67 @@ namespace TMD.Algo.Collections.Generic
             dictionary.TryGetValue(key, out value);
             dictionary[key] = updater(value);
         }
+
+        /// <summary>
+        /// Gets the value stored in a dictionary for a key, or creates, stores and returns a new value using the populater.
+        /// </summary>
+        /// <param name="dictionary">
+        /// Dictionary to lookup or populate.
+        /// </param>
+        /// <param name="key">
+        /// Key to lookup in the dictionary.
+        /// </param>
+        /// <param name="populater">
+        /// Function to populate the dictionary with if it has no value.
+        /// </param>
+        /// <typeparam name="TKey">
+        /// Type of Key.
+        /// </typeparam>
+        /// <typeparam name="TValue">
+        /// Type of Value.
+        /// </typeparam>
+        /// <returns>
+        /// The value stored under the key, or the value added by the populater.
+        /// </returns>
+        public static TValue GetOrPopulate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
+            Func<TValue> populater)
+        {
+            TValue value;
+            if (!dictionary.TryGetValue(key, out value))
+            {
+                value = populater();
+                dictionary[key] = value;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Gets the value stored in a dictionary for a key, or returns the default value if no value is available.
+        /// </summary>
+        /// <param name="dictionary">
+        /// Dictionary to lookup.
+        /// </param>
+        /// <param name="key">
+        /// Key to lookup in the dictionary.
+        /// </param>
+        /// <param name="def">
+        /// Value to use if the key is not found.
+        /// </param>
+        /// <typeparam name="TKey">
+        /// Type of Key.
+        /// </typeparam>
+        /// <typeparam name="TValue">
+        /// Type of value.
+        /// </typeparam>
+        /// <returns>
+        /// The value stored by the key, or the default value if no value was found.
+        /// </returns>
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue def)
+        {
+            TValue value;
+            if (dictionary.TryGetValue(key, out value))
+                return value;
+            return def;
+        }
     }
 }
