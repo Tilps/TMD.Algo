@@ -86,6 +86,7 @@
     <Compile Include="GCJ2008\R2Test.cs" />
     <Compile Include="GCJ2008\R1CTest.cs" />
     <Compile Include="GCJ2008\R1BTest.cs" />
+    <Compile Include="GCJ2016\R1BTest.cs" />
     <Compile Include="GCJ2016\R1ATest.cs" />
     <Compile Include="GCJ2016\QRTest.cs" />
     <Compile Include="OrderedSplittableDisjointTrackerTest.cs" />
@@ -415,6 +416,60 @@
     <EmbeddedResource Include="GCJ2016\R1A\Q3SampleOutput.txt" />
     <EmbeddedResource Include="GCJ2016\R1A\Q3Small.txt" />
     <EmbeddedResource Include="GCJ2016\R1A\Q3SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q1SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q2SmallOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3Large.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3LargeOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3Sample.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3SampleOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3Small.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GCJ2016\R1B\Q3SmallOutput.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
