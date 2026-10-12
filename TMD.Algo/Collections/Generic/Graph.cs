@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -409,6 +409,84 @@ namespace TMD.Algo.Collections.Generic
 
             SingleShortestPathInfo results = new SingleShortestPathInfo(predecesors, distances);
             return results;
+        }
+
+        /// <summary>
+        /// Finds the shortest path info for all nodes from a single source using default comparer and adder.
+        /// Assumes no negative weight edges.
+        /// Running time O(V^2)
+        /// </summary>
+        public SingleShortestPathInfo ShortestPathDijkstra(int startVertexId)
+        {
+            return ShortestPathDijkstra(startVertexId, Comparer<TEdge>.Default, Adder<TEdge>.Default);
+        }
+
+        /// <summary>
+        /// Finds the shortest path info for all nodes from a single source using default comparer and adder.
+        /// Assumes no negative weight edges.
+        /// Running time O(E log V)
+        /// </summary>
+        public SingleShortestPathInfo ShortestPathModifiedDijkstra(int startVertexId)
+        {
+            return ShortestPathModifiedDijkstra(startVertexId, Comparer<TEdge>.Default, Adder<TEdge>.Default);
+        }
+
+        /// <summary>
+        /// Finds the shortest path distance to a target vertex from a single source.
+        /// Terminates early as soon as the target vertex is reached.
+        /// Running time O(E log V)
+        /// </summary>
+        public bool TryShortestPathModifiedDijkstra(int startVertexId, int targetVertexId, out TEdge distance,
+            IComparer<TEdge> edgeComparer = null, IAdder<TEdge> edgeSummer = null)
+        {
+            if (edgeComparer == null) edgeComparer = Comparer<TEdge>.Default;
+            if (edgeSummer == null) edgeSummer = Adder<TEdge>.Default;
+
+            if (startVertexId == targetVertexId)
+            {
+                distance = edgeSummer.Zero;
+                return true;
+            }
+
+            TEdge[] distances = new TEdge[vertices.Count];
+            for (int i = 0; i < vertices.Count; i++)
+                distances[i] = edgeSummer.MaxValue;
+            distances[startVertexId] = edgeSummer.Zero;
+
+            LookupHeap<Pair<TEdge, int>> priorityQueue =
+                new LookupHeap<Pair<TEdge, int>>(
+                    new ReverseComparer<Pair<TEdge, int>>(new Item1Comparer<TEdge, int>(edgeComparer)));
+            priorityQueue.Add(new Pair<TEdge, int>(edgeSummer.Zero, startVertexId));
+
+            while (priorityQueue.Count > 0)
+            {
+                Pair<TEdge, int> currentVertex = priorityQueue.PopFront();
+                int u = currentVertex.Item2;
+                TEdge distU = currentVertex.Item1;
+
+                if (edgeComparer.Compare(distU, distances[u]) > 0)
+                    continue;
+
+                if (u == targetVertexId)
+                {
+                    distance = distU;
+                    return true;
+                }
+
+                foreach (KeyValuePair<int, int> edge in adjacencyList[u])
+                {
+                    int v = edge.Key;
+                    TEdge sum = edgeSummer.Add(distU, edges[edge.Value]);
+                    if (edgeComparer.Compare(distances[v], sum) > 0)
+                    {
+                        distances[v] = sum;
+                        priorityQueue.Add(new Pair<TEdge, int>(sum, v));
+                    }
+                }
+            }
+
+            distance = edgeSummer.MaxValue;
+            return false;
         }
 
         /// <summary>

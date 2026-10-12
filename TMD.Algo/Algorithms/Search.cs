@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2015, the TMD.Algo authors.
@@ -283,6 +283,110 @@ namespace TMD.Algo.Algorithms
                 }
             }
             return distanceSummer.MinValue;
+        }
+
+        /// <summary>
+        /// Attempts to find the shortest path from any of the initial states to a target state using priority first search.
+        /// Supports generalized/time-dependent transitions where the transition function receives both current state and current distance.
+        /// </summary>
+        /// <param name="initialStates">The starting states and their initial distances.</param>
+        /// <param name="targetFoundFunc">Predicate that tests whether a reached state is the target.</param>
+        /// <param name="transitionFunc">Function that yields next states and their resulting distances from the current state and distance.</param>
+        /// <param name="targetDistance">The distance to the target if reached, or default if not reached.</param>
+        /// <param name="comparer">Comparer for distance ordering (defaults to Comparer&lt;TD&gt;.Default).</param>
+        /// <param name="equalityComparer">Equality comparer for states (defaults to EqualityComparer&lt;T&gt;.Default).</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        /// <typeparam name="TD">Type of distance being accumulated.</typeparam>
+        /// <returns>True if a target state was reached, false otherwise.</returns>
+        public static bool TryPfs<T, TD>(
+            IEnumerable<KeyValuePair<T, TD>> initialStates,
+            Func<T, bool> targetFoundFunc,
+            Func<T, TD, IEnumerable<KeyValuePair<T, TD>>> transitionFunc,
+            out TD targetDistance,
+            IComparer<TD> comparer = null,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            if (equalityComparer == null) equalityComparer = EqualityComparer<T>.Default;
+            if (comparer == null) comparer = Comparer<TD>.Default;
+
+            LookupHeap<Pair<TD, T>> priorityQueue =
+                new LookupHeap<Pair<TD, T>>(
+                    new ReverseComparer<Pair<TD, T>>(new Item1Comparer<TD, T>(comparer)));
+            Dictionary<T, TD> best = new Dictionary<T, TD>(equalityComparer);
+
+            if (initialStates != null)
+            {
+                foreach (KeyValuePair<T, TD> init in initialStates)
+                {
+                    if (!best.TryGetValue(init.Key, out TD existing) || comparer.Compare(init.Value, existing) < 0)
+                    {
+                        best[init.Key] = init.Value;
+                        priorityQueue.Add(new Pair<TD, T>(init.Value, init.Key));
+                    }
+                }
+            }
+
+            while (priorityQueue.Count != 0)
+            {
+                Pair<TD, T> cur = priorityQueue.PopFront();
+                TD dist = cur.Item1;
+                T state = cur.Item2;
+
+                if (comparer.Compare(dist, best[state]) > 0)
+                    continue;
+
+                if (targetFoundFunc(state))
+                {
+                    targetDistance = dist;
+                    return true;
+                }
+
+                foreach (KeyValuePair<T, TD> next in transitionFunc(state, dist))
+                {
+                    T nextState = next.Key;
+                    TD nextDist = next.Value;
+                    if (!best.TryGetValue(nextState, out TD curBest) || comparer.Compare(nextDist, curBest) < 0)
+                    {
+                        best[nextState] = nextDist;
+                        priorityQueue.Add(new Pair<TD, T>(nextDist, nextState));
+                    }
+                }
+            }
+
+            targetDistance = default(TD);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to find the shortest path from an initial state to a target state using priority first search.
+        /// Supports generalized/time-dependent transitions where the transition function receives both current state and current distance.
+        /// </summary>
+        /// <param name="initialState">The starting state.</param>
+        /// <param name="initialDistance">The initial distance of the starting state.</param>
+        /// <param name="targetFoundFunc">Predicate that tests whether a reached state is the target.</param>
+        /// <param name="transitionFunc">Function that yields next states and their resulting distances from the current state and distance.</param>
+        /// <param name="targetDistance">The distance to the target if reached, or default if not reached.</param>
+        /// <param name="comparer">Comparer for distance ordering (defaults to Comparer&lt;TD&gt;.Default).</param>
+        /// <param name="equalityComparer">Equality comparer for states (defaults to EqualityComparer&lt;T&gt;.Default).</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        /// <typeparam name="TD">Type of distance being accumulated.</typeparam>
+        /// <returns>True if a target state was reached, false otherwise.</returns>
+        public static bool TryPfs<T, TD>(
+            T initialState,
+            TD initialDistance,
+            Func<T, bool> targetFoundFunc,
+            Func<T, TD, IEnumerable<KeyValuePair<T, TD>>> transitionFunc,
+            out TD targetDistance,
+            IComparer<TD> comparer = null,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            return TryPfs(
+                new[] { new KeyValuePair<T, TD>(initialState, initialDistance) },
+                targetFoundFunc,
+                transitionFunc,
+                out targetDistance,
+                comparer,
+                equalityComparer);
         }
     }
 }

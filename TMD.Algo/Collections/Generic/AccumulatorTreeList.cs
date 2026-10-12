@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -190,6 +190,98 @@ namespace TMD.Algo.Collections.Generic
         public int MinValue => int.MinValue;
 
         #endregion
+    }
+
+    /// <summary>
+    /// Implements IAdder for basic addition operation on doubles.
+    /// </summary>
+    public class DoubleAdder : IAdder<double>
+    {
+        #region IAdder<double> Members
+
+        /// <summary>
+        /// Adds two double numbers together.
+        /// </summary>
+        public double Add(double first, double second) => first + second;
+
+        /// <summary>
+        /// Subtracts two double numbers.
+        /// </summary>
+        public double Subtract(double first, double second) => first - second;
+
+        /// <summary>
+        /// Gets the additive zero.
+        /// </summary>
+        public double Zero => 0.0;
+
+        /// <summary>
+        /// Gets the largest value.
+        /// </summary>
+        public double MaxValue => double.MaxValue;
+
+        /// <summary>
+        /// Gets the smallest value.
+        /// </summary>
+        public double MinValue => double.MinValue;
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Implements IAdder for basic addition operation on floats.
+    /// </summary>
+    public class FloatAdder : IAdder<float>
+    {
+        #region IAdder<float> Members
+
+        /// <summary>
+        /// Adds two float numbers together.
+        /// </summary>
+        public float Add(float first, float second) => first + second;
+
+        /// <summary>
+        /// Subtracts two float numbers.
+        /// </summary>
+        public float Subtract(float first, float second) => first - second;
+
+        /// <summary>
+        /// Gets the additive zero.
+        /// </summary>
+        public float Zero => 0.0f;
+
+        /// <summary>
+        /// Gets the largest value.
+        /// </summary>
+        public float MaxValue => float.MaxValue;
+
+        /// <summary>
+        /// Gets the smallest value.
+        /// </summary>
+        public float MinValue => float.MinValue;
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Provides access to default <see cref="IAdder{T}"/> implementations.
+    /// </summary>
+    public static class Adder<T>
+    {
+        private static IAdder<T> defaultInstance;
+
+        /// <summary>
+        /// Gets the default adder for type <typeparamref name="T"/>.
+        /// </summary>
+        public static IAdder<T> Default => defaultInstance ??= CreateDefault();
+
+        private static IAdder<T> CreateDefault()
+        {
+            if (typeof(T) == typeof(int)) return (IAdder<T>)(object)new IntAdder();
+            if (typeof(T) == typeof(long)) return (IAdder<T>)(object)new LongAdder();
+            if (typeof(T) == typeof(double)) return (IAdder<T>)(object)new DoubleAdder();
+            if (typeof(T) == typeof(float)) return (IAdder<T>)(object)new FloatAdder();
+            throw new NotSupportedException($"No default adder available for type {typeof(T)}.");
+        }
     }
 
     /// <summary>

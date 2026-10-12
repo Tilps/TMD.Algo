@@ -142,23 +142,21 @@ namespace TMD.AlgoTest
             Assert.AreEqual(expected.Length, result.Count);
             for (int i = 0; i < expected.Length; i++)
             {
-                string[] bitsExpected = expected[i].Split(' ');
-                string[] bitsResult = result[i].Split(' ');
+                string[] bitsExpected = expected[i].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string[] bitsResult = result[i].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 Assert.AreEqual(bitsExpected.Length, bitsResult.Length);
-                for (int j = 0; j < bitsExpected.Length - 1; j++)
-                    Assert.AreEqual(bitsExpected[j], bitsResult[j]);
-                double expNum;
-                bool expDouble = double.TryParse(bitsExpected[bitsExpected.Length - 1], out expNum);
-                double resNum;
-                bool resDouble = double.TryParse(bitsResult[bitsResult.Length - 1], out resNum);
-                Assert.AreEqual(expDouble, resDouble);
-                if (expDouble)
+                for (int j = 0; j < bitsExpected.Length; j++)
                 {
-                    Assert.IsTrue(IsApproximatelyEqual(expNum, resNum, error));
-                }
-                else
-                {
-                    Assert.AreEqual(bitsExpected.Last(), bitsResult.Last());
+                    if (double.TryParse(bitsExpected[j], out double expNum) &&
+                        double.TryParse(bitsResult[j], out double resNum))
+                    {
+                        Assert.IsTrue(IsApproximatelyEqual(expNum, resNum, error),
+                            $"Token {j} mismatch in line {i}: expected {expNum}, got {resNum}");
+                    }
+                    else
+                    {
+                        Assert.AreEqual(bitsExpected[j], bitsResult[j]);
+                    }
                 }
             }
         }

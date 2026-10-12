@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -221,6 +221,50 @@ namespace TMD.AlgoTest
                 out successful);
             Assert.AreEqual(1000001, result);
             Assert.AreEqual(1000000*2 + 4 + 999999*1 + 3 + 1000000, minCost);
+        }
+
+        [Test]
+        public void TestDoubleAdderAndDefaultDijkstra()
+        {
+            Graph<string, double> g = new Graph<string, double>();
+            int a = g.AddVertex("A");
+            int b = g.AddVertex("B");
+            int c = g.AddVertex("C");
+            int d = g.AddVertex("D");
+
+            g.AddDirectedEdge(a, b, 1.5);
+            g.AddDirectedEdge(b, c, 2.5);
+            g.AddDirectedEdge(a, c, 5.0);
+            g.AddDirectedEdge(c, d, 0.5);
+
+            // Test default overloads using Adder<double>.Default and Comparer<double>.Default
+            var info = g.ShortestPathModifiedDijkstra(a);
+            Assert.AreEqual(0.0, info.GetDistance(a));
+            Assert.AreEqual(1.5, info.GetDistance(b));
+            Assert.AreEqual(4.0, info.GetDistance(c));
+            Assert.AreEqual(4.5, info.GetDistance(d));
+
+            var info2 = g.ShortestPathDijkstra(a);
+            Assert.AreEqual(4.5, info2.GetDistance(d));
+
+            // Test early termination TryShortestPathModifiedDijkstra
+            Assert.IsTrue(g.TryShortestPathModifiedDijkstra(a, d, out double dist));
+            Assert.AreEqual(4.5, dist);
+
+            // Test unreachable vertex
+            int e = g.AddVertex("E");
+            Assert.IsFalse(g.TryShortestPathModifiedDijkstra(a, e, out double distE));
+            Assert.AreEqual(double.MaxValue, distE);
+        }
+
+        [Test]
+        public void TestAdderRegistry()
+        {
+            Assert.IsInstanceOf<IntAdder>(Adder<int>.Default);
+            Assert.IsInstanceOf<LongAdder>(Adder<long>.Default);
+            Assert.IsInstanceOf<DoubleAdder>(Adder<double>.Default);
+            Assert.IsInstanceOf<FloatAdder>(Adder<float>.Default);
+            Assert.Throws<NotSupportedException>(() => _ = Adder<string>.Default);
         }
     }
 }
