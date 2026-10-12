@@ -95,10 +95,7 @@ namespace TMD.Algo.Algorithms
             }
             if (lastFoundFunc(first))
             {
-                if (pathObserver != null)
-                {
-                    pathObserver(first);
-                }
+                pathObserver?.Invoke(first);
                 return 0;
             }
             Queue<T> toSearch = new Queue<T>();

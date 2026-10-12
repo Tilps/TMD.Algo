@@ -490,7 +490,7 @@ namespace TMD.Algo.Collections.Generic
     /// <returns>
     /// An integer corresponding to the value.
     /// </returns>
-    public delegate int IntMapFunction<T>(T value);
+    public delegate int IntMapFunction<in T>(T value);
 
     /// <summary>
     /// Maps a value to an integer in a specified range.
@@ -511,7 +511,7 @@ namespace TMD.Algo.Collections.Generic
     /// <returns>
     /// A number between 0 and parts-1 inclusive.
     /// </returns>
-    public delegate int PartitionFunction<T>(T value, int parts);
+    public delegate int PartitionFunction<in T>(T value, int parts);
 
     /// <summary>
     /// Maps values to integers for a radix sort.
@@ -532,5 +532,5 @@ namespace TMD.Algo.Collections.Generic
     /// <returns>
     /// An integer which corresponds to the pass.
     /// </returns>
-    public delegate int RadixFunction<T>(T value, int radix);
+    public delegate int RadixFunction<in T>(T value, int radix);
 }

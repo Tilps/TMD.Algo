@@ -157,7 +157,7 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// A number corresponding to the summary.
         /// </returns>
-        public static int KeepLeastSignificanSetBitAndSaturateLeastSignificantUnsetBits(int i)
+        public static int KeepLeastSignificantSetBitAndSaturateLeastSignificantUnsetBits(int i)
         {
             return i ^ (i - 1);
         }

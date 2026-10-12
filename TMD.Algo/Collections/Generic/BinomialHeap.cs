@@ -117,12 +117,7 @@ namespace TMD.Algo.Collections.Generic
             }
         }
 
-        private void Validate(BinomialNode current)
-        {
-            Validate(current, true);
-        }
-
-        private void Validate(BinomialNode current, bool top)
+        private void Validate(BinomialNode current, bool top = true)
         {
             if (current.Child != null)
             {
