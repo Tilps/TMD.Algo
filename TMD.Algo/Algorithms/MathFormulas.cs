@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TMD.Algo.Algorithms
@@ -274,6 +275,99 @@ namespace TMD.Algo.Algorithms
                 }
             }
             return dp;
+        }
+
+        /// <summary>
+        /// Computes the Möbius function values for all integers from 0 to n using a sieve.
+        /// </summary>
+        /// <param name="n">Maximum value (inclusive) up to which to compute the Möbius function.</param>
+        /// <returns>
+        /// An array of length n + 1 where index i contains the Möbius value μ(i):
+        /// 1 if i = 1, 0 if i is not square-free, and (-1)^k if i is square-free with k distinct prime factors.
+        /// μ(0) is 0.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if n is negative.</exception>
+        public static int[] MobiusSieve(int n)
+        {
+            if (n < 0)
+                throw new ArgumentOutOfRangeException(nameof(n), "Upper bound must be non-negative.");
+
+            int[] mu = new int[n + 1];
+            if (n == 0)
+                return mu;
+
+            mu[1] = 1;
+            bool[] isComposite = new bool[n + 1];
+            List<int> primes = new List<int>();
+
+            for (int i = 2; i <= n; i++)
+            {
+                if (!isComposite[i])
+                {
+                    primes.Add(i);
+                    mu[i] = -1;
+                }
+
+                for (int j = 0; j < primes.Count && (long)i * primes[j] <= n; j++)
+                {
+                    int p = primes[j];
+                    isComposite[i * p] = true;
+                    if (i % p == 0)
+                    {
+                        mu[i * p] = 0;
+                        break;
+                    }
+                    mu[i * p] = -mu[i];
+                }
+            }
+
+            return mu;
+        }
+
+        /// <summary>
+        /// Computes Euler's totient function φ(i) for all integers from 0 to n using a sieve.
+        /// </summary>
+        /// <param name="n">Maximum value (inclusive) up to which to compute Euler's totient function.</param>
+        /// <returns>
+        /// An array of length n + 1 where index i contains φ(i), the count of integers 1 ≤ k ≤ i coprime to i.
+        /// φ(0) is 0 and φ(1) is 1.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if n is negative.</exception>
+        public static int[] EulerTotientSieve(int n)
+        {
+            if (n < 0)
+                throw new ArgumentOutOfRangeException(nameof(n), "Upper bound must be non-negative.");
+
+            int[] phi = new int[n + 1];
+            if (n == 0)
+                return phi;
+
+            phi[1] = 1;
+            bool[] isComposite = new bool[n + 1];
+            List<int> primes = new List<int>();
+
+            for (int i = 2; i <= n; i++)
+            {
+                if (!isComposite[i])
+                {
+                    primes.Add(i);
+                    phi[i] = i - 1;
+                }
+
+                for (int j = 0; j < primes.Count && (long)i * primes[j] <= n; j++)
+                {
+                    int p = primes[j];
+                    isComposite[i * p] = true;
+                    if (i % p == 0)
+                    {
+                        phi[i * p] = phi[i] * p;
+                        break;
+                    }
+                    phi[i * p] = phi[i] * (p - 1);
+                }
+            }
+
+            return phi;
         }
     }
 }

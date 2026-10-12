@@ -140,6 +140,115 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Performs a breadth first search traversal of an implicit graph starting from a specified state.
+        /// </summary>
+        /// <param name="first">Starting state.</param>
+        /// <param name="visitor">Action to execute for each reachable state.</param>
+        /// <param name="neighbourFunc">Function for determining potential next states for a given state.</param>
+        /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        public static void Bfs<T>(T first, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            Bfs(new[] { first }, visitor, neighbourFunc, equalityComparer);
+        }
+
+        /// <summary>
+        /// Performs a breadth first search traversal of an implicit graph starting from a collection of states.
+        /// </summary>
+        /// <param name="initialStates">Starting states.</param>
+        /// <param name="visitor">Action to execute for each reachable state.</param>
+        /// <param name="neighbourFunc">Function for determining potential next states for a given state.</param>
+        /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        public static void Bfs<T>(IEnumerable<T> initialStates, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            if (equalityComparer == null)
+            {
+                equalityComparer = EqualityComparer<T>.Default;
+            }
+            Queue<T> toSearch = new Queue<T>();
+            HashSet<T> seen = new HashSet<T>(equalityComparer);
+            if (initialStates != null)
+            {
+                foreach (T state in initialStates)
+                {
+                    if (seen.Add(state))
+                    {
+                        toSearch.Enqueue(state);
+                    }
+                }
+            }
+            while (toSearch.Count != 0)
+            {
+                T cur = toSearch.Dequeue();
+                visitor(cur);
+                foreach (T next in neighbourFunc(cur))
+                {
+                    if (seen.Add(next))
+                    {
+                        toSearch.Enqueue(next);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processes items in a FIFO worklist queue. Duplicate entries currently pending in the worklist are prevented.
+        /// When an item is processed, if the processor returns true, triggered dependent items are added to the worklist.
+        /// </summary>
+        /// <param name="initialItems">Initial items to add to the worklist.</param>
+        /// <param name="processFunc">
+        /// Function to process an item. Returns true if the item was successfully processed and its triggers should run,
+        /// or false if skipped.
+        /// </param>
+        /// <param name="triggerFunc">Function returning next items to enqueue when an item is processed.</param>
+        /// <param name="equalityComparer">Equality comparer for items.</param>
+        /// <typeparam name="T">Type of item being processed.</typeparam>
+        public static void Worklist<T>(
+            IEnumerable<T> initialItems,
+            Func<T, bool> processFunc,
+            Func<T, IEnumerable<T>> triggerFunc,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            if (equalityComparer == null)
+            {
+                equalityComparer = EqualityComparer<T>.Default;
+            }
+            Queue<T> queue = new Queue<T>();
+            HashSet<T> inQueue = new HashSet<T>(equalityComparer);
+
+            void Enqueue(T item)
+            {
+                if (inQueue.Add(item))
+                {
+                    queue.Enqueue(item);
+                }
+            }
+
+            if (initialItems != null)
+            {
+                foreach (T item in initialItems)
+                    Enqueue(item);
+            }
+
+            while (queue.Count > 0)
+            {
+                T cur = queue.Dequeue();
+                inQueue.Remove(cur);
+
+                if (processFunc(cur))
+                {
+                    foreach (T next in triggerFunc(cur))
+                    {
+                        Enqueue(next);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Determines the shortest path between first and last using priority first search.
         /// </summary>
         /// <param name="first">

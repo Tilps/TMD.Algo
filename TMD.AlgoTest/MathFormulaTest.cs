@@ -66,5 +66,65 @@ namespace TMD.AlgoTest
             Assert.AreEqual(0.125, pmfLimited[0], 1e-9);
             Assert.AreEqual(0.375, pmfLimited[1], 1e-9);
         }
+
+        [Test]
+        public void MobiusSieveTest()
+        {
+            int[] expectedSmall = { 0, 1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1 };
+            int[] mu = MathFormulas.MobiusSieve(15);
+            Assert.AreEqual(16, mu.Length);
+            for (int i = 0; i <= 15; i++)
+            {
+                Assert.AreEqual(expectedSmall[i], mu[i], $"Mismatch at index {i}");
+            }
+
+            // Test divisor sum property: sum_{d | n} mu(d) == 0 for all n > 1
+            int n = 500;
+            int[] muLarge = MathFormulas.MobiusSieve(n);
+            for (int i = 2; i <= n; i++)
+            {
+                int sum = 0;
+                for (int d = 1; d <= i; d++)
+                {
+                    if (i % d == 0) sum += muLarge[d];
+                }
+                Assert.AreEqual(0, sum, $"Divisor sum failed for n = {i}");
+            }
+
+            // Boundary conditions
+            Assert.AreEqual(1, MathFormulas.MobiusSieve(0).Length);
+            Assert.AreEqual(0, MathFormulas.MobiusSieve(0)[0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.MobiusSieve(-1));
+        }
+
+        [Test]
+        public void EulerTotientSieveTest()
+        {
+            int[] expectedSmall = { 0, 1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8 };
+            int[] phi = MathFormulas.EulerTotientSieve(15);
+            Assert.AreEqual(16, phi.Length);
+            for (int i = 0; i <= 15; i++)
+            {
+                Assert.AreEqual(expectedSmall[i], phi[i], $"Mismatch at index {i}");
+            }
+
+            // Test Gauss's theorem: sum_{d | n} phi(d) == n for all n >= 1
+            int n = 500;
+            int[] phiLarge = MathFormulas.EulerTotientSieve(n);
+            for (int i = 1; i <= n; i++)
+            {
+                int sum = 0;
+                for (int d = 1; d <= i; d++)
+                {
+                    if (i % d == 0) sum += phiLarge[d];
+                }
+                Assert.AreEqual(i, sum, $"Gauss theorem failed for n = {i}");
+            }
+
+            // Boundary conditions
+            Assert.AreEqual(1, MathFormulas.EulerTotientSieve(0).Length);
+            Assert.AreEqual(0, MathFormulas.EulerTotientSieve(0)[0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.EulerTotientSieve(-1));
+        }
     }
 }

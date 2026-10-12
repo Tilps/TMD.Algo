@@ -135,6 +135,28 @@ namespace TMD.AlgoTest
             Assert.AreEqual(63, BitTricks.LeastSignificantSetBitPos(1L << 63));
             Assert.AreEqual(63, BitTricks.MostSignificantSetBitPos(1L << 63));
             Assert.AreEqual(64, BitTricks.PopulationCount(-1L));
+
+            Assert.AreEqual(-1, BitTricks.LeastSignificantSetBitPos(0UL));
+            Assert.AreEqual(-1, BitTricks.MostSignificantSetBitPos(0UL));
+            Assert.AreEqual(63, BitTricks.LeastSignificantSetBitPos(1UL << 63));
+            Assert.AreEqual(63, BitTricks.MostSignificantSetBitPos(1UL << 63));
+        }
+
+        [Test]
+        public void RemoveAndKeepLeastSignificantSetBit()
+        {
+            Assert.AreEqual(0, BitTricks.RemoveLeastSignificantSetBit(0));
+            Assert.AreEqual(0, BitTricks.RemoveLeastSignificantSetBit(1));
+            Assert.AreEqual(0b1100, BitTricks.RemoveLeastSignificantSetBit(0b1110));
+            Assert.AreEqual(0b0010, BitTricks.KeepLeastSignificantSetBit(0b1110));
+
+            Assert.AreEqual(0L, BitTricks.RemoveLeastSignificantSetBit(0L));
+            Assert.AreEqual(1L << 50, BitTricks.RemoveLeastSignificantSetBit((1L << 50) | (1L << 20)));
+            Assert.AreEqual(1L << 20, BitTricks.KeepLeastSignificantSetBit((1L << 50) | (1L << 20)));
+
+            Assert.AreEqual(0UL, BitTricks.RemoveLeastSignificantSetBit(0UL));
+            Assert.AreEqual(1UL << 63, BitTricks.RemoveLeastSignificantSetBit((1UL << 63) | 1UL));
+            Assert.AreEqual(1UL, BitTricks.KeepLeastSignificantSetBit((1UL << 63) | 1UL));
         }
 
         [Test]

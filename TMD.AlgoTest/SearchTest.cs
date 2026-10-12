@@ -102,6 +102,86 @@ namespace TMD.AlgoTest
             Assert.IsFalse(unreachable);
             Assert.AreEqual(0, noResult);
         }
+
+        [Test]
+        public void TestBfsTraversalSingleSource()
+        {
+            // Directed graph: 1 -> 2, 3; 2 -> 4; 3 -> 4, 5; 4 -> 5
+            Dictionary<int, int[]> adj = new Dictionary<int, int[]>
+            {
+                { 1, new[] { 2, 3 } },
+                { 2, new[] { 4 } },
+                { 3, new[] { 4, 5 } },
+                { 4, new[] { 5 } },
+                { 5, System.Array.Empty<int>() }
+            };
+
+            List<int> visited = new List<int>();
+            Search.Bfs(1, visited.Add, node => adj[node]);
+
+            Assert.AreEqual(5, visited.Count);
+            Assert.AreEqual(1, visited[0]);
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5 }, visited);
+        }
+
+        [Test]
+        public void TestBfsTraversalMultiSource()
+        {
+            Dictionary<int, int[]> adj = new Dictionary<int, int[]>
+            {
+                { 1, new[] { 2 } },
+                { 2, System.Array.Empty<int>() },
+                { 10, new[] { 20 } },
+                { 20, System.Array.Empty<int>() }
+            };
+
+            List<int> visited = new List<int>();
+            Search.Bfs(new[] { 1, 10 }, visited.Add, node => adj[node]);
+
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 10, 20 }, visited);
+        }
+
+        [Test]
+        public void TestWorklist()
+        {
+            // In-degree reduction / topological peeling: nodes with in-degree 0 are processed.
+            // 1 -> 2, 1 -> 3, 2 -> 4, 3 -> 4
+            Dictionary<int, List<int>> outgoing = new Dictionary<int, List<int>>
+            {
+                { 1, new List<int> { 2, 3 } },
+                { 2, new List<int> { 4 } },
+                { 3, new List<int> { 4 } },
+                { 4, new List<int>() }
+            };
+            Dictionary<int, int> inDegree = new Dictionary<int, int>
+            {
+                { 1, 0 }, { 2, 1 }, { 3, 1 }, { 4, 2 }
+            };
+
+            List<int> order = new List<int>();
+            Search.Worklist(
+                new[] { 1 },
+                node =>
+                {
+                    if (inDegree[node] != 0) return false;
+                    order.Add(node);
+                    return true;
+                },
+                node =>
+                {
+                    List<int> ready = new List<int>();
+                    foreach (int child in outgoing[node])
+                    {
+                        inDegree[child]--;
+                        if (inDegree[child] == 0) ready.Add(child);
+                    }
+                    return ready;
+                });
+
+            Assert.AreEqual(4, order.Count);
+            Assert.AreEqual(1, order[0]);
+            Assert.AreEqual(4, order[3]);
+        }
     }
 }
 

@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #endregion
 
+using System;
 using System.Numerics;
 
 namespace TMD.Algo.Algorithms
@@ -95,6 +96,35 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Given a number, removes the least significant bit.
+        /// </summary>
+        /// <param name="i">
+        /// Number to have its least significant bit removed.
+        /// </param>
+        /// <returns>
+        /// The number with its least significant bit removed.
+        /// </returns>
+        public static long RemoveLeastSignificantSetBit(long i)
+        {
+            return i & (i - 1);
+        }
+
+        /// <summary>
+        /// Given a number, removes the least significant bit.
+        /// </summary>
+        /// <param name="i">
+        /// Number to have its least significant bit removed.
+        /// </param>
+        /// <returns>
+        /// The number with its least significant bit removed.
+        /// </returns>
+        [CLSCompliant(false)]
+        public static ulong RemoveLeastSignificantSetBit(ulong i)
+        {
+            return i & (i - 1);
+        }
+
+        /// <summary>
         /// Given a number, removes all but the least significant bit.
         /// </summary>
         /// <param name="i">
@@ -106,6 +136,35 @@ namespace TMD.Algo.Algorithms
         public static int KeepLeastSignificantSetBit(int i)
         {
             return i & -i;
+        }
+
+        /// <summary>
+        /// Given a number, removes all but the least significant bit.
+        /// </summary>
+        /// <param name="i">
+        /// Number to be stripped of all but the least significant bit.
+        /// </param>
+        /// <returns>
+        /// The number stripped of all but the least significant bit.
+        /// </returns>
+        public static long KeepLeastSignificantSetBit(long i)
+        {
+            return i & -i;
+        }
+
+        /// <summary>
+        /// Given a number, removes all but the least significant bit.
+        /// </summary>
+        /// <param name="i">
+        /// Number to be stripped of all but the least significant bit.
+        /// </param>
+        /// <returns>
+        /// The number stripped of all but the least significant bit.
+        /// </returns>
+        [CLSCompliant(false)]
+        public static ulong KeepLeastSignificantSetBit(ulong i)
+        {
+            return i & (0UL - i);
         }
 
         /// <summary>
@@ -300,6 +359,24 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Gets the position of the least significant bit in a number.
+        /// </summary>
+        /// <param name="i">
+        /// Number to get the least significant bit position.
+        /// </param>
+        /// <returns>
+        /// The position of the least significant bit.
+        /// If i is 0, returns -1;
+        /// </returns>
+        [CLSCompliant(false)]
+        public static int LeastSignificantSetBitPos(ulong i)
+        {
+            if (i == 0)
+                return -1;
+            return BitOperations.TrailingZeroCount(i);
+        }
+
+        /// <summary>
         /// Gets whether two numbers have the same most significant bit set.
         /// </summary>
         /// <param name="i">
@@ -365,6 +442,24 @@ namespace TMD.Algo.Algorithms
             if (i == 0)
                 return -1;
             return 63 - BitOperations.LeadingZeroCount((ulong)i);
+        }
+
+        /// <summary>
+        /// Gets the position of the most significant bit in a number.
+        /// </summary>
+        /// <param name="i">
+        /// Number to get the most significant bit position.
+        /// </param>
+        /// <returns>
+        /// The position of the most significant bit.
+        /// If i==0, this returns -1;
+        /// </returns>
+        [CLSCompliant(false)]
+        public static int MostSignificantSetBitPos(ulong i)
+        {
+            if (i == 0)
+                return -1;
+            return 63 - BitOperations.LeadingZeroCount(i);
         }
 
         /// <summary>
