@@ -198,27 +198,58 @@ namespace TMD.Algo.Algorithms
             number = Mod(number);
             if (number == 0)
                 throw new ArgumentException("Zero has no inverse.", nameof(number));
-            if (invertCache == null)
+            if (basis <= 100_000)
             {
-                invertCache = new long[basis];
+                if (invertCache == null)
+                {
+                    invertCache = new long[basis];
+                }
+                if (invertCache[number] == 0)
+                {
+                    long firstProduct;
+                    long secondProduct;
+                    long divisor = ExtendedGcd(number, basis, out firstProduct, out secondProduct);
+                    if (divisor == 1)
+                        invertCache[number] = Mod(firstProduct);
+                    else
+                        invertCache[number] = -1;
+                }
+                if (invertCache[number] == -1)
+                    throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.",
+                        nameof(number));
+                return invertCache[number];
             }
-            if (invertCache[number] == 0)
+            else
             {
-                long firstProduct;
-                long secondProudct;
-                long divisor = ExtendedGcd(number, basis, out firstProduct, out secondProudct);
-                if (divisor == 1)
-                    invertCache[number] = Mod(firstProduct);
-                else
-                    invertCache[number] = -1;
+                if (invertDict == null)
+                {
+                    invertDict = new Dictionary<long, long>();
+                }
+                if (!invertDict.TryGetValue(number, out long inv))
+                {
+                    long firstProduct;
+                    long secondProduct;
+                    long divisor = ExtendedGcd(number, basis, out firstProduct, out secondProduct);
+                    if (divisor == 1)
+                    {
+                        inv = Mod(firstProduct);
+                        invertDict[number] = inv;
+                    }
+                    else
+                    {
+                        invertDict[number] = -1;
+                        inv = -1;
+                    }
+                }
+                if (inv == -1)
+                    throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.",
+                        nameof(number));
+                return inv;
             }
-            if (invertCache[number] == -1)
-                throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.",
-                    nameof(number));
-            return invertCache[number];
         }
 
         private long[] invertCache;
+        private Dictionary<long, long> invertDict;
 
         /// <summary>
         /// Solves linear modulo equation.

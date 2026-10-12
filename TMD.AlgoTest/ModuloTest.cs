@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Numerics;
 using NUnit.Framework;
 using TMD.Algo.Algorithms;
 
@@ -35,8 +36,8 @@ namespace TMD.AlgoTest
             for (int i = 1; i < 3; i++)
                 Assert.AreEqual(1, modulator.Multiply(i, modulator.Invert(i)));
 
-            Assert.AreEqual(2, modulator.Permutations(8, 2));
-            Assert.AreEqual(2, modulator.Choose(6, 3));
+            Assert.AreEqual(BigIntegerPermutations(8, 2, 3), modulator.Permutations(8, 2));
+            Assert.AreEqual(BigIntegerChoose(6, 3, 3), modulator.Choose(6, 3));
         }
 
         [Test]
@@ -47,18 +48,107 @@ namespace TMD.AlgoTest
 
             long a = 1_000_000_000L;
             long b = 1_000_000_000L;
-            // a * b = 10^18, under mod 10^9+7:
-            // 10^18 % 10^9+7 = 49
-            long expected = (long)(((UInt128)(ulong)a * (UInt128)(ulong)b) % (UInt128)(ulong)basis);
+            // Independent expected value via BigInteger:
+            long expected = BigIntegerMultiply(a, b, basis);
             Assert.AreEqual(expected, modulator.Multiply(a, b));
 
             long bigMod = 1_000_000_000_039L; // prime > 10^12
             Modulo bigModulator = new Modulo(bigMod);
             long x = 900_000_000_000L;
             long y = 800_000_000_000L;
-            // x * y = 7.2 * 10^23, which drastically exceeds long.MaxValue (9.22 * 10^18)!
-            long expectedBig = (long)(((UInt128)(ulong)x * (UInt128)(ulong)y) % (UInt128)(ulong)bigMod);
+            // x * y = 7.2 * 10^23, which exceeds long.MaxValue (9.22 * 10^18):
+            long expectedBig = BigIntegerMultiply(x, y, bigMod);
             Assert.AreEqual(expectedBig, bigModulator.Multiply(x, y));
+        }
+
+        [Test]
+        public void IndependentBigIntegerVerification()
+        {
+            long[] bases = { 3L, 7L, 101L, 1_000_000_007L, 1_000_000_000_039L };
+            Random rnd = new Random(42);
+
+            foreach (long basis in bases)
+            {
+                Modulo modulator = new Modulo(basis);
+
+                for (int i = 0; i < 50; i++)
+                {
+                    long a = (long)(rnd.NextDouble() * (basis - 1)) + 1;
+                    long b = (long)(rnd.NextDouble() * (basis - 1)) + 1;
+
+                    Assert.AreEqual(BigIntegerMultiply(a, b, basis), modulator.Multiply(a, b));
+                    Assert.AreEqual(BigIntegerAdd(a, b, basis), modulator.Add(a, b));
+                    Assert.AreEqual(BigIntegerSubtract(a, b, basis), modulator.Subtract(a, b));
+
+                    long invA = modulator.Invert(a);
+                    Assert.AreEqual(1L, BigIntegerMultiply(a, invA, basis));
+                }
+            }
+        }
+
+        [Test]
+        public void CombinatoricsAgainstBigInteger()
+        {
+            long primeBasis = 17L;
+            Modulo modulator = new Modulo(primeBasis);
+
+            for (int n = 0; n <= 30; n++)
+            {
+                for (int k = 0; k <= n; k++)
+                {
+                    Assert.AreEqual(BigIntegerChoose(n, k, primeBasis), modulator.Choose(n, k), $"Choose({n}, {k}) failed");
+                    Assert.AreEqual(BigIntegerPermutations(n, k, primeBasis), modulator.Permutations(n, k), $"Permutations({n}, {k}) failed");
+                }
+            }
+        }
+
+        private static long BigIntegerMod(BigInteger value, long basis)
+        {
+            BigInteger mod = value % basis;
+            if (mod < 0) mod += basis;
+            return (long)mod;
+        }
+
+        private static long BigIntegerMultiply(long a, long b, long basis)
+        {
+            return BigIntegerMod(new BigInteger(a) * new BigInteger(b), basis);
+        }
+
+        private static long BigIntegerAdd(long a, long b, long basis)
+        {
+            return BigIntegerMod(new BigInteger(a) + new BigInteger(b), basis);
+        }
+
+        private static long BigIntegerSubtract(long a, long b, long basis)
+        {
+            return BigIntegerMod(new BigInteger(a) - new BigInteger(b), basis);
+        }
+
+        private static long BigIntegerChoose(long n, long k, long basis)
+        {
+            if (k < 0 || n < k) return 0;
+            if (k == 0) return 1;
+            BigInteger num = 1;
+            BigInteger den = 1;
+            for (long i = 1; i <= k; i++)
+            {
+                num *= (n - i + 1);
+                den *= i;
+            }
+            BigInteger comb = num / den;
+            return BigIntegerMod(comb, basis);
+        }
+
+        private static long BigIntegerPermutations(long n, long k, long basis)
+        {
+            if (k < 0 || n < k) return 0;
+            if (k == 0) return 1;
+            BigInteger res = 1;
+            for (long i = 0; i < k; i++)
+            {
+                res *= (n - i);
+            }
+            return BigIntegerMod(res, basis);
         }
     }
 }
