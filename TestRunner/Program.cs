@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -34,7 +34,10 @@ namespace TestRunner
                 Console.Out.WriteLine(ex.ToString());
             }
             Console.Out.WriteLine("Done");
-            Console.ReadKey();
+            if (!Console.IsInputRedirected)
+            {
+                Console.ReadKey();
+            }
         }
     }
 }
