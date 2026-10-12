@@ -42,5 +42,29 @@ namespace TMD.AlgoTest
             for (int i = 1; i <= 50; i++) expected50 += 1.0 / i;
             Assert.AreEqual(expected50, MathFormulas.HarmonicNumber(50), 0.0001);
         }
+
+        [Test]
+        public void PoissonBinomialTest()
+        {
+            // Fair coins: Binomial(3, 0.5)
+            double[] pmfFair = MathFormulas.PoissonBinomialPmf(new double[] { 0.5, 0.5, 0.5 });
+            Assert.AreEqual(4, pmfFair.Length);
+            Assert.AreEqual(0.125, pmfFair[0], 1e-9);
+            Assert.AreEqual(0.375, pmfFair[1], 1e-9);
+            Assert.AreEqual(0.375, pmfFair[2], 1e-9);
+            Assert.AreEqual(0.125, pmfFair[3], 1e-9);
+
+            // Deterministic trials
+            double[] pmfDet = MathFormulas.PoissonBinomialPmf(new double[] { 0.0, 1.0 });
+            Assert.AreEqual(0.0, pmfDet[0], 1e-9);
+            Assert.AreEqual(1.0, pmfDet[1], 1e-9);
+            Assert.AreEqual(0.0, pmfDet[2], 1e-9);
+
+            // maxSuccesses limit
+            double[] pmfLimited = MathFormulas.PoissonBinomialPmf(new double[] { 0.5, 0.5, 0.5 }, maxSuccesses: 1);
+            Assert.AreEqual(2, pmfLimited.Length);
+            Assert.AreEqual(0.125, pmfLimited[0], 1e-9);
+            Assert.AreEqual(0.375, pmfLimited[1], 1e-9);
+        }
     }
 }

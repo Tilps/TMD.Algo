@@ -97,6 +97,42 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Calculates the minimum circular distance between two numbers under the modulo.
+        /// </summary>
+        /// <param name="first">
+        /// First number.
+        /// </param>
+        /// <param name="second">
+        /// Second number.
+        /// </param>
+        /// <returns>
+        /// The circular distance between first and second, in the range [0, basis / 2].
+        /// </returns>
+        public long Dist(long first, long second)
+        {
+            long diff = Math.Abs(Mod(first) - Mod(second));
+            return Math.Min(diff, basis - diff);
+        }
+
+        /// <summary>
+        /// Calculates the minimum circular distance between two numbers under the modulo.
+        /// Equivalent to <see cref="Dist(long, long)"/>.
+        /// </summary>
+        /// <param name="first">
+        /// First number.
+        /// </param>
+        /// <param name="second">
+        /// Second number.
+        /// </param>
+        /// <returns>
+        /// The circular distance between first and second, in the range [0, basis / 2].
+        /// </returns>
+        public long Distance(long first, long second)
+        {
+            return Dist(first, second);
+        }
+
+        /// <summary>
         /// Reduces a given number to the domain of the basis.
         /// </summary>
         /// <param name="number">

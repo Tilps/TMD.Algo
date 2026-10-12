@@ -41,6 +41,38 @@ namespace TMD.AlgoTest
         }
 
         [Test]
+        public void DistTest()
+        {
+            Modulo mod10 = new Modulo(10);
+            Assert.AreEqual(0, mod10.Dist(3, 3));
+            Assert.AreEqual(0, mod10.Distance(3, 3));
+            Assert.AreEqual(1, mod10.Dist(0, 9));
+            Assert.AreEqual(1, mod10.Dist(9, 0));
+            Assert.AreEqual(2, mod10.Dist(1, 9));
+            Assert.AreEqual(2, mod10.Dist(9, 1));
+            Assert.AreEqual(5, mod10.Dist(0, 5));
+            Assert.AreEqual(5, mod10.Dist(5, 0));
+            Assert.AreEqual(4, mod10.Dist(2, 6));
+
+            // Negative coordinates and large offsets
+            Assert.AreEqual(1, mod10.Dist(-1, 0));
+            Assert.AreEqual(2, mod10.Dist(-1, 1));
+            Assert.AreEqual(2, mod10.Dist(19, 1));
+
+            // Independent confirmation against explicit min of directional subtractions
+            Modulo mod24 = new Modulo(24);
+            for (int i = -30; i <= 30; i++)
+            {
+                for (int j = -30; j <= 30; j++)
+                {
+                    long expected = Math.Min(mod24.Subtract(i, j), mod24.Subtract(j, i));
+                    Assert.AreEqual(expected, mod24.Dist(i, j));
+                    Assert.AreEqual(expected, mod24.Distance(i, j));
+                }
+            }
+        }
+
+        [Test]
         public void LargeNumbers()
         {
             long basis = 1_000_000_007L;

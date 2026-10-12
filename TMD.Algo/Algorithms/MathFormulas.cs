@@ -241,5 +241,39 @@ namespace TMD.Algo.Algorithms
             }
             return result;
         }
+
+        /// <summary>
+        /// Computes the probability mass function (PMF) of the Poisson binomial distribution,
+        /// which represents the distribution of the number of successes in a sequence of independent,
+        /// non-identically distributed Bernoulli trials with the given success probabilities.
+        /// </summary>
+        /// <param name="probabilities">
+        /// Probabilities of success for each trial (each value must be in [0, 1]).
+        /// </param>
+        /// <param name="maxSuccesses">
+        /// Optional maximum number of successes to compute probabilities for. If negative or greater than the number of trials,
+        /// probabilities up to the total number of trials are computed.
+        /// </param>
+        /// <returns>
+        /// An array of length min(limit, n) + 1 where element k is the probability of exactly k successes.
+        /// </returns>
+        public static double[] PoissonBinomialPmf(ReadOnlySpan<double> probabilities, int maxSuccesses = -1)
+        {
+            int n = probabilities.Length;
+            int limit = (maxSuccesses < 0 || maxSuccesses > n) ? n : maxSuccesses;
+            double[] dp = new double[limit + 1];
+            dp[0] = 1.0;
+            for (int i = 0; i < n; i++)
+            {
+                double p = probabilities[i];
+                double oneMinusP = 1.0 - p;
+                int upper = Math.Min(i + 1, limit);
+                for (int j = upper; j >= 0; j--)
+                {
+                    dp[j] = dp[j] * oneMinusP + (j > 0 ? dp[j - 1] * p : 0.0);
+                }
+            }
+            return dp;
+        }
     }
 }

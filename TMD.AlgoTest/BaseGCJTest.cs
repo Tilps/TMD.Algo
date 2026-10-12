@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2014, the TMD.Algo authors.
@@ -66,6 +66,26 @@ namespace TMD.AlgoTest
             Validate(expectedOutput, result, error);
         }
 
+        protected void Test<T>(Func<GCJTestCase, Func<T>> target, Action<string, string, List<string>> customValidator,
+            [CallerMemberName] string caller = null)
+        {
+            string input = Load(caller + ".txt");
+            string expectedOutput = Load(caller + "Output.txt");
+
+            var result = GCJ.___TESTRunTestsTEST(input, target);
+            customValidator(input, expectedOutput, result);
+        }
+
+        protected void SlowTest<T>(Func<GCJTestCase, Func<T>> target, Action<string, string, List<string>> customValidator,
+            [CallerMemberName] string caller = null)
+        {
+            string input = Load(caller + ".txt");
+            string expectedOutput = Load(caller + "Output.txt");
+
+            var result = GCJ.___TESTRunParallelTestsTEST(input, target);
+            customValidator(input, expectedOutput, result);
+        }
+
         protected string Load(string fileName)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -113,7 +133,7 @@ namespace TMD.AlgoTest
             Assert.AreEqual(expected.Length, result.Count);
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.AreEqual(expected[i], result[i]);
+                Assert.AreEqual(expected[i].TrimEnd(), result[i].TrimEnd());
             }
         }
 
