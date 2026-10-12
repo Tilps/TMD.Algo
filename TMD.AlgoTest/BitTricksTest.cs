@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -109,6 +109,50 @@ namespace TMD.AlgoTest
                     count++;
             }
             Assert.AreEqual(count, BitTricks.PopulationCount(p));
+        }
+
+        [Test]
+        public void LongBasic()
+        {
+            Assert.AreEqual(-1, BitTricks.LeastSignificantSetBitPos(0L));
+            Assert.AreEqual(-1, BitTricks.MostSignificantSetBitPos(0L));
+            Assert.AreEqual(0, BitTricks.PopulationCount(0L));
+
+            Assert.AreEqual(0, BitTricks.LeastSignificantSetBitPos(1L));
+            Assert.AreEqual(0, BitTricks.MostSignificantSetBitPos(1L));
+            Assert.AreEqual(1, BitTricks.PopulationCount(1L));
+
+            long highVal = 1L << 50;
+            Assert.AreEqual(50, BitTricks.LeastSignificantSetBitPos(highVal));
+            Assert.AreEqual(50, BitTricks.MostSignificantSetBitPos(highVal));
+            Assert.AreEqual(1, BitTricks.PopulationCount(highVal));
+
+            long combo = (1L << 10) | (1L << 40);
+            Assert.AreEqual(10, BitTricks.LeastSignificantSetBitPos(combo));
+            Assert.AreEqual(40, BitTricks.MostSignificantSetBitPos(combo));
+            Assert.AreEqual(2, BitTricks.PopulationCount(combo));
+
+            Assert.AreEqual(63, BitTricks.LeastSignificantSetBitPos(1L << 63));
+            Assert.AreEqual(63, BitTricks.MostSignificantSetBitPos(1L << 63));
+            Assert.AreEqual(64, BitTricks.PopulationCount(-1L));
+        }
+
+        [Test]
+        public void PowerOfTwo()
+        {
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(0));
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(-1));
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(int.MinValue));
+            Assert.IsTrue(BitTricks.IsPowerOfTwo(1));
+            Assert.IsTrue(BitTricks.IsPowerOfTwo(2));
+            Assert.IsTrue(BitTricks.IsPowerOfTwo(1024));
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(1023));
+
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(0L));
+            Assert.IsFalse(BitTricks.IsPowerOfTwo(-1L));
+            Assert.IsTrue(BitTricks.IsPowerOfTwo(1L));
+            Assert.IsTrue(BitTricks.IsPowerOfTwo(1L << 45));
+            Assert.IsFalse(BitTricks.IsPowerOfTwo((1L << 45) + 1));
         }
     }
 }

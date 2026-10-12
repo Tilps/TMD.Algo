@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -31,6 +31,16 @@ namespace TMD.AlgoTest
             Assert.AreEqual(0.00001, Math.Exp(res) - 1.0, 0.000000000001);
 
             Assert.AreEqual(1.0/1000000, MathFormulas.HarmonicSegment(1000000, 1000000), 0.000000001);
+
+            // Test small Harmonic numbers
+            Assert.AreEqual(1.0, MathFormulas.HarmonicNumber(1), 0.0000001);
+            Assert.AreEqual(1.5, MathFormulas.HarmonicNumber(2), 0.0000001);
+            Assert.AreEqual(1.0 + 0.5 + 1.0/3.0 + 0.25, MathFormulas.HarmonicNumber(4), 0.0000001);
+
+            // Test Harmonic number for n > 32
+            double expected50 = 0.0;
+            for (int i = 1; i <= 50; i++) expected50 += 1.0 / i;
+            Assert.AreEqual(expected50, MathFormulas.HarmonicNumber(50), 0.0001);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -131,7 +131,7 @@ namespace TMD.Algo.Algorithms
                 factCache[1] = 1;
                 for (long i = 2; i < basis; i++)
                 {
-                    factCache[i] = (factCache[i - 1]*i)%basis;
+                    factCache[i] = Multiply(factCache[i - 1], i);
                 }
             }
             return factCache[number];
@@ -140,8 +140,7 @@ namespace TMD.Algo.Algorithms
         private long[] factCache;
 
         /// <summary>
-        /// Multiplies two numbers togeather under the basis.
-        /// Assumes that the multiplication will not overflow.
+        /// Multiplies two numbers together under the basis without overflow.
         /// </summary>
         /// <param name="first">
         /// First number to multiply.
@@ -149,10 +148,12 @@ namespace TMD.Algo.Algorithms
         /// <param name="second">
         /// Second number to multiply.
         /// </param>
-        /// <returns></returns>
+        /// <returns>The product modulo the basis.</returns>
         public long Multiply(long first, long second)
         {
-            return Mod(first*second);
+            first = Mod(first);
+            second = Mod(second);
+            return (long)((UInt128)(ulong)first * (UInt128)(ulong)second % (UInt128)(ulong)basis);
         }
 
         /// <summary>
@@ -297,7 +298,7 @@ namespace TMD.Algo.Algorithms
                 return first;
             if (basisIsPrime)
             {
-                return Mod(Factorial(last)*Invert(Factorial(first - 1)));
+                return Multiply(Factorial(last), Invert(Factorial(first - 1)));
             }
             else
             {
@@ -305,7 +306,7 @@ namespace TMD.Algo.Algorithms
                 long result = 1;
                 for (long i = first; i <= last; i++)
                 {
-                    result = Mod(result*i);
+                    result = Multiply(result, i);
                 }
                 return result;
             }
@@ -335,7 +336,7 @@ namespace TMD.Algo.Algorithms
             if (basisIsPrime)
             {
                 // Lucas's law.
-                return Mod(Choose(n/basis, k/basis)*ChooseInternal(Mod(n), Mod(k)));
+                return Multiply(Choose(n/basis, k/basis), ChooseInternal(Mod(n), Mod(k)));
             }
             else
             {
@@ -345,7 +346,7 @@ namespace TMD.Algo.Algorithms
 
         private long ChooseInternal(long n, long k)
         {
-            return Mod(Permutations(n, k)*Invert(Factorial(k)));
+            return Multiply(Permutations(n, k), Invert(Factorial(k)));
         }
     }
 }

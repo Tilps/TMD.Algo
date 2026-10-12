@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -45,7 +45,7 @@ namespace TMD.Algo.Algorithms
                 double accumulator = 0.0;
                 for (int i = 0; i < n; i++)
                 {
-                    accumulator += 1.0/n;
+                    accumulator += 1.0/(i + 1);
                 }
                 return accumulator;
             }

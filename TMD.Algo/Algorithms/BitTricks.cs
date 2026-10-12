@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -14,6 +14,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
  */
 
 #endregion
+
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -246,19 +248,21 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static int PopulationCount(int i)
         {
-            // TODO: work out why this works with signed right shifts, surely it shouldn't.
-            int j = (i >> 1) & 0x55555555;
-            i -= j;
-            j = i >> 2;
-            i = i & 0x33333333;
-            j = j & 0x33333333;
-            i += j;
-            j = i;
-            j >>= 4;
-            j += i;
-            j &= 0x0F0F0F0F;
-            j *= 0x01010101;
-            return j >> 24;
+            return BitOperations.PopCount((uint)i);
+        }
+
+        /// <summary>
+        /// Gets the number of set bits in the specified number.
+        /// </summary>
+        /// <param name="i">
+        /// Number to count the set bits in.
+        /// </param>
+        /// <returns>
+        /// The number of set bits in the number.
+        /// </returns>
+        public static int PopulationCount(long i)
+        {
+            return BitOperations.PopCount((ulong)i);
         }
 
         /// <summary>
@@ -275,21 +279,24 @@ namespace TMD.Algo.Algorithms
         {
             if (i == 0)
                 return -1;
-            // TODO: consider a method without so many conditionals.
-            int j = KeepLeastSignificantSetBit(i);
-            int total = 0;
-            if ((j & 0x55555555) == 0)
-                total += 1;
-            if ((j & 0x33333333) == 0)
-                total += 2;
-            if ((j & 0x0F0F0F0F) == 0)
-                total += 4;
-            if ((j & 0x00FF00FF) == 0)
-                total += 8;
-            if ((j & 0x0000FFFF) == 0)
-                total += 16;
+            return BitOperations.TrailingZeroCount(i);
+        }
 
-            return total;
+        /// <summary>
+        /// Gets the position of the least significant bit in a number.
+        /// </summary>
+        /// <param name="i">
+        /// Number to get the least significant bit position.
+        /// </param>
+        /// <returns>
+        /// The position of the least significant bit.
+        /// If i is 0, returns -1;
+        /// </returns>
+        public static int LeastSignificantSetBitPos(long i)
+        {
+            if (i == 0)
+                return -1;
+            return BitOperations.TrailingZeroCount(i);
         }
 
         /// <summary>
@@ -340,23 +347,52 @@ namespace TMD.Algo.Algorithms
         {
             if (i == 0)
                 return -1;
-            unchecked
-            {
-                // TODO: consider a method without so many conditionals.
-                int total = 0;
-                if (HaveSameMostSignificantSetBit(i, i & (int)0xAAAAAAAA))
-                    total += 1;
-                if (HaveSameMostSignificantSetBit(i, i & (int)0xCCCCCCCC))
-                    total += 2;
-                if (HaveSameMostSignificantSetBit(i, i & (int)0xF0F0F0F0))
-                    total += 4;
-                if (HaveSameMostSignificantSetBit(i, i & (int)0xFF00FF00))
-                    total += 8;
-                if (HaveSameMostSignificantSetBit(i, i & (int)0xFFFF0000))
-                    total += 16;
+            return 31 - BitOperations.LeadingZeroCount((uint)i);
+        }
 
-                return total;
-            }
+        /// <summary>
+        /// Gets the position of the most significant bit in a number.
+        /// </summary>
+        /// <param name="i">
+        /// Number to get the most significant bit position.
+        /// </param>
+        /// <returns>
+        /// The position of the most significant bit.
+        /// If i==0, this returns -1;
+        /// </returns>
+        public static int MostSignificantSetBitPos(long i)
+        {
+            if (i == 0)
+                return -1;
+            return 63 - BitOperations.LeadingZeroCount((ulong)i);
+        }
+
+        /// <summary>
+        /// Determines whether the specified integer is a power of two.
+        /// </summary>
+        /// <param name="i">
+        /// Number to check.
+        /// </param>
+        /// <returns>
+        /// True if the number is a power of two; otherwise, false.
+        /// </returns>
+        public static bool IsPowerOfTwo(int i)
+        {
+            return BitOperations.IsPow2(i);
+        }
+
+        /// <summary>
+        /// Determines whether the specified integer is a power of two.
+        /// </summary>
+        /// <param name="i">
+        /// Number to check.
+        /// </param>
+        /// <returns>
+        /// True if the number is a power of two; otherwise, false.
+        /// </returns>
+        public static bool IsPowerOfTwo(long i)
+        {
+            return BitOperations.IsPow2(i);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #endregion
 
+using System;
 using NUnit.Framework;
 using TMD.Algo.Algorithms;
 
@@ -36,6 +37,28 @@ namespace TMD.AlgoTest
 
             Assert.AreEqual(2, modulator.Permutations(8, 2));
             Assert.AreEqual(2, modulator.Choose(6, 3));
+        }
+
+        [Test]
+        public void LargeNumbers()
+        {
+            long basis = 1_000_000_007L;
+            Modulo modulator = new Modulo(basis);
+
+            long a = 1_000_000_000L;
+            long b = 1_000_000_000L;
+            // a * b = 10^18, under mod 10^9+7:
+            // 10^18 % 10^9+7 = 49
+            long expected = (long)(((UInt128)(ulong)a * (UInt128)(ulong)b) % (UInt128)(ulong)basis);
+            Assert.AreEqual(expected, modulator.Multiply(a, b));
+
+            long bigMod = 1_000_000_000_039L; // prime > 10^12
+            Modulo bigModulator = new Modulo(bigMod);
+            long x = 900_000_000_000L;
+            long y = 800_000_000_000L;
+            // x * y = 7.2 * 10^23, which drastically exceeds long.MaxValue (9.22 * 10^18)!
+            long expectedBig = (long)(((UInt128)(ulong)x * (UInt128)(ulong)y) % (UInt128)(ulong)bigMod);
+            Assert.AreEqual(expectedBig, bigModulator.Multiply(x, y));
         }
     }
 }
