@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using TMD.Algo.Collections.Generic;
 
@@ -265,6 +266,48 @@ namespace TMD.AlgoTest
             Assert.IsInstanceOf<DoubleAdder>(Adder<double>.Default);
             Assert.IsInstanceOf<FloatAdder>(Adder<float>.Default);
             Assert.Throws<NotSupportedException>(() => _ = Adder<string>.Default);
+        }
+
+        [Test]
+        public void TestGraphBipartiteMatching()
+        {
+            Graph<string, int> g = new Graph<string, int>();
+            int u0 = g.AddVertex("U0");
+            int u1 = g.AddVertex("U1");
+            int u2 = g.AddVertex("U2");
+            int v0 = g.AddVertex("V0");
+            int v1 = g.AddVertex("V1");
+            int v2 = g.AddVertex("V2");
+
+            g.AddUndirectedEdge(u0, v0, 1);
+            g.AddUndirectedEdge(u0, v1, 1);
+            g.AddUndirectedEdge(u1, v1, 1);
+            g.AddUndirectedEdge(u2, v2, 1);
+
+            // Test auto-partitioned FindMaximumBipartiteMatching
+            var resultAuto = g.FindMaximumBipartiteMatching();
+            Assert.AreEqual(3, resultAuto.Count);
+            Assert.IsTrue(resultAuto.CanMatchAllLeft);
+
+            // Test explicit partitions
+            int[] left = { u0, u1, u2 };
+            int[] right = { v0, v1, v2 };
+            var resultExplicit = g.MaximumBipartiteMatching(left, right);
+            Assert.AreEqual(3, resultExplicit.Count);
+            Assert.IsTrue(resultExplicit.CanMatchAllLeft);
+
+            // Verify mapped graph vertex IDs
+            Assert.Contains(resultExplicit.MatchLeft[0], new[] { v0, v1 });
+            Assert.AreEqual(3, resultExplicit.Edges.Count());
+
+            // Test CanMatchAllLeft on Graph
+            Assert.IsTrue(g.CanMatchAllLeft(left, right));
+
+            // Test failing CanMatchAllLeft: add u3 connected only to v2 (which u2 also needs)
+            int u3 = g.AddVertex("U3");
+            g.AddUndirectedEdge(u3, v2, 1);
+            int[] left4 = { u0, u1, u2, u3 };
+            Assert.IsFalse(g.CanMatchAllLeft(left4, right));
         }
     }
 }

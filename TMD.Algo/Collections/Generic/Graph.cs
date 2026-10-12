@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using TMD.Algo.Algorithms;
 using TMD.Algo.Algorithms.Generic;
 
 namespace TMD.Algo.Collections.Generic
@@ -1311,11 +1312,21 @@ namespace TMD.Algo.Collections.Generic
         /// Determines the maximum matching assuming this graph is undirected and bipartite.
         /// </summary>
         /// <returns>
-        /// The maximum matching.
+        /// The maximum matching cardinality.
         /// </returns>
         public int MaximumBipartiteMatching()
         {
-            // Create bipartition, graph is undirected so this is easy.
+            return FindMaximumBipartiteMatching().Count;
+        }
+
+        /// <summary>
+        /// Finds the maximum bipartite matching on this graph, automatically discovering the 2-coloring bipartition.
+        /// </summary>
+        /// <returns>A <see cref="BipartiteMatchingResult"/> describing the maximum matching with graph vertex IDs.</returns>
+        public BipartiteMatchingResult FindMaximumBipartiteMatching()
+        {
+            var left = new List<int>();
+            var right = new List<int>();
             bool[] secondGroup = new bool[vertices.Count];
             DepthFirstSearch(delegate(int nodeId, int prevNodeId, int depth, bool postOrder)
             {
@@ -1325,31 +1336,102 @@ namespace TMD.Algo.Collections.Generic
                 }
                 return false;
             });
-
-            Graph<int, int> network = new Graph<int, int>();
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                network.AddVertex(i);
-            }
-            int source = network.AddVertex(vertices.Count);
-            int sink = network.AddVertex(vertices.Count + 1);
             for (int i = 0; i < vertices.Count; i++)
             {
                 if (secondGroup[i])
-                {
-                    network.AddDirectedEdge(i, sink, 1);
-                    // Only add edges from the first group to the second group, avoids duplication issues, so long as we are bipartite.
-                }
+                    right.Add(i);
                 else
+                    left.Add(i);
+            }
+            return MaximumBipartiteMatching(left, right);
+        }
+
+        /// <summary>
+        /// Determines the maximum matching assuming this graph is undirected and bipartite,
+        /// given the explicit sets of vertices in each partition.
+        /// </summary>
+        /// <param name="leftVertices">Vertex IDs in the left partition.</param>
+        /// <param name="rightVertices">Vertex IDs in the right partition.</param>
+        /// <returns>A <see cref="BipartiteMatchingResult"/> describing the maximum matching, with vertex IDs matching this graph.</returns>
+        public BipartiteMatchingResult MaximumBipartiteMatching(
+            IEnumerable<int> leftVertices,
+            IEnumerable<int> rightVertices)
+        {
+            if (leftVertices == null) throw new ArgumentNullException(nameof(leftVertices));
+            if (rightVertices == null) throw new ArgumentNullException(nameof(rightVertices));
+
+            var leftList = new List<int>(leftVertices);
+            var rightList = new List<int>(rightVertices);
+            var rightMap = new Dictionary<int, int>(rightList.Count);
+            for (int i = 0; i < rightList.Count; i++)
+                rightMap[rightList[i]] = i;
+
+            var adj = new List<int>[leftList.Count];
+            for (int i = 0; i < leftList.Count; i++)
+            {
+                adj[i] = new List<int>();
+                int u = leftList[i];
+                if (u >= 0 && u < adjacencyList.Count)
                 {
-                    network.AddDirectedEdge(source, i, 1);
-                    foreach (KeyValuePair<int, int> edge in adjacencyList[i])
+                    foreach (var edge in adjacencyList[u])
                     {
-                        network.AddDirectedEdge(i, edge.Key, 1);
+                        if (rightMap.TryGetValue(edge.Key, out int v))
+                            adj[i].Add(v);
                     }
                 }
             }
-            return network.MaximumFlowFordFulkersonBfs(source, sink, Comparer<int>.Default, new IntAdder());
+
+            var rawResult = BipartiteMatching.FindMaximumMatching(leftList.Count, rightList.Count, adj);
+
+            int[] matchLeft = new int[leftList.Count];
+            for (int i = 0; i < leftList.Count; i++)
+                matchLeft[i] = rawResult.MatchLeft[i] >= 0 ? rightList[rawResult.MatchLeft[i]] : -1;
+
+            int[] matchRight = new int[rightList.Count];
+            for (int i = 0; i < rightList.Count; i++)
+                matchRight[i] = rawResult.MatchRight[i] >= 0 ? leftList[rawResult.MatchRight[i]] : -1;
+
+            return new BipartiteMatchingResult(rawResult.Count, matchLeft, matchRight);
+        }
+
+        /// <summary>
+        /// Determines whether all vertices in the left partition can be matched to vertices in the right partition.
+        /// </summary>
+        /// <param name="leftVertices">Vertex IDs in the left partition.</param>
+        /// <param name="rightVertices">Vertex IDs in the right partition.</param>
+        /// <returns>True if every left vertex can be matched; otherwise, false.</returns>
+        public bool CanMatchAllLeft(
+            IEnumerable<int> leftVertices,
+            IEnumerable<int> rightVertices)
+        {
+            if (leftVertices == null) throw new ArgumentNullException(nameof(leftVertices));
+            if (rightVertices == null) throw new ArgumentNullException(nameof(rightVertices));
+
+            var leftList = new List<int>(leftVertices);
+            var rightList = new List<int>(rightVertices);
+            if (leftList.Count > rightList.Count) return false;
+            if (leftList.Count == 0) return true;
+
+            var rightMap = new Dictionary<int, int>(rightList.Count);
+            for (int i = 0; i < rightList.Count; i++)
+                rightMap[rightList[i]] = i;
+
+            var adj = new List<int>[leftList.Count];
+            for (int i = 0; i < leftList.Count; i++)
+            {
+                adj[i] = new List<int>();
+                int u = leftList[i];
+                if (u >= 0 && u < adjacencyList.Count)
+                {
+                    foreach (var edge in adjacencyList[u])
+                    {
+                        if (rightMap.TryGetValue(edge.Key, out int v))
+                            adj[i].Add(v);
+                    }
+                }
+            }
+
+            return BipartiteMatching.CanMatchAllLeft(leftList.Count, rightList.Count, adj);
         }
 
 
