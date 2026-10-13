@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2011, the TMD.Algo authors.
@@ -29,6 +29,7 @@ namespace TMD.Algo.Collections.Generic
     /// Type of data being stored.
     /// </typeparam>
     public class LookupQueue<T> : ICollection<T>
+        where T : notnull
     {
         #region data structure
 
@@ -104,11 +105,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the queue was non-empty, false otherwise.
         /// </returns>
-        public bool TryDequeue(out T value)
+        public bool TryDequeue([MaybeNullWhen(false)] out T value)
         {
             if (Count == 0)
             {
-                value = default(T);
+                value = default!;
                 return false;
             }
             value = Dequeue();
@@ -294,7 +295,7 @@ namespace TMD.Algo.Collections.Generic
                 linkListTail = prev;
             else
                 linkList[next].Prev = prev;
-            linkList[index].Value = default(T);
+            linkList[index].Value = default!;
             linkList[index].Next = freeListHead;
             freeListHead = index;
             version++;
@@ -366,7 +367,7 @@ namespace TMD.Algo.Collections.Generic
                     if (currentIndex == -1)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == -2)
-                        return default(T);
+                        return default!;
                     else
                         return parent.linkList[currentIndex].Value;
                 }
@@ -396,7 +397,7 @@ namespace TMD.Algo.Collections.Generic
                 {
                     if (currentIndex == -2)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
-                    return this.Current;
+                    return this.Current!;
                 }
             }
 

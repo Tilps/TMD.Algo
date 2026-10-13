@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -45,7 +45,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the heap was non-empty, false otherwise.
         /// </returns>
-        bool TryGetFront(out T var);
+        bool TryGetFront([MaybeNullWhen(false)] out T var);
 
         /// <summary>
         /// Gets and removes the first element in the heap.
@@ -64,6 +64,6 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the element was poped, false otherwise.
         /// </returns>
-        bool TryPopFront(out T var);
+        bool TryPopFront([MaybeNullWhen(false)] out T var);
     }
 }

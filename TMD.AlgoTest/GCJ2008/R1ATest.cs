@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2014, the TMD.Algo authors.
@@ -210,11 +210,11 @@ Case #2: IMPOSSIBLE";
 
         private class Root5Pair
         {
-            public int[] Value;
+            public int[] Value = Array.Empty<int>();
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
-                Root5Pair other = (Root5Pair)obj;
+                if (obj is not Root5Pair other) return false;
                 return Value[0] == other.Value[0] && Value[1] == other.Value[1];
             }
 

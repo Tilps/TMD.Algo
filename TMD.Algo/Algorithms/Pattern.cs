@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2010, the TMD.Algo authors.
@@ -45,6 +45,7 @@ namespace TMD.Algo.Algorithms
         /// The sum of the first 'sumTo' entries.
         /// </returns>
         public static double SumPattern<T>(T first, Func<T, Tuple<double, T>> generatorWithValue, long sumTo)
+            where T : notnull
         {
             Dictionary<T, double> values = new Dictionary<T, double>();
             Dictionary<T, int> indicies = new Dictionary<T, int>();
@@ -105,6 +106,7 @@ namespace TMD.Algo.Algorithms
         /// The value at the 'findAt' index in the pattern.
         /// </returns>
         public static T FindInPattern<T>(T first, Func<T, T> generator, long findAt)
+            where T : notnull
         {
             Dictionary<T, int> indicies = new Dictionary<T, int>();
             List<T> seen = new List<T>();

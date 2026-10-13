@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -141,7 +141,7 @@ namespace TMD.Algo.Collections.Generic
             if (count <= 0)
                 throw new InvalidOperationException("There is no back when the dequeue is empty.");
             T result = array[end];
-            array[end] = default(T);
+            array[end] = default!;
             end--;
             if (end < 0)
                 end = array.Length - 1;
@@ -161,7 +161,7 @@ namespace TMD.Algo.Collections.Generic
             if (count <= 0)
                 throw new InvalidOperationException("There is no front when the dequeue is empty.");
             T result = array[start];
-            array[start] = default(T);
+            array[start] = default!;
             start = (start + 1)%array.Length;
             count--;
             version++;
@@ -452,7 +452,7 @@ namespace TMD.Algo.Collections.Generic
                     if (currentIndex >= parent.count)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == -1)
-                        return default(T);
+                        return default!;
                     else
                         return parent.array[(parent.start + currentIndex)%parent.array.Length];
                 }
@@ -482,7 +482,7 @@ namespace TMD.Algo.Collections.Generic
                 {
                     if (currentIndex == -1)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
-                    return this.Current;
+                    return this.Current!;
                 }
             }
 

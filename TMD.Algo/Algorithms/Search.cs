@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using TMD.Algo.Algorithms.Generic;
 using TMD.Algo.Collections.Generic;
 
@@ -51,8 +52,8 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// The number of steps to get from first to last. -1 if no path exists.
         /// </returns>
-        public static int Bfs<T>(T first, T last, Func<T, IEnumerable<T>> neighbourFunc, Action<T> pathObserver,
-            IEqualityComparer<T> equalityComparer)
+        public static int Bfs<T>(T first, T last, Func<T, IEnumerable<T>> neighbourFunc, Action<T>? pathObserver = null,
+            IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
             if (equalityComparer == null)
             {
@@ -87,7 +88,7 @@ namespace TMD.Algo.Algorithms
         /// The number of steps to get from first to last. -1 if no path exists.
         /// </returns>
         public static int Bfs<T>(T first, Func<T, bool> lastFoundFunc, Func<T, IEnumerable<T>> neighbourFunc,
-            Action<T> pathObserver, IEqualityComparer<T> equalityComparer)
+            Action<T>? pathObserver = null, IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
             if (equalityComparer == null)
             {
@@ -102,7 +103,7 @@ namespace TMD.Algo.Algorithms
             toSearch.Enqueue(first);
             Dictionary<T, KeyValuePair<T, int>> seen = new Dictionary<T, KeyValuePair<T, int>>(equalityComparer)
             {
-                {first, new KeyValuePair<T, int>(default(T), 0)}
+                {first, new KeyValuePair<T, int>(default!, 0)}
             };
             while (toSearch.Count != 0)
             {
@@ -148,7 +149,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
         /// <typeparam name="T">Type of state being searched over.</typeparam>
         public static void Bfs<T>(T first, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
-            IEqualityComparer<T> equalityComparer = null)
+            IEqualityComparer<T>? equalityComparer = null)
         {
             Bfs(new[] { first }, visitor, neighbourFunc, equalityComparer);
         }
@@ -162,7 +163,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
         /// <typeparam name="T">Type of state being searched over.</typeparam>
         public static void Bfs<T>(IEnumerable<T> initialStates, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
-            IEqualityComparer<T> equalityComparer = null)
+            IEqualityComparer<T>? equalityComparer = null)
         {
             if (equalityComparer == null)
             {
@@ -205,18 +206,18 @@ namespace TMD.Algo.Algorithms
         /// <typeparam name="T">Type of state being searched over.</typeparam>
         public static void Bfs<T>(
             T first,
-            Action<T, T, int> visitor,
+            Action<T, T?, int> visitor,
             Func<T, IEnumerable<T>> neighbourFunc,
-            IEqualityComparer<T> equalityComparer = null)
+            IEqualityComparer<T>? equalityComparer = null)
         {
             if (equalityComparer == null)
             {
                 equalityComparer = EqualityComparer<T>.Default;
             }
-            Queue<(T Current, T Parent, int Depth)> toSearch = new Queue<(T, T, int)>();
+            Queue<(T Current, T? Parent, int Depth)> toSearch = new Queue<(T Current, T? Parent, int Depth)>();
             HashSet<T> seen = new HashSet<T>(equalityComparer);
             seen.Add(first);
-            toSearch.Enqueue((first, default(T), 0));
+            toSearch.Enqueue((first, default, 0));
 
             while (toSearch.Count != 0)
             {
@@ -244,18 +245,18 @@ namespace TMD.Algo.Algorithms
         /// <typeparam name="T">Type of state being searched over.</typeparam>
         public static void Bfs<T>(
             T first,
-            Func<T, T, int, bool> visitor,
+            Func<T, T?, int, bool> visitor,
             Func<T, IEnumerable<T>> neighbourFunc,
-            IEqualityComparer<T> equalityComparer = null)
+            IEqualityComparer<T>? equalityComparer = null)
         {
             if (equalityComparer == null)
             {
                 equalityComparer = EqualityComparer<T>.Default;
             }
-            Queue<(T Current, T Parent, int Depth)> toSearch = new Queue<(T, T, int)>();
+            Queue<(T Current, T? Parent, int Depth)> toSearch = new Queue<(T Current, T? Parent, int Depth)>();
             HashSet<T> seen = new HashSet<T>(equalityComparer);
             seen.Add(first);
-            toSearch.Enqueue((first, default(T), 0));
+            toSearch.Enqueue((first, default, 0));
 
             while (toSearch.Count != 0)
             {
@@ -288,7 +289,7 @@ namespace TMD.Algo.Algorithms
             IEnumerable<T> initialItems,
             Func<T, bool> processFunc,
             Func<T, IEnumerable<T>> triggerFunc,
-            IEqualityComparer<T> equalityComparer = null)
+            IEqualityComparer<T>? equalityComparer = null)
         {
             if (equalityComparer == null)
             {
@@ -360,8 +361,8 @@ namespace TMD.Algo.Algorithms
         /// The distance get from first to last. distanceSummer.MinValue if no path exists.
         /// </returns>
         public static TD Pfs<T, TD>(T first, T last, Func<T, IEnumerable<KeyValuePair<T, TD>>> neighbourFunc,
-            Action<T> pathObserver, IEqualityComparer<T> equalityComparer, IComparer<TD> comparer,
-            IAdder<TD> distanceSummer)
+            Action<T>? pathObserver, IEqualityComparer<T>? equalityComparer, IComparer<TD>? comparer,
+            IAdder<TD> distanceSummer) where T : notnull
         {
             if (equalityComparer == null)
             {
@@ -406,8 +407,8 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static TD Pfs<T, TD>(T first, Func<T, bool> lastFoundFunc,
             Func<T, IEnumerable<KeyValuePair<T, TD>>> neighbourFunc,
-            Action<T> pathObserver, IEqualityComparer<T> equalityComparer, IComparer<TD> comparer,
-            IAdder<TD> distanceSummer)
+            Action<T>? pathObserver, IEqualityComparer<T>? equalityComparer, IComparer<TD>? comparer,
+            IAdder<TD> distanceSummer) where T : notnull
         {
             if (equalityComparer == null)
             {
@@ -425,7 +426,7 @@ namespace TMD.Algo.Algorithms
                 };
             Dictionary<T, KeyValuePair<T, TD>> seen = new Dictionary<T, KeyValuePair<T, TD>>(equalityComparer)
             {
-                {first, new KeyValuePair<T, TD>(default(T), distanceSummer.Zero)}
+                {first, new KeyValuePair<T, TD>(default!, distanceSummer.Zero)}
             };
             while (priorityQueue.Count != 0)
             {
@@ -453,8 +454,7 @@ namespace TMD.Algo.Algorithms
                 foreach (KeyValuePair<T, TD> next in neighbourFunc(cur.Item2))
                 {
                     TD newDist = distanceSummer.Add(next.Value, cur.Item1);
-                    KeyValuePair<T, TD> existingEntry;
-                    if (!seen.TryGetValue(next.Key, out existingEntry))
+                    if (!seen.TryGetValue(next.Key, out var existingEntry))
                     {
                         priorityQueue.Add(new Pair<TD, T>(newDist, next.Key));
                         seen.Add(next.Key, new KeyValuePair<T, TD>(cur.Item2, newDist));
@@ -489,9 +489,9 @@ namespace TMD.Algo.Algorithms
             IEnumerable<KeyValuePair<T, TD>> initialStates,
             Func<T, bool> targetFoundFunc,
             Func<T, TD, IEnumerable<KeyValuePair<T, TD>>> transitionFunc,
-            out TD targetDistance,
-            IComparer<TD> comparer = null,
-            IEqualityComparer<T> equalityComparer = null)
+            [MaybeNullWhen(false)] out TD targetDistance,
+            IComparer<TD>? comparer = null,
+            IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
             if (equalityComparer == null) equalityComparer = EqualityComparer<T>.Default;
             if (comparer == null) comparer = Comparer<TD>.Default;
@@ -505,7 +505,7 @@ namespace TMD.Algo.Algorithms
             {
                 foreach (KeyValuePair<T, TD> init in initialStates)
                 {
-                    if (!best.TryGetValue(init.Key, out TD existing) || comparer.Compare(init.Value, existing) < 0)
+                    if (!best.TryGetValue(init.Key, out var existing) || comparer.Compare(init.Value, existing) < 0)
                     {
                         best[init.Key] = init.Value;
                         priorityQueue.Add(new Pair<TD, T>(init.Value, init.Key));
@@ -532,7 +532,7 @@ namespace TMD.Algo.Algorithms
                 {
                     T nextState = next.Key;
                     TD nextDist = next.Value;
-                    if (!best.TryGetValue(nextState, out TD curBest) || comparer.Compare(nextDist, curBest) < 0)
+                    if (!best.TryGetValue(nextState, out var curBest) || comparer.Compare(nextDist, curBest) < 0)
                     {
                         best[nextState] = nextDist;
                         priorityQueue.Add(new Pair<TD, T>(nextDist, nextState));
@@ -540,7 +540,7 @@ namespace TMD.Algo.Algorithms
                 }
             }
 
-            targetDistance = default(TD);
+            targetDistance = default!;
             return false;
         }
 
@@ -563,9 +563,9 @@ namespace TMD.Algo.Algorithms
             TD initialDistance,
             Func<T, bool> targetFoundFunc,
             Func<T, TD, IEnumerable<KeyValuePair<T, TD>>> transitionFunc,
-            out TD targetDistance,
-            IComparer<TD> comparer = null,
-            IEqualityComparer<T> equalityComparer = null)
+            [MaybeNullWhen(false)] out TD targetDistance,
+            IComparer<TD>? comparer = null,
+            IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
             return TryPfs(
                 new[] { new KeyValuePair<T, TD>(initialState, initialDistance) },

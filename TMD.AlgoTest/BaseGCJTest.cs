@@ -29,7 +29,7 @@ namespace TMD.AlgoTest
 {
     public class BaseGCJTest
     {
-        protected void Test<T>(Func<GCJTestCase, Func<T>> target, [CallerMemberName] string caller = null)
+        protected void Test<T>(Func<GCJTestCase, Func<T>> target, [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -38,7 +38,7 @@ namespace TMD.AlgoTest
             Validate(expectedOutput, result);
         }
 
-        protected void SlowTest<T>(Func<GCJTestCase, Func<T>> target, [CallerMemberName] string caller = null)
+        protected void SlowTest<T>(Func<GCJTestCase, Func<T>> target, [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -47,7 +47,7 @@ namespace TMD.AlgoTest
             Validate(expectedOutput, result);
         }
 
-        protected void Test<T>(Func<GCJTestCase, Func<T>> target, double error, [CallerMemberName] string caller = null)
+        protected void Test<T>(Func<GCJTestCase, Func<T>> target, double error, [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -57,7 +57,7 @@ namespace TMD.AlgoTest
         }
 
         protected void SlowTest<T>(Func<GCJTestCase, Func<T>> target, double error,
-            [CallerMemberName] string caller = null)
+            [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -67,7 +67,7 @@ namespace TMD.AlgoTest
         }
 
         protected void Test<T>(Func<GCJTestCase, Func<T>> target, Action<string, string, List<string>> customValidator,
-            [CallerMemberName] string caller = null)
+            [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -77,7 +77,7 @@ namespace TMD.AlgoTest
         }
 
         protected void SlowTest<T>(Func<GCJTestCase, Func<T>> target, Action<string, string, List<string>> customValidator,
-            [CallerMemberName] string caller = null)
+            [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
             string expectedOutput = Load(caller + "Output.txt");
@@ -91,10 +91,14 @@ namespace TMD.AlgoTest
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = GetType().Namespace + "." + GetType().Name.Replace("Test", "") + "." + fileName;
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
+            using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
             {
-                return reader.ReadToEnd();
+                if (stream == null)
+                    throw new FileNotFoundException($"Embedded resource '{resourceName}' not found.");
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
             }
         }
 

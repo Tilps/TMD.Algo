@@ -40,7 +40,7 @@ namespace TMD.AlgoTest.GCJ2016
 
         private string Q1Solver(int n, int r, int p, int s)
         {
-            string best = null;
+            string? best = null;
             char[] candidates = { 'P', 'R', 'S' };
             foreach (char winner in candidates)
             {
@@ -217,7 +217,7 @@ namespace TMD.AlgoTest.GCJ2016
                         board[y, x] = (dir & 1) == 0 ? '/' : '\\';
                     }
 
-                    char hedge = board[y, x].Value;
+                    char hedge = board[y, x]!.Value;
                     long turn = (hedge == '/') ? ((dir & 1) == 0 ? 1 : 3) : ((dir & 1) == 0 ? 3 : 1);
                     dir = (int)modDir.Add(dir, turn);
                     x += dx[dir];

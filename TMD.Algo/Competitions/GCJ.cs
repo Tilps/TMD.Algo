@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2014, the TMD.Algo authors.
@@ -166,7 +166,7 @@ namespace TMD.Algo.Competitions
             return new List<string>(output);
         }
 
-        private static string Format(object input)
+        private static string Format(object? input)
         {
             // TODO: further specializations for char[] and char[][] and Tuples.
             var stringInput = input as string;
@@ -188,9 +188,9 @@ namespace TMD.Algo.Competitions
             var enumerable = input as IEnumerable;
             if (enumerable != null)
             {
-                return string.Join(" ", enumerable.Cast<object>().Select(Format));
+                return string.Join(" ", enumerable.Cast<object?>().Select(Format));
             }
-            return input.ToString();
+            return input?.ToString() ?? string.Empty;
         }
     }
 }

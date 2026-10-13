@@ -49,8 +49,8 @@ namespace TMD.Algo.Algorithms
             Dictionary<TState, TResult> lookup = new Dictionary<TState, TResult>();
             return input =>
             {
-                if (lookup.TryGetValue(input, out TResult result))
-                    return result;
+                if (lookup.TryGetValue(input, out var result))
+                    return result!;
                 result = inputFunction(input);
                 lookup[input] = result;
                 return result;
@@ -74,8 +74,8 @@ namespace TMD.Algo.Algorithms
             return (arg1, arg2) =>
             {
                 var key = (arg1, arg2);
-                if (lookup.TryGetValue(key, out TResult result))
-                    return result;
+                if (lookup.TryGetValue(key, out var result))
+                    return result!;
                 result = inputFunction(arg1, arg2);
                 lookup[key] = result;
                 return result;
@@ -176,8 +176,8 @@ namespace TMD.Algo.Algorithms
             Func<TState, TResult> self = null!;
             self = input =>
             {
-                if (lookup.TryGetValue(input, out TResult result))
-                    return result;
+                if (lookup.TryGetValue(input, out var result))
+                    return result!;
                 result = recursiveFunction(self, input);
                 lookup[input] = result;
                 return result;
@@ -207,8 +207,8 @@ namespace TMD.Algo.Algorithms
             self = (arg1, arg2) =>
             {
                 var key = (arg1, arg2);
-                if (lookup.TryGetValue(key, out TResult result))
-                    return result;
+                if (lookup.TryGetValue(key, out var result))
+                    return result!;
                 result = recursiveFunction(self, arg1, arg2);
                 lookup[key] = result;
                 return result;

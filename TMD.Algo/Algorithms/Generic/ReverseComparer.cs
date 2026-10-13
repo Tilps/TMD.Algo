@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -60,7 +60,7 @@ namespace TMD.Algo.Algorithms.Generic
         /// <returns>
         /// A number indicating the relative order of the two values.
         /// </returns>
-        public int Compare(T x, T y)
+        public int Compare(T? x, T? y)
         {
             return comparer.Compare(y, x);
         }

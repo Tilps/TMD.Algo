@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -58,11 +58,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The smallest item if the list contains any items.
         /// </returns>
-        public static T FindMinimum<T>(this IEnumerable<T> input, IComparer<T> comparer)
+        public static T FindMinimum<T>(this IEnumerable<T> input, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
-            T result = default(T);
+            T result = default!;
             bool first = true;
             foreach (T value in input)
             {
@@ -111,11 +111,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The largest item if the list contains any items.
         /// </returns>
-        public static T FindMaximum<T>(this IEnumerable<T> input, IComparer<T> comparer)
+        public static T FindMaximum<T>(this IEnumerable<T> input, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
-            T result = default(T);
+            T result = default!;
             bool first = true;
             foreach (T value in input)
             {
@@ -172,7 +172,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The nth smallest item from the given input.
         /// </returns>
-        public static T SelectRandomizedInPlace<T>(this IList<T> input, int selection, IComparer<T> comparer)
+        public static T SelectRandomizedInPlace<T>(this IList<T> input, int selection, IComparer<T>? comparer)
         {
             if (selection < 0 || selection >= input.Count)
                 throw new ArgumentOutOfRangeException(nameof(selection),

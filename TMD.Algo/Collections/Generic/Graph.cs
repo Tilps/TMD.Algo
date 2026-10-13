@@ -288,7 +288,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The list of edge ids corresponding to the minimum combination which covers the verticies.
         /// </returns>
-        public List<int> FindMinimumSpanningTree(IComparer<TEdge> edgeComparer)
+        public List<int> FindMinimumSpanningTree(IComparer<TEdge>? edgeComparer)
         {
             if (edgeComparer == null)
                 edgeComparer = Comparer<TEdge>.Default;
@@ -458,7 +458,7 @@ namespace TMD.Algo.Collections.Generic
         /// Running time O(E log V)
         /// </summary>
         public bool TryShortestPathModifiedDijkstra(int startVertexId, int targetVertexId, out TEdge distance,
-            IComparer<TEdge> edgeComparer = null, IAdder<TEdge> edgeSummer = null)
+            IComparer<TEdge>? edgeComparer = null, IAdder<TEdge>? edgeSummer = null)
         {
             if (edgeComparer == null) edgeComparer = Comparer<TEdge>.Default;
             if (edgeSummer == null) edgeSummer = Adder<TEdge>.Default;

@@ -267,7 +267,7 @@ namespace TMD.Algo.Collections.Generic
     /// </summary>
     public static class Adder<T>
     {
-        private static IAdder<T> defaultInstance;
+        private static IAdder<T>? defaultInstance;
 
         /// <summary>
         /// Gets the default adder for type <typeparamref name="T"/>.
@@ -328,12 +328,12 @@ namespace TMD.Algo.Collections.Generic
 
         private class TreeNode
         {
-            public TreeNode Parent;
-            public TreeNode Left;
-            public TreeNode Right;
+            public TreeNode Parent = null!;
+            public TreeNode Left = null!;
+            public TreeNode Right = null!;
             public int Count;
-            public T Value;
-            public T Sum;
+            public T Value = default!;
+            public T Sum = default!;
             public bool Red;
         }
 
@@ -352,7 +352,7 @@ namespace TMD.Algo.Collections.Generic
             if (node == sentinal)
                 return -1;
 
-            if (node.Value.Equals(item))
+            if (EqualityComparer<T>.Default.Equals(node.Value, item))
                 return node.Left.Count;
 
             int index = TreeIndex(node.Left, item);
@@ -370,7 +370,7 @@ namespace TMD.Algo.Collections.Generic
         {
             Debug.Assert(node != null);
             Debug.Assert(node != sentinal);
-            TreeNode other = null;
+            TreeNode? other = null;
             bool lastLeft = false;
             while (node != sentinal)
             {
@@ -925,7 +925,7 @@ namespace TMD.Algo.Collections.Generic
 
             private readonly AccumulatorTreeList<T> parent;
             private readonly int origVersion;
-            private TreeNode currentNode;
+            private TreeNode? currentNode;
             private bool offEnd;
 
             #region IEnumerator<T> Members
@@ -938,7 +938,7 @@ namespace TMD.Algo.Collections.Generic
                 get
                 {
                     if (currentNode == null)
-                        return default(T);
+                        return default!;
                     else
                         return currentNode.Value;
                 }
@@ -968,7 +968,7 @@ namespace TMD.Algo.Collections.Generic
                 {
                     if (currentNode == null)
                         throw new InvalidOperationException("Current is not pointing to a valid node.");
-                    return this.Current;
+                    return this.Current!;
                 }
             }
 
@@ -983,7 +983,9 @@ namespace TMD.Algo.Collections.Generic
                 if (origVersion != parent.version)
                     throw new InvalidOperationException(
                         "The collection being enumerated has been modified since enumerator was acquired.");
-                if (!offEnd && currentNode == null)
+                if (offEnd)
+                    return false;
+                if (currentNode == null)
                 {
                     if (parent.treeRoot == parent.sentinal)
                     {

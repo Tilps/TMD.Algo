@@ -404,7 +404,7 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// True if the other object is a fraction and it has the same value.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (!(obj is Fraction))
                 return false;

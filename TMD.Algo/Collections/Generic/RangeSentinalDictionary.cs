@@ -291,11 +291,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if key is found and value returned, false otherwise.
         /// </returns>
-        public bool TryGetValue(K key, out V value)
+        public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
         {
             if (!ContainsKey(key))
             {
-                value = default(V);
+                value = default!;
                 return false;
             }
             value = data[mapFunc(key)];
@@ -323,9 +323,8 @@ namespace TMD.Algo.Collections.Generic
         {
             get
             {
-                V result;
-                if (TryGetValue(key, out result))
-                    return result;
+                if (TryGetValue(key, out var result))
+                    return result!;
                 throw new KeyNotFoundException();
             }
             set
@@ -357,10 +356,9 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public bool Contains(KeyValuePair<K, V> item)
         {
-            V otherValue;
-            if (!TryGetValue(item.Key, out otherValue))
+            if (!TryGetValue(item.Key, out var otherValue))
                 return false;
-            return Comparer<V>.Default.Compare(item.Value, otherValue) == 0;
+            return Comparer<V>.Default.Compare(item.Value, otherValue!) == 0;
         }
 
         /// <summary>

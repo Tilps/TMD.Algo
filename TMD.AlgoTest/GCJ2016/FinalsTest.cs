@@ -271,7 +271,7 @@ namespace TMD.AlgoTest.GCJ2016
 
         private const int MOD_Q2 = 1_000_000_007;
         private static readonly Modulo modQ2 = new Modulo(MOD_Q2);
-        private static int[] fPrecomputed;
+        private static int[]? fPrecomputed;
         private static readonly object fLock = new object();
 
         private static int[] GetF()
@@ -341,7 +341,7 @@ namespace TMD.AlgoTest.GCJ2016
 
         #region Question 3 - Gallery of Pillars
 
-        private static int[] mobiusPrecomputed;
+        private static int[]? mobiusPrecomputed;
         private static readonly object mobiusLock = new object();
 
         private static int[] GetMobius()
@@ -588,7 +588,7 @@ namespace TMD.AlgoTest.GCJ2016
 
             List<string> expCases = new List<string>();
             string[] expLines = expectedOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder curCase = null;
+            StringBuilder? curCase = null;
             foreach (var line in expLines)
             {
                 if (line.StartsWith("Case #"))

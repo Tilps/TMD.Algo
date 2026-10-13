@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -124,11 +124,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the heap was non-empty, false otherwise.
         /// </returns>
-        public bool TryGetFront(out T var)
+        public bool TryGetFront([MaybeNullWhen(false)] out T var)
         {
             if (count <= 0)
             {
-                var = default(T);
+                var = default!;
                 return false;
             }
             else
@@ -150,7 +150,7 @@ namespace TMD.Algo.Collections.Generic
                 throw new InvalidOperationException("The heap is currently empty.");
             T max = array[1];
             array[1] = array[count];
-            array[count] = default(T); // Clear the entry incase it references something.
+            array[count] = default!; // Clear the entry incase it references something.
             count--;
             Heapify(1);
             version++;
@@ -166,11 +166,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the element was poped, false otherwise.
         /// </returns>
-        public bool TryPopFront(out T var)
+        public bool TryPopFront([MaybeNullWhen(false)] out T var)
         {
             if (count <= 0)
             {
-                var = default(T);
+                var = default!;
                 return false;
             }
             else
@@ -342,7 +342,7 @@ namespace TMD.Algo.Collections.Generic
                         }
                         array[i] = array[count + 1];
                     }
-                    array[count + 1] = default(T); // Clear the entry incase it references something.
+                    array[count + 1] = default!; // Clear the entry incase it references something.
                     version++;
                     return true;
                 }
@@ -420,7 +420,7 @@ namespace TMD.Algo.Collections.Generic
                     if (currentIndex > parent.count)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
                     if (currentIndex == 0)
-                        return default(T);
+                        return default!;
                     else
                         return parent.array[currentIndex];
                 }
@@ -450,7 +450,7 @@ namespace TMD.Algo.Collections.Generic
                 {
                     if (currentIndex == 0)
                         throw new InvalidOperationException("Current is not pointing to a valid location.");
-                    return this.Current;
+                    return this.Current!;
                 }
             }
 

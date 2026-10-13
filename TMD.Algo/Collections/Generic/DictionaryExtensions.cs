@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2016, the TMD.Algo authors.
@@ -49,9 +49,8 @@ namespace TMD.Algo.Collections.Generic
         public static void UpdateValueForKey<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
             Func<TValue, TValue> updater)
         {
-            TValue value;
-            dictionary.TryGetValue(key, out value);
-            dictionary[key] = updater(value);
+            dictionary.TryGetValue(key, out var value);
+            dictionary[key] = updater(value!);
         }
 
         /// <summary>
@@ -78,13 +77,12 @@ namespace TMD.Algo.Collections.Generic
         public static TValue GetOrPopulate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
             Func<TValue> populater)
         {
-            TValue value;
-            if (!dictionary.TryGetValue(key, out value))
+            if (!dictionary.TryGetValue(key, out var value))
             {
                 value = populater();
                 dictionary[key] = value;
             }
-            return value;
+            return value!;
         }
 
         /// <summary>
@@ -110,9 +108,8 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue def)
         {
-            TValue value;
-            if (dictionary.TryGetValue(key, out value))
-                return value;
+            if (dictionary.TryGetValue(key, out var value))
+                return value!;
             return def;
         }
     }

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2012, the TMD.Algo authors.
@@ -31,6 +31,7 @@ namespace TMD.Algo.Collections.Generic
     /// Type of item being tracked.
     /// </typeparam>
     public class RevertibleDisjointTracker<T>
+        where T : notnull
     {
         /// <summary>
         /// Constructor.
@@ -45,7 +46,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Equality comparer to use to lookup entries in the internal storage.
         /// </param>
-        public RevertibleDisjointTracker(IEqualityComparer<T> comparer)
+        public RevertibleDisjointTracker(IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = EqualityComparer<T>.Default;
@@ -139,12 +140,11 @@ namespace TMD.Algo.Collections.Generic
             int secondRank = ranker[second];
             if (firstRank > secondRank)
             {
-                T oldTracker;
-                bool exists = tracker.TryGetValue(second, out oldTracker);
+                bool exists = tracker.TryGetValue(second, out var oldTracker);
                 tracker[second] = first;
                 CurrentUndo.Add(() =>
                 {
-                    if (exists) tracker[second] = oldTracker;
+                    if (exists) tracker[second] = oldTracker!;
                     else tracker.Remove(second);
                 });
             }
@@ -155,12 +155,11 @@ namespace TMD.Algo.Collections.Generic
                     ranker[second] = secondRank + 1;
                     CurrentUndo.Add(() => { ranker[second] = secondRank; });
                 }
-                T oldTracker;
-                bool exists = tracker.TryGetValue(first, out oldTracker);
+                bool exists = tracker.TryGetValue(first, out var oldTracker);
                 tracker[first] = second;
                 CurrentUndo.Add(() =>
                 {
-                    if (exists) tracker[first] = oldTracker;
+                    if (exists) tracker[first] = oldTracker!;
                     else tracker.Remove(first);
                 });
             }

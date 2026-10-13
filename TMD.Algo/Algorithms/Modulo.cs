@@ -173,7 +173,7 @@ namespace TMD.Algo.Algorithms
             return factCache[number];
         }
 
-        private long[] factCache;
+        private long[]? factCache;
 
         /// <summary>
         /// Multiplies two numbers together under the basis without overflow.
@@ -284,8 +284,8 @@ namespace TMD.Algo.Algorithms
             }
         }
 
-        private long[] invertCache;
-        private Dictionary<long, long> invertDict;
+        private long[]? invertCache;
+        private Dictionary<long, long>? invertDict;
 
         /// <summary>
         /// Solves linear modulo equation.

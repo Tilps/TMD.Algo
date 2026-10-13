@@ -181,7 +181,7 @@ namespace TMD.Algo.Algorithms
             if (multiplyFunc == null) throw new ArgumentNullException(nameof(multiplyFunc));
             long bit = 1;
             T current = value;
-            T result = default(T);
+            T result = default!;
             bool resultSet = false;
             for (int i = 0; i < 64; i++)
             {

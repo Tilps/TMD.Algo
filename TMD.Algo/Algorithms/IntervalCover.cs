@@ -85,7 +85,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="targetEnd">End of the target range (inclusive).</param>
         /// <param name="intervals">Candidate intervals as (Start, End) pairs.</param>
         /// <returns>A list of chosen intervals, or null if the target range cannot be covered.</returns>
-        public static List<(int Start, int End)> FindMinimumCover(
+        public static List<(int Start, int End)>? FindMinimumCover(
             int targetStart,
             int targetEnd,
             IEnumerable<(int Start, int End)> intervals)
@@ -100,7 +100,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="targetEnd">End of the target range (inclusive).</param>
         /// <param name="intervals">Candidate intervals as KeyValuePair&lt;int, int&gt; where Key is start and Value is end.</param>
         /// <returns>A list of chosen intervals, or null if the target range cannot be covered.</returns>
-        public static List<KeyValuePair<int, int>> FindMinimumCover(
+        public static List<KeyValuePair<int, int>>? FindMinimumCover(
             int targetStart,
             int targetEnd,
             IEnumerable<KeyValuePair<int, int>> intervals)
@@ -118,7 +118,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="getStart">Function extracting the start coordinate (inclusive).</param>
         /// <param name="getEnd">Function extracting the end coordinate (inclusive).</param>
         /// <returns>A list of chosen intervals, or null if the target range cannot be covered.</returns>
-        public static List<T> FindMinimumCover<T>(
+        public static List<T>? FindMinimumCover<T>(
             int targetStart,
             int targetEnd,
             IEnumerable<T> intervals,

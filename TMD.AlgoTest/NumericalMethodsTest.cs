@@ -59,11 +59,11 @@ namespace TMD.AlgoTest
         [Test]
         public void ArgumentValidation()
         {
-            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((Func<double, double, double>)null, 0, 0, 1, 10));
+            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((Func<double, double, double>)null!, 0, 0, 1, 10));
             Assert.Throws<ArgumentOutOfRangeException>(() => NumericalMethods.RungeKutta4((x, y) => y, 0, 0, 1, 0));
-            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((Func<double, double[], double[]>)null, 0, new double[] { 0 }, 1, 10));
-            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((x, y) => y, 0, null, 1, 10));
-            Assert.Throws<ArgumentNullException>(() => NumericalMethods.Simpson(null, 0, 1));
+            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((Func<double, double[], double[]>)null!, 0, new double[] { 0 }, 1, 10));
+            Assert.Throws<ArgumentNullException>(() => NumericalMethods.RungeKutta4((x, y) => y, 0, null!, 1, 10));
+            Assert.Throws<ArgumentNullException>(() => NumericalMethods.Simpson(null!, 0, 1));
         }
     }
 }

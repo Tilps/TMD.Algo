@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -43,7 +43,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="startList">
         /// List to initialy populate the heap with.  Construction runs in O(n) time.
         /// </param>
-        public BinomialHeap(IEnumerable<T> startList) : this(startList, Comparer<T>.Default)
+        public BinomialHeap(IEnumerable<T>? startList) : this(startList, Comparer<T>.Default)
         {
         }
 
@@ -53,7 +53,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer to use to compare items.  Specify null to use the default comparer.
         /// </param>
-        public BinomialHeap(IComparer<T> comparer)
+        public BinomialHeap(IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -69,7 +69,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer to use to compare items.  Specify null to use the default comparer.
         /// </param>
-        public BinomialHeap(IEnumerable<T> startList, IComparer<T> comparer)
+        public BinomialHeap(IEnumerable<T>? startList, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -83,10 +83,10 @@ namespace TMD.Algo.Collections.Generic
 
         private class BinomialNode
         {
-            public T Value;
-            public BinomialNode Parent;
-            public BinomialNode Child;
-            public BinomialNode Sibling;
+            public T Value = default!;
+            public BinomialNode? Parent;
+            public BinomialNode? Child;
+            public BinomialNode? Sibling;
             public int Degree;
         }
 
@@ -98,7 +98,7 @@ namespace TMD.Algo.Collections.Generic
             if (head == null)
                 return;
             int maxLoop = 33;
-            BinomialNode current = head;
+            BinomialNode? current = head;
             int lastDegree = -1;
             while (current != null)
             {
@@ -151,11 +151,11 @@ namespace TMD.Algo.Collections.Generic
         {
             get
             {
-                if (count <= 0)
+                if (count <= 0 || head == null)
                     throw new InvalidOperationException("The heap is currently empty.");
                 BinomialNode y = head;
                 T maxValue = y.Value;
-                BinomialNode x = head.Sibling;
+                BinomialNode? x = head.Sibling;
                 while (x != null)
                 {
                     if (comparer.Compare(x.Value, maxValue) > 0)
@@ -178,11 +178,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the heap was non-empty, false otherwise.
         /// </returns>
-        public bool TryGetFront(out T var)
+        public bool TryGetFront([MaybeNullWhen(false)] out T var)
         {
             if (count <= 0)
             {
-                var = default(T);
+                var = default!;
                 return false;
             }
             else
@@ -200,13 +200,13 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public T PopFront()
         {
-            if (count <= 0)
+            if (count <= 0 || head == null)
                 throw new InvalidOperationException("The heap is currently empty.");
-            BinomialNode prevY = null;
+            BinomialNode? prevY = null;
             BinomialNode y = head;
             T maxValue = y.Value;
-            BinomialNode prevX = head;
-            BinomialNode x = head.Sibling;
+            BinomialNode? prevX = head;
+            BinomialNode? x = head.Sibling;
             while (x != null)
             {
                 if (comparer.Compare(x.Value, maxValue) > 0)
@@ -231,11 +231,11 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if the element was poped, false otherwise.
         /// </returns>
-        public bool TryPopFront(out T var)
+        public bool TryPopFront([MaybeNullWhen(false)] out T var)
         {
             if (count <= 0)
             {
-                var = default(T);
+                var = default!;
                 return false;
             }
             else
@@ -245,14 +245,14 @@ namespace TMD.Algo.Collections.Generic
             }
         }
 
-        private void RemoveTopLevelNode(BinomialNode prevY, BinomialNode y)
+        private void RemoveTopLevelNode(BinomialNode? prevY, BinomialNode y)
         {
-            BinomialNode head2 = null;
-            BinomialNode current = y.Child;
+            BinomialNode? head2 = null;
+            BinomialNode? current = y.Child;
             while (current != null)
             {
                 current.Parent = null;
-                BinomialNode tmp = current.Sibling;
+                BinomialNode? tmp = current.Sibling;
                 current.Sibling = head2;
                 head2 = current;
                 current = tmp;
@@ -272,24 +272,24 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="other">
         /// Other heap to union in to this one.
         /// </param>
-        public void UnionWith(BinomialHeap<T> other)
+        public void UnionWith(BinomialHeap<T>? other)
         {
             if (other == null) return;
             count += other.count;
             version++;
-            BinomialNode otherHead = other.head;
+            BinomialNode? otherHead = other.head;
             other.Clear();
             UnionWith(otherHead);
         }
 
-        private void UnionWith(BinomialNode otherHead)
+        private void UnionWith(BinomialNode? otherHead)
         {
             head = MergeTopLevels(head, otherHead);
             if (head == null)
                 return;
-            BinomialNode prevX = null;
+            BinomialNode? prevX = null;
             BinomialNode x = head;
-            BinomialNode nextX = x.Sibling;
+            BinomialNode? nextX = x.Sibling;
             while (nextX != null)
             {
                 if (x.Degree != nextX.Degree || (nextX.Sibling != null && nextX.Sibling.Degree == x.Degree))
@@ -318,10 +318,10 @@ namespace TMD.Algo.Collections.Generic
             }
         }
 
-        private static BinomialNode MergeTopLevels(BinomialNode firstList, BinomialNode secondList)
+        private static BinomialNode? MergeTopLevels(BinomialNode? firstList, BinomialNode? secondList)
         {
-            BinomialNode result = null;
-            BinomialNode current = null;
+            BinomialNode? result = null;
+            BinomialNode? current = null;
             while (firstList != null && secondList != null)
             {
                 if (firstList.Degree <= secondList.Degree)
@@ -395,7 +395,7 @@ namespace TMD.Algo.Collections.Generic
         private int version;
         private int count;
         private readonly IComparer<T> comparer;
-        private BinomialNode head;
+        private BinomialNode? head;
 
         #region ICollection<T> Members
 
@@ -485,7 +485,7 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public bool Remove(T item)
         {
-            BinomialNode node = Find(item);
+            BinomialNode? node = Find(item);
             if (node == null)
                 return false;
             while (node.Parent != null)
@@ -495,7 +495,7 @@ namespace TMD.Algo.Collections.Generic
                 node.Value = tmp;
                 node = node.Parent;
             }
-            BinomialNode prev = null;
+            BinomialNode? prev = null;
             if (head != node)
             {
                 prev = head;
@@ -512,7 +512,7 @@ namespace TMD.Algo.Collections.Generic
             return true;
         }
 
-        private BinomialNode Find(T item)
+        private BinomialNode? Find(T item)
         {
             if (head == null)
                 return null;
@@ -600,7 +600,7 @@ namespace TMD.Algo.Collections.Generic
 
             private readonly BinomialHeap<T> parent;
             private readonly int origVersion;
-            private BinomialNode currentNode;
+            private BinomialNode? currentNode;
             private bool finished;
             private bool lastWasChild;
 
@@ -640,7 +640,7 @@ namespace TMD.Algo.Collections.Generic
             /// <summary>
             /// Gets the current object this enumerator is pointing at.
             /// </summary>
-            object System.Collections.IEnumerator.Current => this.Current;
+            object? System.Collections.IEnumerator.Current => this.Current;
 
             /// <summary>
             /// Moves to the next entry in the heap, if available.

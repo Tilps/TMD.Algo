@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -38,7 +38,7 @@ namespace TMD.Algo.Algorithms
         /// Values of each item.
         /// </param>
         /// <returns></returns>
-        public static int[] OptimalCostForTarget(int target, int[] costs, int[] values)
+        public static int[]? OptimalCostForTarget(int target, int[] costs, int[] values)
         {
             // break in to half to allow us to double the number of things we can process.
             // we can easily generate all combinations to work out what is best, but if number of items exceeds ~26, that is going to be slow.

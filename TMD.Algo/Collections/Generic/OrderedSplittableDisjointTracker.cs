@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2012, the TMD.Algo authors.
@@ -34,6 +34,8 @@ namespace TMD.Algo.Collections.Generic
     /// Type of the representative to store information about a given disjoint set.
     /// </typeparam>
     public class OrderedSplittableDisjointTracker<TElement, TRep>
+        where TElement : notnull
+        where TRep : notnull
     {
         /// <summary>
         /// Constructor.
@@ -51,8 +53,8 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="orderingComparer">
         /// Ordering comparer to order the elements for splitting/joining.
         /// </param>
-        public OrderedSplittableDisjointTracker(IEqualityComparer<TElement> comparer,
-            IComparer<TElement> orderingComparer)
+        public OrderedSplittableDisjointTracker(IEqualityComparer<TElement>? comparer,
+            IComparer<TElement>? orderingComparer)
         {
             if (comparer == null)
                 comparer = EqualityComparer<TElement>.Default;
@@ -83,7 +85,7 @@ namespace TMD.Algo.Collections.Generic
             public int Right;
             public int Parent;
             public bool Red;
-            public TRep Representative;
+            public TRep? Representative;
         }
 
         private readonly Dictionary<TElement, int> tracker;
@@ -910,7 +912,7 @@ namespace TMD.Algo.Collections.Generic
         public TRep GetRepresentative(TElement value)
         {
             int pos = GetRoot(value);
-            return nodes[pos].Representative;
+            return nodes[pos].Representative!;
         }
 
         private int GetRoot(TElement value)
@@ -959,7 +961,7 @@ namespace TMD.Algo.Collections.Generic
                 throw new InvalidOperationException("Cannot merge two sets which have crossing edges.");
         }
 
-        private void SetRep(int newRoot, TRep newRep)
+        private void SetRep(int newRoot, TRep? newRep)
         {
             Node newRootNodeValue = nodes[newRoot];
             newRootNodeValue.Representative = newRep;

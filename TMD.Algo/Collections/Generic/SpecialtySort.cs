@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -66,7 +66,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// A new list which contains the sorted results.
         /// </returns>
-        public static List<T> BucketSort<T>(this IEnumerable<T> input, PartitionFunction<T> part, IComparer<T> comparer)
+        public static List<T> BucketSort<T>(this IEnumerable<T> input, PartitionFunction<T> part, IComparer<T>? comparer)
         {
             int count = input.Count();
             List<T>[] parts = new List<T>[count];
@@ -236,7 +236,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer for comparing values.  Specify null to use the default comparer.
         /// </param>
-        public static void InsertionSort<T>(this IList<T> input, IComparer<T> comparer)
+        public static void InsertionSort<T>(this IList<T> input, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -279,7 +279,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer for comparing values.  Specify null to use the default comparer.
         /// </param>
-        public static void MergeSort<T>(this IList<T> input, IComparer<T> comparer)
+        public static void MergeSort<T>(this IList<T> input, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -362,7 +362,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer for comparing values.  Specify null to use the default comparer.
         /// </param>
-        public static void MergeSort2<T>(this IList<T> input, IComparer<T> comparer)
+        public static void MergeSort2<T>(this IList<T> input, IComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -396,6 +396,7 @@ namespace TMD.Algo.Collections.Generic
         /// An array of integers with the same sorting characteristics as the input.
         /// </returns>
         public static int[] Relabel<T>(this IEnumerable<T> input)
+            where T : notnull
         {
             return Relabel(input, null, null);
         }
@@ -418,8 +419,9 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// An array of integers with the same sorting characteristics as the input.
         /// </returns>
-        public static int[] Relabel<T>(this IEnumerable<T> input, IComparer<T> comparer,
-            IEqualityComparer<T> equalityComparer)
+        public static int[] Relabel<T>(this IEnumerable<T> input, IComparer<T>? comparer,
+            IEqualityComparer<T>? equalityComparer)
+            where T : notnull
         {
             if (comparer == null)
                 comparer = Comparer<T>.Default;
@@ -467,7 +469,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// An array containing the input in sorted order.
         /// </returns>
-        public static T[] ToSortedArray<T>(this IEnumerable<T> input, IComparer<T> comparer)
+        public static T[] ToSortedArray<T>(this IEnumerable<T> input, IComparer<T>? comparer)
         {
             T[] result = input.ToArray();
             Array.Sort(result, comparer);

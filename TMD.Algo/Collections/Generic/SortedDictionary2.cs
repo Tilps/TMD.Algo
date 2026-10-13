@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -61,11 +61,11 @@ namespace TMD.Algo.Collections.Generic
 
         internal class TreeNode
         {
-            public TreeNode Parent;
-            public TreeNode Left;
-            public TreeNode Right;
-            public K Key;
-            public V Value;
+            public TreeNode Parent = null!;
+            public TreeNode Left = null!;
+            public TreeNode Right = null!;
+            public K Key = default!;
+            public V Value = default!;
             public bool Red;
         }
 
@@ -141,7 +141,7 @@ namespace TMD.Algo.Collections.Generic
         {
             Debug.Assert(node != null);
             Debug.Assert(node != sentinal);
-            TreeNode other = null;
+            TreeNode? other = null;
             bool lastLeft = false;
             while (node != sentinal)
             {
@@ -464,7 +464,7 @@ namespace TMD.Algo.Collections.Generic
 
             private readonly SortedDictionary2<K, V> parent;
             private readonly int origVersion;
-            private TreeNode currentNode;
+            private TreeNode? currentNode;
             private bool offEnd;
 
             #region IEnumerator<T> Members
@@ -522,7 +522,9 @@ namespace TMD.Algo.Collections.Generic
                 if (origVersion != parent.version)
                     throw new InvalidOperationException(
                         "The collection being enumerated has been modified since enumerator was acquired.");
-                if (!offEnd && currentNode == null)
+                if (offEnd)
+                    return false;
+                if (currentNode == null)
                 {
                     if (parent.treeRoot == parent.sentinal)
                     {
@@ -665,12 +667,12 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if key is found and value returned, false otherwise.
         /// </returns>
-        public bool TryGetValue(K key, out V value)
+        public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
         {
             TreeNode node = TreeFind(key);
             if (node == sentinal)
             {
-                value = default(V);
+                value = default!;
                 return false;
             }
             value = node.Value;
@@ -698,9 +700,8 @@ namespace TMD.Algo.Collections.Generic
         {
             get
             {
-                V result;
-                if (TryGetValue(key, out result))
-                    return result;
+                if (TryGetValue(key, out var result))
+                    return result!;
                 throw new KeyNotFoundException();
             }
             set
@@ -732,10 +733,9 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public bool Contains(KeyValuePair<K, V> item)
         {
-            V otherValue;
-            if (!TryGetValue(item.Key, out otherValue))
+            if (!TryGetValue(item.Key, out var otherValue))
                 return false;
-            return Comparer<V>.Default.Compare(item.Value, otherValue) == 0;
+            return Comparer<V>.Default.Compare(item.Value, otherValue!) == 0;
         }
 
         /// <summary>

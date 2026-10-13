@@ -30,7 +30,7 @@ namespace TMD.AlgoTest
             var intervals = new List<(int S, int E)> { (1, 5) };
             var result = IntervalCover.FindMinimumCover(5, 4, intervals, x => x.S, x => x.E);
             Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count);
+            Assert.AreEqual(0, result!.Count);
             Assert.AreEqual(0, IntervalCover.MinIntervalsToCover(5, 4, intervals, x => x.S, x => x.E));
         }
 
@@ -40,8 +40,8 @@ namespace TMD.AlgoTest
             var intervals = new List<(int S, int E)> { (1, 10) };
             var result = IntervalCover.FindMinimumCover(1, 10, intervals, x => x.S, x => x.E);
             Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual((1, 10), result[0]);
+            Assert.AreEqual(1, result!.Count);
+            Assert.AreEqual((1, 10), result![0]);
         }
 
         [Test]
@@ -95,9 +95,9 @@ namespace TMD.AlgoTest
             };
             var result = IntervalCover.FindMinimumCover(1, 10, intervals, x => x.S, x => x.E);
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
-            Assert.AreEqual((1, 5), result[0]);
-            Assert.AreEqual((4, 10), result[1]);
+            Assert.AreEqual(2, result!.Count);
+            Assert.AreEqual((1, 5), result![0]);
+            Assert.AreEqual((4, 10), result![1]);
             Assert.AreEqual(2, IntervalCover.MinIntervalsToCover(1, 10, intervals, x => x.S, x => x.E));
         }
 
@@ -112,7 +112,7 @@ namespace TMD.AlgoTest
             };
             var result = IntervalCover.FindMinimumCover(1, 10, intervals, x => x.S, x => x.E);
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(2, result!.Count);
             Assert.AreEqual(2, IntervalCover.MinIntervalsToCover(1, 10, intervals, x => x.S, x => x.E));
         }
 
@@ -127,7 +127,7 @@ namespace TMD.AlgoTest
             };
             var result = IntervalCover.FindMinimumCover(1, 10, intervals);
             Assert.IsNotNull(result);
-            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(3, result!.Count);
             Assert.AreEqual(3, IntervalCover.MinIntervalsToCover(1, 10, intervals));
         }
 
@@ -141,7 +141,7 @@ namespace TMD.AlgoTest
             };
             var result = IntervalCover.FindMinimumCover(1, 10, intervals);
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(2, result!.Count);
             Assert.AreEqual(2, IntervalCover.MinIntervalsToCover(1, 10, intervals));
         }
     }

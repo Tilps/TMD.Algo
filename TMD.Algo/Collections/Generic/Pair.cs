@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2015, the TMD.Algo authors.
@@ -83,7 +83,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// True if obj is a Pair of same type and memberwise equal.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null || obj.GetType() != GetType()) return false;
             return Equals((Pair<T1, T2>)obj);
@@ -97,7 +97,9 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public override int GetHashCode()
         {
-            return t1Comparer.GetHashCode(Item1)*33 ^ t2Comparer.GetHashCode(Item2);
+            int h1 = Item1 is null ? 0 : t1Comparer.GetHashCode(Item1);
+            int h2 = Item2 is null ? 0 : t2Comparer.GetHashCode(Item2);
+            return h1 * 33 ^ h2;
         }
     }
 

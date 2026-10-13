@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -27,6 +27,7 @@ namespace TMD.Algo.Collections.Generic
     /// Type of item being tracked.
     /// </typeparam>
     public class DisjointTracker<T>
+        where T : notnull
     {
         /// <summary>
         /// Constructor.
@@ -41,7 +42,7 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Equality comparer to use to lookup entries in the internal storage.
         /// </param>
-        public DisjointTracker(IEqualityComparer<T> comparer)
+        public DisjointTracker(IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
                 comparer = EqualityComparer<T>.Default;

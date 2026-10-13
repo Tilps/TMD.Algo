@@ -124,7 +124,7 @@ namespace TMD.AlgoTest
         [Test]
         public void ParseValidation()
         {
-            Assert.Throws<ArgumentNullException>(() => ((string)null).Parse(out int _));
+            Assert.Throws<ArgumentNullException>(() => ((string)null!).Parse(out int _));
             Assert.Throws<ArgumentNullException>(() => string.Empty.Parse(out int _, out int _));
             Assert.Throws<ArgumentException>(() => "10".Parse(out int _, out int _));
             Assert.Throws<ArgumentException>(() => "10 20 30".Parse(out int _, out int _));
