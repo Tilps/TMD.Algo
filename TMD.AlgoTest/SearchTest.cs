@@ -182,6 +182,40 @@ namespace TMD.AlgoTest
             Assert.AreEqual(1, order[0]);
             Assert.AreEqual(4, order[3]);
         }
+
+        [Test]
+        public void TestBfsWithParentAndDepth()
+        {
+            var adj = new Dictionary<int, List<int>>
+            {
+                { 1, new List<int> { 2, 3 } },
+                { 2, new List<int> { 4 } },
+                { 3, new List<int> { 5 } },
+                { 4, new List<int>() },
+                { 5, new List<int>() }
+            };
+
+            var visited = new List<(int Node, int Parent, int Depth)>();
+            Search.Bfs(1, (u, p, d) => visited.Add((u, p, d)), u => adj[u]);
+
+            Assert.AreEqual(5, visited.Count);
+            Assert.AreEqual((1, 0, 0), visited[0]);
+            Assert.AreEqual((2, 1, 1), visited[1]);
+            Assert.AreEqual((3, 1, 1), visited[2]);
+            Assert.AreEqual((4, 2, 2), visited[3]);
+            Assert.AreEqual((5, 3, 2), visited[4]);
+
+            // Test early termination overload
+            var earlyVisited = new List<int>();
+            Search.Bfs(1, (u, p, d) =>
+            {
+                earlyVisited.Add(u);
+                return u == 3;
+            }, u => adj[u]);
+
+            Assert.AreEqual(3, earlyVisited.Count);
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, earlyVisited);
+        }
     }
 }
 

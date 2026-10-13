@@ -306,6 +306,60 @@ namespace TMD.Algo.Text
         }
 
         /// <summary>
+        /// Converts a string containing a space separated pair into a 2-tuple.
+        /// </summary>
+        public static void Parse<T1, T2>(this string value, out (T1, T2) result)
+        {
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+            Parse(value.AsSpan(), out result);
+        }
+
+        /// <summary>
+        /// Converts a span containing a space separated pair into a 2-tuple.
+        /// </summary>
+        public static void Parse<T1, T2>(this ReadOnlySpan<char> value, out (T1, T2) result)
+        {
+            Parse(value, out T1 res1, out T2 res2);
+            result = (res1, res2);
+        }
+
+        /// <summary>
+        /// Converts a string containing a space separated triple into a 3-tuple.
+        /// </summary>
+        public static void Parse<T1, T2, T3>(this string value, out (T1, T2, T3) result)
+        {
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+            Parse(value.AsSpan(), out result);
+        }
+
+        /// <summary>
+        /// Converts a span containing a space separated triple into a 3-tuple.
+        /// </summary>
+        public static void Parse<T1, T2, T3>(this ReadOnlySpan<char> value, out (T1, T2, T3) result)
+        {
+            Parse(value, out T1 res1, out T2 res2, out T3 res3);
+            result = (res1, res2, res3);
+        }
+
+        /// <summary>
+        /// Converts a string containing a space separated quadruple into a 4-tuple.
+        /// </summary>
+        public static void Parse<T1, T2, T3, T4>(this string value, out (T1, T2, T3, T4) result)
+        {
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+            Parse(value.AsSpan(), out result);
+        }
+
+        /// <summary>
+        /// Converts a span containing a space separated quadruple into a 4-tuple.
+        /// </summary>
+        public static void Parse<T1, T2, T3, T4>(this ReadOnlySpan<char> value, out (T1, T2, T3, T4) result)
+        {
+            Parse(value, out T1 res1, out T2 res2, out T3 res3, out T4 res4);
+            result = (res1, res2, res3, res4);
+        }
+
+        /// <summary>
         /// Converts a string containing a space separated quintuple into 5 typed results.
         /// </summary>
         /// <param name="value">

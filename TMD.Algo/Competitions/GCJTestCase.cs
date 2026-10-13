@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2014, the TMD.Algo authors.
@@ -301,6 +301,89 @@ namespace TMD.Algo.Competitions
             }
             values1 = result1;
             values2 = result2;
+        }
+
+        /// <summary>
+        /// Gets a pair of values from a line as a 2-tuple assuming space separation.
+        /// </summary>
+        public void Get<T1, T2>(out (T1, T2) value)
+        {
+            Get(out T1 v1, out T2 v2);
+            value = (v1, v2);
+        }
+
+        /// <summary>
+        /// Gets three values from a line as a 3-tuple assuming space separation.
+        /// </summary>
+        public void Get<T1, T2, T3>(out (T1, T2, T3) value)
+        {
+            Get(out T1 v1, out T2 v2, out T3 v3);
+            value = (v1, v2, v3);
+        }
+
+        /// <summary>
+        /// Gets four values from a line as a 4-tuple assuming space separation.
+        /// </summary>
+        public void Get<T1, T2, T3, T4>(out (T1, T2, T3, T4) value)
+        {
+            Get(out T1 v1, out T2 v2, out T3 v3, out T4 v4);
+            value = (v1, v2, v3, v4);
+        }
+
+        /// <summary>
+        /// Gets an array of 2-tuples stored over multiple lines.
+        /// </summary>
+        public void GetLines<T1, T2>(int count, out (T1, T2)[] values)
+        {
+            var result = new (T1, T2)[count];
+            for (int i = 0; i < count; i++)
+            {
+                Get(out result[i]);
+            }
+            values = result;
+        }
+
+        /// <summary>
+        /// Gets an array of 3-tuples stored over multiple lines.
+        /// </summary>
+        public void GetLines<T1, T2, T3>(int count, out (T1, T2, T3)[] values)
+        {
+            var result = new (T1, T2, T3)[count];
+            for (int i = 0; i < count; i++)
+            {
+                Get(out result[i]);
+            }
+            values = result;
+        }
+
+        /// <summary>
+        /// Gets an array of 4-tuples stored over multiple lines.
+        /// </summary>
+        public void GetLines<T1, T2, T3, T4>(int count, out (T1, T2, T3, T4)[] values)
+        {
+            var result = new (T1, T2, T3, T4)[count];
+            for (int i = 0; i < count; i++)
+            {
+                Get(out result[i]);
+            }
+            values = result;
+        }
+
+        /// <summary>
+        /// Gets three arrays of values which are stored over multiple lines in separate columns.
+        /// </summary>
+        public void GetLines<T1, T2, T3>(int count, out T1[] values1, out T2[] values2, out T3[] values3)
+        {
+            T1[] result1 = new T1[count];
+            T2[] result2 = new T2[count];
+            T3[] result3 = new T3[count];
+            for (int i = 0; i < count; i++)
+            {
+                Get(out result1[i], out result2[i], out result3[i]);
+            }
+            values1 = result1;
+            values2 = result2;
+            values3 = result3;
         }
 
         /// <summary>

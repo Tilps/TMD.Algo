@@ -195,6 +195,84 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Performs a breadth first search traversal of an implicit graph starting from a specified state,
+        /// providing the current state, predecessor (parent) state, and depth from start to the visitor.
+        /// </summary>
+        /// <param name="first">Starting state.</param>
+        /// <param name="visitor">Action to execute for each reachable state, receiving (current, parent, depth).</param>
+        /// <param name="neighbourFunc">Function for determining potential next states for a given state.</param>
+        /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        public static void Bfs<T>(
+            T first,
+            Action<T, T, int> visitor,
+            Func<T, IEnumerable<T>> neighbourFunc,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            if (equalityComparer == null)
+            {
+                equalityComparer = EqualityComparer<T>.Default;
+            }
+            Queue<(T Current, T Parent, int Depth)> toSearch = new Queue<(T, T, int)>();
+            HashSet<T> seen = new HashSet<T>(equalityComparer);
+            seen.Add(first);
+            toSearch.Enqueue((first, default(T), 0));
+
+            while (toSearch.Count != 0)
+            {
+                var (cur, parent, depth) = toSearch.Dequeue();
+                visitor(cur, parent, depth);
+                foreach (T next in neighbourFunc(cur))
+                {
+                    if (seen.Add(next))
+                    {
+                        toSearch.Enqueue((next, cur, depth + 1));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs a breadth first search traversal of an implicit graph starting from a specified state,
+        /// providing the current state, predecessor (parent) state, and depth from start to the visitor.
+        /// Traversal terminates early if the visitor returns true.
+        /// </summary>
+        /// <param name="first">Starting state.</param>
+        /// <param name="visitor">Function to execute for each reachable state, receiving (current, parent, depth). Returns true to stop search.</param>
+        /// <param name="neighbourFunc">Function for determining potential next states for a given state.</param>
+        /// <param name="equalityComparer">Equality comparer to determine when states have been seen.</param>
+        /// <typeparam name="T">Type of state being searched over.</typeparam>
+        public static void Bfs<T>(
+            T first,
+            Func<T, T, int, bool> visitor,
+            Func<T, IEnumerable<T>> neighbourFunc,
+            IEqualityComparer<T> equalityComparer = null)
+        {
+            if (equalityComparer == null)
+            {
+                equalityComparer = EqualityComparer<T>.Default;
+            }
+            Queue<(T Current, T Parent, int Depth)> toSearch = new Queue<(T, T, int)>();
+            HashSet<T> seen = new HashSet<T>(equalityComparer);
+            seen.Add(first);
+            toSearch.Enqueue((first, default(T), 0));
+
+            while (toSearch.Count != 0)
+            {
+                var (cur, parent, depth) = toSearch.Dequeue();
+                if (visitor(cur, parent, depth))
+                    return;
+                foreach (T next in neighbourFunc(cur))
+                {
+                    if (seen.Add(next))
+                    {
+                        toSearch.Enqueue((next, cur, depth + 1));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Processes items in a FIFO worklist queue. Duplicate entries currently pending in the worklist are prevented.
         /// When an item is processed, if the processor returns true, triggered dependent items are added to the worklist.
         /// </summary>

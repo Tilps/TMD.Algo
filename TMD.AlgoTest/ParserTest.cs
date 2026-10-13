@@ -129,5 +129,24 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentException>(() => "10".Parse(out int _, out int _));
             Assert.Throws<ArgumentException>(() => "10 20 30".Parse(out int _, out int _));
         }
+
+        [Test]
+        public void ParseValueTuples()
+        {
+            "BLUE 1 5000".Parse(out (string Color, int A, int B) triple);
+            Assert.AreEqual("BLUE", triple.Color);
+            Assert.AreEqual(1, triple.A);
+            Assert.AreEqual(5000, triple.B);
+
+            "42 99".Parse(out (int X, int Y) pair);
+            Assert.AreEqual(42, pair.X);
+            Assert.AreEqual(99, pair.Y);
+
+            "A B C D".Parse(out (string W1, string W2, string W3, string W4) quad);
+            Assert.AreEqual("A", quad.W1);
+            Assert.AreEqual("B", quad.W2);
+            Assert.AreEqual("C", quad.W3);
+            Assert.AreEqual("D", quad.W4);
+        }
     }
 }

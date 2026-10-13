@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -58,6 +58,26 @@ namespace TMD.AlgoTest
             Assert.AreEqual(int.MaxValue, hull[2].Value);
             Assert.AreEqual(0, hull[3].Key);
             Assert.AreEqual(int.MaxValue, hull[3].Value);
+        }
+
+        [Test]
+        public void CollinearPoints()
+        {
+            var points = new List<KeyValuePair<long, long>>
+            {
+                new KeyValuePair<long, long>(0, 0),
+                new KeyValuePair<long, long>(5, 0),
+                new KeyValuePair<long, long>(10, 0),
+                new KeyValuePair<long, long>(5, 5),
+                new KeyValuePair<long, long>(10, 10),
+                new KeyValuePair<long, long>(0, 10)
+            };
+            var hull = Geometry.ConvexHull(points);
+            Assert.AreEqual(4, hull.Count);
+            Assert.AreEqual(new KeyValuePair<long, long>(0, 0), hull[0]);
+            Assert.AreEqual(new KeyValuePair<long, long>(10, 0), hull[1]);
+            Assert.AreEqual(new KeyValuePair<long, long>(10, 10), hull[2]);
+            Assert.AreEqual(new KeyValuePair<long, long>(0, 10), hull[3]);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -96,7 +96,7 @@ namespace TMD.Algo.Algorithms
                     long nextDist = SqDist(otherPoints[i].Key, otherPoints[i].Value, p0.Key, p0.Value);
                     if (nextDist > curSqDist)
                     {
-                        cur = otherPoints[0];
+                        cur = otherPoints[i];
                         curSqDist = nextDist;
                     }
                 }
