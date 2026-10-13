@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
 Copyright (c) 2008, the TMD.Algo authors.
@@ -94,11 +94,12 @@ namespace TMD.Algo.Algorithms
             }
         }
 
-        private long Gcd(long p, long q)
+        /// <summary>
+        /// Computes the greatest common divisor of two integers.
+        /// </summary>
+        public static long Gcd(long p, long q)
         {
-            if (q == 0)
-                return p;
-            return Gcd(q, p%q);
+            return MathFormulas.Gcd(p, q);
         }
 
         /// <summary>

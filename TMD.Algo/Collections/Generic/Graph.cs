@@ -51,6 +51,26 @@ namespace TMD.Algo.Collections.Generic
         }
 
         /// <summary>
+        /// Gets the data associated with a vertex id.
+        /// </summary>
+        public TVertex GetVertex(int vertexId) => vertices[vertexId];
+
+        /// <summary>
+        /// Gets the data associated with an edge id.
+        /// </summary>
+        public TEdge GetEdge(int edgeId) => edges[edgeId];
+
+        /// <summary>
+        /// Gets the number of vertices in the graph.
+        /// </summary>
+        public int VertexCount => vertices.Count;
+
+        /// <summary>
+        /// Gets the number of edges in the graph.
+        /// </summary>
+        public int EdgeCount => edges.Count;
+
+        /// <summary>
         /// Adds an undirected edge to the graph.
         /// </summary>
         /// <param name="firstVertexId">
@@ -853,6 +873,58 @@ namespace TMD.Algo.Collections.Generic
 
             private readonly int[,] predecesors;
             private readonly TEdge[,] distances;
+        }
+
+        /// <summary>
+        /// Calculates the maximum flow for a flow network graph between source and sink using default comparer and adder.
+        /// Edges of the graph are treated as capacities.
+        /// </summary>
+        /// <param name="source">
+        /// Source node where flow comes from.
+        /// </param>
+        /// <param name="sink">
+        /// Sink node where flow goes to.
+        /// </param>
+        /// <returns>
+        /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
+        /// </returns>
+        public TEdge MaximumFlowFordFulkersonBfs(int source, int sink)
+        {
+            return MaximumFlowFordFulkersonBfs(source, sink, Comparer<TEdge>.Default, Adder<TEdge>.Default);
+        }
+
+        /// <summary>
+        /// Calculates the maximum flow using Dinic's algorithm assuming edge data can be converted to integer capacity.
+        /// </summary>
+        /// <param name="source">Source vertex id.</param>
+        /// <param name="sink">Sink vertex id.</param>
+        /// <returns>The maximum flow value.</returns>
+        public int MaximumFlowDinic(int source, int sink)
+        {
+            if (typeof(TEdge) == typeof(int))
+                return MaximumFlowDinic(source, sink, edge => (int)(object)edge!);
+            return MaximumFlowDinic(source, sink, edge => Convert.ToInt32(edge));
+        }
+
+        /// <summary>
+        /// Calculates the maximum flow using Dinic's algorithm given a function to select edge capacities as integers.
+        /// </summary>
+        /// <param name="source">Source vertex id.</param>
+        /// <param name="sink">Sink vertex id.</param>
+        /// <param name="capacitySelector">Function extracting integer capacity from edge data.</param>
+        /// <returns>The maximum flow value.</returns>
+        public int MaximumFlowDinic(int source, int sink, Func<TEdge, int> capacitySelector)
+        {
+            if (capacitySelector == null) throw new ArgumentNullException(nameof(capacitySelector));
+            var maxFlow = new TMD.Algo.Algorithms.MaxFlow(vertices.Count);
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                foreach (KeyValuePair<int, int> edge in adjacencyList[i])
+                {
+                    maxFlow.AddDirectedEdge(i, edge.Key, capacitySelector(edges[edge.Value]));
+                }
+            }
+            return maxFlow.ComputeMaxFlow(source, sink);
         }
 
         /// <summary>

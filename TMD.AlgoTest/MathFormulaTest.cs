@@ -126,5 +126,60 @@ namespace TMD.AlgoTest
             Assert.AreEqual(0, MathFormulas.EulerTotientSieve(0)[0]);
             Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.EulerTotientSieve(-1));
         }
+
+        [Test]
+        public void GcdAndLcmTest()
+        {
+            Assert.AreEqual(6, MathFormulas.Gcd(12, 18));
+            Assert.AreEqual(6L, MathFormulas.Gcd(12L, 18L));
+            Assert.AreEqual(7, MathFormulas.Gcd(7, 0));
+            Assert.AreEqual(7, MathFormulas.Gcd(0, 7));
+            Assert.AreEqual(5, MathFormulas.Gcd(-10, 15));
+            Assert.AreEqual(5, MathFormulas.Gcd(15, -10));
+            Assert.AreEqual(1, MathFormulas.Gcd(13, 17));
+
+            Assert.AreEqual(36L, MathFormulas.Lcm(12L, 18L));
+            Assert.AreEqual(0L, MathFormulas.Lcm(0L, 5L));
+            Assert.AreEqual(0L, MathFormulas.Lcm(5L, 0L));
+            Assert.AreEqual(221L, MathFormulas.Lcm(13L, 17L));
+
+            Assert.AreEqual(6L, Fraction.Gcd(12L, 18L));
+        }
+
+        [Test]
+        public void DivFloorAndCeilTest()
+        {
+            // Positive denominator
+            Assert.AreEqual(2, MathFormulas.DivFloor(7, 3));
+            Assert.AreEqual(3, MathFormulas.DivCeil(7, 3));
+            Assert.AreEqual(2, MathFormulas.DivFloor(6, 3));
+            Assert.AreEqual(2, MathFormulas.DivCeil(6, 3));
+
+            // Negative numerator, positive denominator
+            Assert.AreEqual(-3, MathFormulas.DivFloor(-7, 3));
+            Assert.AreEqual(-2, MathFormulas.DivCeil(-7, 3));
+            Assert.AreEqual(-2, MathFormulas.DivFloor(-6, 3));
+            Assert.AreEqual(-2, MathFormulas.DivCeil(-6, 3));
+
+            // Positive numerator, negative denominator
+            Assert.AreEqual(-3, MathFormulas.DivFloor(7, -3));
+            Assert.AreEqual(-2, MathFormulas.DivCeil(7, -3));
+
+            // Both negative
+            Assert.AreEqual(2, MathFormulas.DivFloor(-7, -3));
+            Assert.AreEqual(3, MathFormulas.DivCeil(-7, -3));
+
+            // Long overloads
+            Assert.AreEqual(2L, MathFormulas.DivFloor(7L, 3L));
+            Assert.AreEqual(3L, MathFormulas.DivCeil(7L, 3L));
+            Assert.AreEqual(-3L, MathFormulas.DivFloor(-7L, 3L));
+            Assert.AreEqual(-2L, MathFormulas.DivCeil(-7L, 3L));
+
+            // Zero denominator throws
+            Assert.Throws<DivideByZeroException>(() => MathFormulas.DivFloor(1, 0));
+            Assert.Throws<DivideByZeroException>(() => MathFormulas.DivCeil(1, 0));
+            Assert.Throws<DivideByZeroException>(() => MathFormulas.DivFloor(1L, 0L));
+            Assert.Throws<DivideByZeroException>(() => MathFormulas.DivCeil(1L, 0L));
+        }
     }
 }

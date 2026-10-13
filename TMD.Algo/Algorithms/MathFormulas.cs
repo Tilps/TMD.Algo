@@ -369,5 +369,107 @@ namespace TMD.Algo.Algorithms
 
             return phi;
         }
+
+        /// <summary>
+        /// Computes the greatest common divisor of two 64-bit integers using the Euclidean algorithm.
+        /// </summary>
+        /// <param name="a">First integer.</param>
+        /// <param name="b">Second integer.</param>
+        /// <returns>The greatest common divisor, which is always non-negative.</returns>
+        public static long Gcd(long a, long b)
+        {
+            while (b != 0)
+            {
+                long t = a % b;
+                a = b;
+                b = t;
+            }
+            return Math.Abs(a);
+        }
+
+        /// <summary>
+        /// Computes the greatest common divisor of two 32-bit integers using the Euclidean algorithm.
+        /// </summary>
+        /// <param name="a">First integer.</param>
+        /// <param name="b">Second integer.</param>
+        /// <returns>The greatest common divisor, which is always non-negative.</returns>
+        public static int Gcd(int a, int b)
+        {
+            while (b != 0)
+            {
+                int t = a % b;
+                a = b;
+                b = t;
+            }
+            return Math.Abs(a);
+        }
+
+        /// <summary>
+        /// Computes the least common multiple of two 64-bit integers.
+        /// </summary>
+        /// <param name="a">First integer.</param>
+        /// <param name="b">Second integer.</param>
+        /// <returns>The least common multiple, which is always non-negative.</returns>
+        public static long Lcm(long a, long b)
+        {
+            if (a == 0 || b == 0) return 0;
+            return Math.Abs((a / Gcd(a, b)) * b);
+        }
+
+        /// <summary>
+        /// Computes integer division rounded down towards negative infinity (floor division).
+        /// </summary>
+        /// <param name="num">The dividend numerator.</param>
+        /// <param name="den">The divisor denominator.</param>
+        /// <returns>The quotient rounded towards negative infinity.</returns>
+        /// <exception cref="DivideByZeroException">Thrown if <paramref name="den"/> is zero.</exception>
+        public static long DivFloor(long num, long den)
+        {
+            if (den == 0) throw new DivideByZeroException("Denominator cannot be zero.");
+            if (den < 0) { num = -num; den = -den; }
+            return num >= 0 ? num / den : (num - den + 1) / den;
+        }
+
+        /// <summary>
+        /// Computes integer division rounded up towards positive infinity (ceil division).
+        /// </summary>
+        /// <param name="num">The dividend numerator.</param>
+        /// <param name="den">The divisor denominator.</param>
+        /// <returns>The quotient rounded towards positive infinity.</returns>
+        /// <exception cref="DivideByZeroException">Thrown if <paramref name="den"/> is zero.</exception>
+        public static long DivCeil(long num, long den)
+        {
+            if (den == 0) throw new DivideByZeroException("Denominator cannot be zero.");
+            if (den < 0) { num = -num; den = -den; }
+            return num >= 0 ? (num + den - 1) / den : num / den;
+        }
+
+        /// <summary>
+        /// Computes integer division rounded down towards negative infinity (floor division).
+        /// </summary>
+        /// <param name="num">The dividend numerator.</param>
+        /// <param name="den">The divisor denominator.</param>
+        /// <returns>The quotient rounded towards negative infinity.</returns>
+        /// <exception cref="DivideByZeroException">Thrown if <paramref name="den"/> is zero.</exception>
+        public static int DivFloor(int num, int den)
+        {
+            if (den == 0) throw new DivideByZeroException("Denominator cannot be zero.");
+            if (den < 0) { num = -num; den = -den; }
+            return num >= 0 ? num / den : (num - den + 1) / den;
+        }
+
+        /// <summary>
+        /// Computes integer division rounded up towards positive infinity (ceil division).
+        /// </summary>
+        /// <param name="num">The dividend numerator.</param>
+        /// <param name="den">The divisor denominator.</param>
+        /// <returns>The quotient rounded towards positive infinity.</returns>
+        /// <exception cref="DivideByZeroException">Thrown if <paramref name="den"/> is zero.</exception>
+        public static int DivCeil(int num, int den)
+        {
+            if (den == 0) throw new DivideByZeroException("Denominator cannot be zero.");
+            if (den < 0) { num = -num; den = -den; }
+            return num >= 0 ? (num + den - 1) / den : num / den;
+        }
     }
 }
