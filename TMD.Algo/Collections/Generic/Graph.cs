@@ -876,29 +876,29 @@ namespace TMD.Algo.Collections.Generic
         }
 
         /// <summary>
-        /// Calculates the maximum flow for a flow network graph between source and sink using default comparer and adder.
-        /// Edges of the graph are treated as capacities.
-        /// </summary>
-        /// <param name="source">
-        /// Source node where flow comes from.
-        /// </param>
-        /// <param name="sink">
-        /// Sink node where flow goes to.
-        /// </param>
-        /// <returns>
-        /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
-        /// </returns>
-        public TEdge MaximumFlowFordFulkersonBfs(int source, int sink)
-        {
-            return MaximumFlowFordFulkersonBfs(source, sink, Comparer<TEdge>.Default, Adder<TEdge>.Default);
-        }
-
-        /// <summary>
         /// Calculates the maximum flow using Dinic's algorithm assuming edge data can be converted to integer capacity.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Algorithm &amp; Complexity:</b> Implements Dinic's blocking flow algorithm with layered level graphs.
+        /// Runs in <c>O(V^2 * E)</c> time on general networks with integer capacities, and <c>O(E * sqrt(V))</c> time on unit networks
+        /// (such as bipartite matching and min-cut grid graphs).
+        /// </para>
+        /// <para>
+        /// <b>When to choose Dinic:</b> This is the recommended choice for almost all flow networks where edge capacities
+        /// are integers (or convertible to integers). In practice, Dinic is significantly faster than Ford-Fulkerson (Edmonds-Karp),
+        /// often by several orders of magnitude on dense graphs, grid networks, and unit-capacity graphs.
+        /// </para>
+        /// <para>
+        /// Choose <see cref="MaximumFlowFordFulkersonBfs(int, int)"/> instead if edge capacities require non-integer types
+        /// (e.g., <see cref="double"/>, <see cref="Fraction"/>) or custom algebraic adders/comparers.
+        /// </para>
+        /// </remarks>
         /// <param name="source">Source vertex id.</param>
         /// <param name="sink">Sink vertex id.</param>
         /// <returns>The maximum flow value.</returns>
+        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, int})"/>
+        /// <seealso cref="MaximumFlowFordFulkersonBfs(int, int)"/>
         public int MaximumFlowDinic(int source, int sink)
         {
             if (typeof(TEdge) == typeof(int))
@@ -909,10 +909,28 @@ namespace TMD.Algo.Collections.Generic
         /// <summary>
         /// Calculates the maximum flow using Dinic's algorithm given a function to select edge capacities as integers.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Algorithm &amp; Complexity:</b> Implements Dinic's blocking flow algorithm with layered level graphs.
+        /// Runs in <c>O(V^2 * E)</c> time on general networks with integer capacities, and <c>O(E * sqrt(V))</c> time on unit networks
+        /// (such as bipartite matching and min-cut grid graphs).
+        /// </para>
+        /// <para>
+        /// <b>When to choose Dinic:</b> This is the recommended choice for almost all flow networks where edge capacities
+        /// are integers (or convertible to integers). In practice, Dinic is significantly faster than Ford-Fulkerson (Edmonds-Karp),
+        /// often by several orders of magnitude on dense graphs, grid networks, and unit-capacity graphs.
+        /// </para>
+        /// <para>
+        /// Choose <see cref="MaximumFlowFordFulkersonBfs(int, int, IComparer{TEdge}, IAdder{TEdge})"/> instead if edge capacities
+        /// require non-integer types (e.g., <see cref="double"/>, <see cref="Fraction"/>) or custom algebraic adders/comparers.
+        /// </para>
+        /// </remarks>
         /// <param name="source">Source vertex id.</param>
         /// <param name="sink">Sink vertex id.</param>
         /// <param name="capacitySelector">Function extracting integer capacity from edge data.</param>
         /// <returns>The maximum flow value.</returns>
+        /// <seealso cref="MaximumFlowDinic(int, int)"/>
+        /// <seealso cref="MaximumFlowFordFulkersonBfs(int, int, IComparer{TEdge}, IAdder{TEdge})"/>
         public int MaximumFlowDinic(int source, int sink, Func<TEdge, int> capacitySelector)
         {
             if (capacitySelector == null) throw new ArgumentNullException(nameof(capacitySelector));
@@ -928,9 +946,58 @@ namespace TMD.Algo.Collections.Generic
         }
 
         /// <summary>
+        /// Calculates the maximum flow for a flow network graph between source and sink using default comparer and adder.
+        /// Edges of the graph are treated as capacities.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Algorithm &amp; Complexity:</b> Implements the Edmonds-Karp variant of the Ford-Fulkerson method, finding augmenting
+        /// paths via breadth-first search. Runs in <c>O(V * E^2)</c> time regardless of capacity values.
+        /// </para>
+        /// <para>
+        /// <b>When to choose Ford-Fulkerson (Edmonds-Karp):</b> Choose this method when working with generic or non-integer
+        /// edge capacities (such as <see cref="double"/>, <see cref="Fraction"/>, or custom numeric types) that require custom
+        /// <see cref="IAdder{T}"/> and <see cref="IComparer{T}"/> implementations. It is also suitable for small or very sparse graphs.
+        /// </para>
+        /// <para>
+        /// If edge capacities are integer values, prefer <see cref="MaximumFlowDinic(int, int)"/>, which offers substantially
+        /// better time complexity (<c>O(V^2 * E)</c> in general, and <c>O(E * sqrt(V))</c> on unit networks) and runs orders of magnitude faster.
+        /// </para>
+        /// </remarks>
+        /// <param name="source">
+        /// Source node where flow comes from.
+        /// </param>
+        /// <param name="sink">
+        /// Sink node where flow goes to.
+        /// </param>
+        /// <returns>
+        /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
+        /// </returns>
+        /// <seealso cref="MaximumFlowDinic(int, int)"/>
+        public TEdge MaximumFlowFordFulkersonBfs(int source, int sink)
+        {
+            return MaximumFlowFordFulkersonBfs(source, sink, Comparer<TEdge>.Default, Adder<TEdge>.Default);
+        }
+
+        /// <summary>
         /// Calculates the maximum flow for a flow network graph between source and sink.
         /// Edges of the graph are treated as capacities.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Algorithm &amp; Complexity:</b> Implements the Edmonds-Karp variant of the Ford-Fulkerson method, finding augmenting
+        /// paths via breadth-first search. Runs in <c>O(V * E^2)</c> time regardless of capacity values.
+        /// </para>
+        /// <para>
+        /// <b>When to choose Ford-Fulkerson (Edmonds-Karp):</b> Choose this method when working with generic or non-integer
+        /// edge capacities (such as <see cref="double"/>, <see cref="Fraction"/>, or custom numeric types) that require custom
+        /// <see cref="IAdder{T}"/> and <see cref="IComparer{T}"/> implementations. It is also suitable for small or very sparse graphs.
+        /// </para>
+        /// <para>
+        /// If edge capacities are integer values, prefer <see cref="MaximumFlowDinic(int, int)"/>, which offers substantially
+        /// better time complexity (<c>O(V^2 * E)</c> in general, and <c>O(E * sqrt(V))</c> on unit networks) and runs orders of magnitude faster.
+        /// </para>
+        /// </remarks>
         /// <param name="source">
         /// Source node where flow comes from.
         /// </param>
@@ -946,6 +1013,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
         /// </returns>
+        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, int})"/>
         public TEdge MaximumFlowFordFulkersonBfs(int source, int sink, IComparer<TEdge> flowComparer,
             IAdder<TEdge> flowSummer)
         {
