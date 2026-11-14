@@ -17,9 +17,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TMD.Algo.Collections.Generic
 {
@@ -49,6 +46,8 @@ namespace TMD.Algo.Collections.Generic
         public static void UpdateValueForKey<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
             Func<TValue, TValue> updater)
         {
+            ArgumentNullException.ThrowIfNull(dictionary);
+            ArgumentNullException.ThrowIfNull(updater);
             dictionary.TryGetValue(key, out var value);
             dictionary[key] = updater(value!);
         }
@@ -77,6 +76,8 @@ namespace TMD.Algo.Collections.Generic
         public static TValue GetOrPopulate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
             Func<TValue> populater)
         {
+            ArgumentNullException.ThrowIfNull(dictionary);
+            ArgumentNullException.ThrowIfNull(populater);
             if (!dictionary.TryGetValue(key, out var value))
             {
                 value = populater();
@@ -108,6 +109,7 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue def)
         {
+            ArgumentNullException.ThrowIfNull(dictionary);
             if (dictionary.TryGetValue(key, out var value))
                 return value!;
             return def;

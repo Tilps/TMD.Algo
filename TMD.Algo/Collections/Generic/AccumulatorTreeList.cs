@@ -826,7 +826,7 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException(nameof(array));
+            ArgumentNullException.ThrowIfNull(array);
             if (Count + arrayIndex > array.Length)
                 throw new ArgumentException("Specified array and array index not sufficient to contain this list.");
             TreeCopy(treeRoot, array, ref arrayIndex);

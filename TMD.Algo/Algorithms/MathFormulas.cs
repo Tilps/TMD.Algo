@@ -178,7 +178,7 @@ namespace TMD.Algo.Algorithms
         public static T FastExponent<T>(T value, long power, Func<T, T, T> multiplyFunc)
         {
             if (power <= 0) throw new ArgumentException("Power must be positive.", nameof(power));
-            if (multiplyFunc == null) throw new ArgumentNullException(nameof(multiplyFunc));
+            ArgumentNullException.ThrowIfNull(multiplyFunc);
             long bit = 1;
             T current = value;
             T result = default!;
@@ -289,8 +289,7 @@ namespace TMD.Algo.Algorithms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if n is negative.</exception>
         public static int[] MobiusSieve(int n)
         {
-            if (n < 0)
-                throw new ArgumentOutOfRangeException(nameof(n), "Upper bound must be non-negative.");
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
 
             int[] mu = new int[n + 1];
             if (n == 0)
@@ -298,7 +297,7 @@ namespace TMD.Algo.Algorithms
 
             mu[1] = 1;
             bool[] isComposite = new bool[n + 1];
-            List<int> primes = new List<int>();
+            List<int> primes = [];
 
             for (int i = 2; i <= n; i++)
             {
@@ -335,8 +334,7 @@ namespace TMD.Algo.Algorithms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if n is negative.</exception>
         public static int[] EulerTotientSieve(int n)
         {
-            if (n < 0)
-                throw new ArgumentOutOfRangeException(nameof(n), "Upper bound must be non-negative.");
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
 
             int[] phi = new int[n + 1];
             if (n == 0)
@@ -344,7 +342,7 @@ namespace TMD.Algo.Algorithms
 
             phi[1] = 1;
             bool[] isComposite = new bool[n + 1];
-            List<int> primes = new List<int>();
+            List<int> primes = [];
 
             for (int i = 2; i <= n; i++)
             {

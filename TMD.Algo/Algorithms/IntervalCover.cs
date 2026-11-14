@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TMD.Algo.Algorithms
 {
@@ -125,14 +126,14 @@ namespace TMD.Algo.Algorithms
             Func<T, int> getStart,
             Func<T, int> getEnd)
         {
-            if (intervals == null) throw new ArgumentNullException(nameof(intervals));
-            if (getStart == null) throw new ArgumentNullException(nameof(getStart));
-            if (getEnd == null) throw new ArgumentNullException(nameof(getEnd));
+            ArgumentNullException.ThrowIfNull(intervals);
+            ArgumentNullException.ThrowIfNull(getStart);
+            ArgumentNullException.ThrowIfNull(getEnd);
 
             if (targetStart > targetEnd)
-                return new List<T>();
+                return [];
 
-            var list = new List<T>();
+            List<T> list = intervals.TryGetNonEnumeratedCount(out int count) ? [with(capacity: count)] : [];
             foreach (var item in intervals)
             {
                 // Discard intervals entirely outside the target range

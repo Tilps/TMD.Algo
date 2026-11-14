@@ -82,16 +82,16 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public RootedForest(int[] parents)
         {
-            if (parents == null) throw new ArgumentNullException(nameof(parents));
+            ArgumentNullException.ThrowIfNull(parents);
 
             NodeCount = parents.Length;
             int[] normalizedParents = new int[NodeCount];
             List<int>[] children = new List<int>[NodeCount];
-            List<int> roots = new List<int>();
+            List<int> roots = [];
 
             for (int i = 0; i < NodeCount; i++)
             {
-                children[i] = new List<int>();
+                children[i] = [];
                 int p = parents[i];
                 if (p < 0 || p == i || p >= NodeCount)
                 {
@@ -224,8 +224,8 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>An array containing the node indices in topological order.</returns>
         public int[] GenerateRandomTopologicalSort(Random rng)
         {
-            if (rng == null) throw new ArgumentNullException(nameof(rng));
-            if (NodeCount == 0) return Array.Empty<int>();
+            ArgumentNullException.ThrowIfNull(rng);
+            if (NodeCount == 0) return [];
 
             double[] values = new double[NodeCount];
             for (int i = 0; i < NodeCount; i++)
@@ -249,9 +249,7 @@ namespace TMD.Algo.Collections.Generic
                 }
                 if (minNode != u)
                 {
-                    double tmp = values[u];
-                    values[u] = values[minNode];
-                    values[minNode] = tmp;
+                    (values[u], values[minNode]) = (values[minNode], values[u]);
                 }
             }
 
@@ -297,9 +295,7 @@ namespace TMD.Algo.Collections.Generic
 
             if (Depths[u] < Depths[v])
             {
-                int tmp = u;
-                u = v;
-                v = tmp;
+                (u, v) = (v, u);
             }
 
             int diff = Depths[u] - Depths[v];

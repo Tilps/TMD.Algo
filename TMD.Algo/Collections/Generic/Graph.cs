@@ -933,7 +933,7 @@ namespace TMD.Algo.Collections.Generic
         /// <seealso cref="MaximumFlowFordFulkersonBfs(int, int, IComparer{TEdge}, IAdder{TEdge})"/>
         public int MaximumFlowDinic(int source, int sink, Func<TEdge, int> capacitySelector)
         {
-            if (capacitySelector == null) throw new ArgumentNullException(nameof(capacitySelector));
+            ArgumentNullException.ThrowIfNull(capacitySelector);
             var maxFlow = new TMD.Algo.Algorithms.MaxFlow(vertices.Count);
             for (int i = 0; i < vertices.Count; i++)
             {
@@ -1497,29 +1497,12 @@ namespace TMD.Algo.Collections.Generic
             IEnumerable<int> leftVertices,
             IEnumerable<int> rightVertices)
         {
-            if (leftVertices == null) throw new ArgumentNullException(nameof(leftVertices));
-            if (rightVertices == null) throw new ArgumentNullException(nameof(rightVertices));
+            ArgumentNullException.ThrowIfNull(leftVertices);
+            ArgumentNullException.ThrowIfNull(rightVertices);
 
-            var leftList = new List<int>(leftVertices);
-            var rightList = new List<int>(rightVertices);
-            var rightMap = new Dictionary<int, int>(rightList.Count);
-            for (int i = 0; i < rightList.Count; i++)
-                rightMap[rightList[i]] = i;
-
-            var adj = new List<int>[leftList.Count];
-            for (int i = 0; i < leftList.Count; i++)
-            {
-                adj[i] = new List<int>();
-                int u = leftList[i];
-                if (u >= 0 && u < adjacencyList.Count)
-                {
-                    foreach (var edge in adjacencyList[u])
-                    {
-                        if (rightMap.TryGetValue(edge.Key, out int v))
-                            adj[i].Add(v);
-                    }
-                }
-            }
+            List<int> leftList = [.. leftVertices];
+            List<int> rightList = [.. rightVertices];
+            var adj = BuildBipartiteAdjacency(leftList, rightList);
 
             var rawResult = BipartiteMatching.FindMaximumMatching(leftList.Count, rightList.Count, adj);
 
@@ -1544,22 +1527,28 @@ namespace TMD.Algo.Collections.Generic
             IEnumerable<int> leftVertices,
             IEnumerable<int> rightVertices)
         {
-            if (leftVertices == null) throw new ArgumentNullException(nameof(leftVertices));
-            if (rightVertices == null) throw new ArgumentNullException(nameof(rightVertices));
+            ArgumentNullException.ThrowIfNull(leftVertices);
+            ArgumentNullException.ThrowIfNull(rightVertices);
 
-            var leftList = new List<int>(leftVertices);
-            var rightList = new List<int>(rightVertices);
+            List<int> leftList = [.. leftVertices];
+            List<int> rightList = [.. rightVertices];
             if (leftList.Count > rightList.Count) return false;
             if (leftList.Count == 0) return true;
 
-            var rightMap = new Dictionary<int, int>(rightList.Count);
+            var adj = BuildBipartiteAdjacency(leftList, rightList);
+            return BipartiteMatching.CanMatchAllLeft(leftList.Count, rightList.Count, adj);
+        }
+
+        private List<int>[] BuildBipartiteAdjacency(List<int> leftList, List<int> rightList)
+        {
+            Dictionary<int, int> rightMap = [with(capacity: rightList.Count)];
             for (int i = 0; i < rightList.Count; i++)
                 rightMap[rightList[i]] = i;
 
             var adj = new List<int>[leftList.Count];
             for (int i = 0; i < leftList.Count; i++)
             {
-                adj[i] = new List<int>();
+                adj[i] = [];
                 int u = leftList[i];
                 if (u >= 0 && u < adjacencyList.Count)
                 {
@@ -1570,8 +1559,7 @@ namespace TMD.Algo.Collections.Generic
                     }
                 }
             }
-
-            return BipartiteMatching.CanMatchAllLeft(leftList.Count, rightList.Count, adj);
+            return adj;
         }
 
 

@@ -71,10 +71,8 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public LookupHeap(IComparer<T>? comparer, IEqualityComparer<T>? hashComparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            this.comparer = comparer;
-            lookup = new Dictionary<T, int>(hashComparer);
+            this.comparer = comparer ?? Comparer<T>.Default;
+            lookup = [with(hashComparer)];
             array = emptyHeapArray;
         }
 
@@ -105,11 +103,15 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public LookupHeap(IEnumerable<T> startList, IComparer<T>? comparer, IEqualityComparer<T>? hashComparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            this.comparer = comparer;
-            count = startList.Count();
-            lookup = new Dictionary<T, int>(hashComparer);
+            ArgumentNullException.ThrowIfNull(startList);
+            this.comparer = comparer ?? Comparer<T>.Default;
+            if (!startList.TryGetNonEnumeratedCount(out count))
+            {
+                List<T> materialized = [.. startList];
+                count = materialized.Count;
+                startList = materialized;
+            }
+            lookup = [with(count, hashComparer)];
             array = new T[count + 1];
             int index = 1;
             foreach (T value in startList)

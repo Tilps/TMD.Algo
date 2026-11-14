@@ -32,7 +32,7 @@ namespace TMD.Algo.Collections.Generic
     {
         private int count;
         private int version;
-        private T[] array = Array.Empty<T>();
+        private T[] array = [];
         private int start;
         private int end = -1;
 

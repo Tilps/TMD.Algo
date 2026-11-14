@@ -56,16 +56,14 @@ namespace TMD.Algo.Collections.Generic
         public OrderedSplittableDisjointTracker(IEqualityComparer<TElement>? comparer,
             IComparer<TElement>? orderingComparer)
         {
-            if (comparer == null)
-                comparer = EqualityComparer<TElement>.Default;
-            if (orderingComparer == null)
-                orderingComparer = Comparer<TElement>.Default;
+            comparer ??= EqualityComparer<TElement>.Default;
+            orderingComparer ??= Comparer<TElement>.Default;
             this.comparer = comparer;
             this.orderingComparer = orderingComparer;
 
-            tracker = new Dictionary<TElement, int>(comparer);
-            reps = new Dictionary<TRep, int>();
-            nodes = new List<Node>();
+            tracker = [with(comparer)];
+            reps = [];
+            nodes = [];
         }
 
         private struct Node
@@ -92,7 +90,7 @@ namespace TMD.Algo.Collections.Generic
         private readonly Dictionary<TRep, int> reps;
         private readonly List<Node> nodes;
         private int firstFree = -1;
-        private IEqualityComparer<TElement> comparer;
+        private readonly IEqualityComparer<TElement> comparer;
         private readonly IComparer<TElement> orderingComparer;
 
 

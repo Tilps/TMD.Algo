@@ -453,7 +453,7 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException(nameof(array));
+            ArgumentNullException.ThrowIfNull(array);
             if (arrayIndex < 0 || arrayIndex + count > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex),
                     "Specified array index is either negative or does not allow for enough space to store the data.");

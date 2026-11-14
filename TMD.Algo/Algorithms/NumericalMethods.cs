@@ -35,9 +35,9 @@ namespace TMD.Algo.Algorithms
         /// <returns>The state vector y at x1.</returns>
         public static double[] RungeKutta4(Func<double, double[], double[]> f, double x0, double[] y0, double x1, int steps)
         {
-            if (f == null) throw new ArgumentNullException(nameof(f));
-            if (y0 == null) throw new ArgumentNullException(nameof(y0));
-            if (steps <= 0) throw new ArgumentOutOfRangeException(nameof(steps), "Steps must be positive.");
+            ArgumentNullException.ThrowIfNull(f);
+            ArgumentNullException.ThrowIfNull(y0);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(steps);
 
             int dim = y0.Length;
             double h = (x1 - x0) / steps;
@@ -82,8 +82,8 @@ namespace TMD.Algo.Algorithms
         /// <returns>The value y at x1.</returns>
         public static double RungeKutta4(Func<double, double, double> f, double x0, double y0, double x1, int steps)
         {
-            if (f == null) throw new ArgumentNullException(nameof(f));
-            if (steps <= 0) throw new ArgumentOutOfRangeException(nameof(steps), "Steps must be positive.");
+            ArgumentNullException.ThrowIfNull(f);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(steps);
 
             double h = (x1 - x0) / steps;
             double y = y0;
@@ -113,7 +113,7 @@ namespace TMD.Algo.Algorithms
         /// <returns>Approximated integral.</returns>
         public static double Simpson(Func<double, double> f, double a, double b, int intervals = 1000)
         {
-            if (f == null) throw new ArgumentNullException(nameof(f));
+            ArgumentNullException.ThrowIfNull(f);
             if (intervals < 2) intervals = 2;
             if (intervals % 2 != 0) intervals++;
 

@@ -62,6 +62,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static List<KeyValuePair<long, long>> ConvexHull(List<KeyValuePair<long, long>> points)
         {
+            ArgumentNullException.ThrowIfNull(points);
             if (points.Count < 3)
                 throw new ArgumentException("Points were insufficient to form a polygon", nameof(points));
 
@@ -73,7 +74,7 @@ namespace TMD.Algo.Algorithms
                 else if (points[i].Value == p0.Value && points[i].Key < p0.Key)
                     p0 = points[i];
             }
-            List<KeyValuePair<long, long>> otherPoints = new List<KeyValuePair<long, long>>();
+            List<KeyValuePair<long, long>> otherPoints = [with(capacity: points.Count)];
             foreach (KeyValuePair<long, long> point in points)
             {
                 if (point.Key != p0.Key || point.Value != p0.Value)

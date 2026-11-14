@@ -48,20 +48,19 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public RevertibleDisjointTracker(IEqualityComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = EqualityComparer<T>.Default;
+            comparer ??= EqualityComparer<T>.Default;
             this.comparer = comparer;
-            tracker = new Dictionary<T, T>(comparer);
-            ranker = new Dictionary<T, int>(comparer);
+            tracker = [with(comparer)];
+            ranker = [with(comparer)];
         }
 
 
         private readonly Dictionary<T, T> tracker;
         private readonly Dictionary<T, int> ranker;
         private readonly IEqualityComparer<T> comparer;
-        private readonly List<List<Action>> undoLists = new List<List<Action>>();
+        private readonly List<List<Action>> undoLists = [];
 
-        private List<Action> CurrentUndo => undoLists[undoLists.Count - 1];
+        private List<Action> CurrentUndo => undoLists[^1];
 
         /// <summary>
         /// Undoes all changes to this data structure since the start of the last call to Add or Link.
@@ -82,7 +81,7 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void Add(T value)
         {
-            undoLists.Add(new List<Action>());
+            undoLists.Add([]);
             CurrentUndo.Add(() => { undoLists.RemoveAt(undoLists.Count - 1); });
             tracker[value] = value;
             ranker[value] = 0;

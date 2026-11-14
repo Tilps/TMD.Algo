@@ -42,7 +42,7 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T>(this string value, out T result)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
             result = Parse<T>(value.AsSpan());
         }
 
@@ -77,7 +77,7 @@ namespace TMD.Algo.Text
         /// </typeparam>
         public static void Parse<T>(this string value, out T[] results)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
             Parse(value.AsSpan(), out results);
         }
 
@@ -97,7 +97,7 @@ namespace TMD.Algo.Text
         {
             if (value.IsEmpty)
             {
-                results = Array.Empty<T>();
+                results = [];
                 return;
             }
             int count = 1;

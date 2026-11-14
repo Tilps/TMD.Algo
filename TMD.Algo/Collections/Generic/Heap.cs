@@ -54,11 +54,9 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer to use to compare items.  Specify null to use the default comparer.
         /// </param>
-        public Heap(IComparer<T> comparer)
+        public Heap(IComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            this.comparer = comparer;
+            this.comparer = comparer ?? Comparer<T>.Default;
             array = emptyHeapArray;
         }
 
@@ -71,12 +69,16 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="comparer">
         /// Comparer to use to compare items.  Specify null to use the default comparer.
         /// </param>
-        public Heap(IEnumerable<T> startList, IComparer<T> comparer)
+        public Heap(IEnumerable<T> startList, IComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            this.comparer = comparer;
-            count = startList.Count();
+            ArgumentNullException.ThrowIfNull(startList);
+            this.comparer = comparer ?? Comparer<T>.Default;
+            if (!startList.TryGetNonEnumeratedCount(out count))
+            {
+                List<T> materialized = [.. startList];
+                count = materialized.Count;
+                startList = materialized;
+            }
             array = new T[count + 1];
             int index = 1;
             foreach (T value in startList)

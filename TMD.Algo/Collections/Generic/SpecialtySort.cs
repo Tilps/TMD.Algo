@@ -68,15 +68,22 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static List<T> BucketSort<T>(this IEnumerable<T> input, PartitionFunction<T> part, IComparer<T>? comparer)
         {
-            int count = input.Count();
+            ArgumentNullException.ThrowIfNull(input);
+            ArgumentNullException.ThrowIfNull(part);
+            if (!input.TryGetNonEnumeratedCount(out int count))
+            {
+                List<T> materialized = [.. input];
+                count = materialized.Count;
+                input = materialized;
+            }
             List<T>[] parts = new List<T>[count];
             for (int i = 0; i < count; i++)
-                parts[i] = new List<T>();
+                parts[i] = [];
             foreach (T value in input)
             {
                 parts[part(value, count)].Add(value);
             }
-            List<T> results = new List<T>();
+            List<T> results = [with(capacity: count)];
             for (int i = 0; i < count; i++)
             {
                 parts[i].Sort(comparer);

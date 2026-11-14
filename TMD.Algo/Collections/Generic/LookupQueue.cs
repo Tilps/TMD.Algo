@@ -59,7 +59,7 @@ namespace TMD.Algo.Collections.Generic
         /// </summary>
         public LookupQueue()
         {
-            lookup = new Dictionary<T, int>();
+            lookup = [];
             linkList = new LinkListNode[4];
             linkListHead = -1;
             linkListTail = -1;
@@ -245,10 +245,8 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array));
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            ArgumentNullException.ThrowIfNull(array);
+            ArgumentOutOfRangeException.ThrowIfNegative(arrayIndex);
             // TODO: check for arrayIndex + size overflow?
             if (array.Length < arrayIndex + size)
                 throw new ArgumentException("Insufficient size in provided array.", nameof(array));

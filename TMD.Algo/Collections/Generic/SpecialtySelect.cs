@@ -60,23 +60,7 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static T FindMinimum<T>(this IEnumerable<T> input, IComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            T result = default!;
-            bool first = true;
-            foreach (T value in input)
-            {
-                if (first)
-                {
-                    result = value;
-                    first = false;
-                }
-                else if (comparer.Compare(result, value) > 0)
-                    result = value;
-            }
-            if (first)
-                throw new ArgumentException("'this' must not be an empty list.", nameof(input));
-            return result;
+            return FindExtremum(input, comparer, compareSign: 1);
         }
 
         /// <summary>
@@ -113,8 +97,13 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static T FindMaximum<T>(this IEnumerable<T> input, IComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
+            return FindExtremum(input, comparer, compareSign: -1);
+        }
+
+        private static T FindExtremum<T>(IEnumerable<T> input, IComparer<T>? comparer, int compareSign)
+        {
+            ArgumentNullException.ThrowIfNull(input);
+            comparer ??= Comparer<T>.Default;
             T result = default!;
             bool first = true;
             foreach (T value in input)
@@ -124,7 +113,7 @@ namespace TMD.Algo.Collections.Generic
                     result = value;
                     first = false;
                 }
-                else if (comparer.Compare(result, value) < 0)
+                else if (comparer.Compare(result, value) * compareSign > 0)
                     result = value;
             }
             if (first)
@@ -174,12 +163,12 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static T SelectRandomizedInPlace<T>(this IList<T> input, int selection, IComparer<T>? comparer)
         {
+            ArgumentNullException.ThrowIfNull(input);
             if (selection < 0 || selection >= input.Count)
                 throw new ArgumentOutOfRangeException(nameof(selection),
                     "Selection must be non-negative and less than the size of the input.");
-            if (comparer == null)
-                comparer = Comparer<T>.Default;
-            Random rnd = new Random();
+            comparer ??= Comparer<T>.Default;
+            Random rnd = Random.Shared;
             int currentStart = 0;
             int currentEnd = input.Count - 1;
             while (currentStart < currentEnd)
@@ -204,9 +193,8 @@ namespace TMD.Algo.Collections.Generic
             int currentEnd)
         {
             int randomPos = currentStart + rnd.Next(currentEnd - currentStart + 1);
-            T tmp = input[randomPos];
-            input[randomPos] = input[currentStart];
-            input[currentStart] = tmp;
+            (input[randomPos], input[currentStart]) = (input[currentStart], input[randomPos]);
+            T tmp = input[currentStart];
             int startPoint = currentStart - 1;
             int endPoint = currentEnd + 1;
             while (true)
@@ -221,9 +209,7 @@ namespace TMD.Algo.Collections.Generic
                 } while (comparer.Compare(input[startPoint], tmp) < 0);
                 if (startPoint < endPoint)
                 {
-                    T tmp2 = input[startPoint];
-                    input[startPoint] = input[endPoint];
-                    input[endPoint] = tmp2;
+                    (input[startPoint], input[endPoint]) = (input[endPoint], input[startPoint]);
                 }
                 else
                 {

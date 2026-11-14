@@ -15,6 +15,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #endregion
 
+using System;
+
 namespace TMD.Algo.Collections.Generic
 {
     /// <summary>
@@ -33,6 +35,7 @@ namespace TMD.Algo.Collections.Generic
         /// </summary>
         public MappedDisjointTracker(IntMapFunction<T> map, int min, int max)
         {
+            ArgumentNullException.ThrowIfNull(map);
             tracker = new T[max - min + 1];
             ranker = new int[max - min + 1];
             this.min = min;

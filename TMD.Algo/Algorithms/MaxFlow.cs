@@ -70,6 +70,7 @@ namespace TMD.Algo.Algorithms
         private readonly List<Edge>[] graph;
         private readonly int[] level;
         private readonly int[] nextEdgePtr;
+        private readonly Queue<int> bfsQueue = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxFlow"/> class with the specified number of nodes.
@@ -77,13 +78,12 @@ namespace TMD.Algo.Algorithms
         /// <param name="nodeCount">The number of nodes in the flow network.</param>
         public MaxFlow(int nodeCount)
         {
-            if (nodeCount <= 0)
-                throw new ArgumentOutOfRangeException(nameof(nodeCount), "Node count must be positive.");
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(nodeCount);
 
             this.nodeCount = nodeCount;
             graph = new List<Edge>[nodeCount];
             for (int i = 0; i < nodeCount; i++)
-                graph[i] = new List<Edge>();
+                graph[i] = [];
 
             level = new int[nodeCount];
             nextEdgePtr = new int[nodeCount];
@@ -104,8 +104,7 @@ namespace TMD.Algo.Algorithms
         {
             ValidateNode(from, nameof(from));
             ValidateNode(to, nameof(to));
-            if (capacity < 0)
-                throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be non-negative.");
+            ArgumentOutOfRangeException.ThrowIfNegative(capacity);
 
             int forwardIndex = graph[from].Count;
             int reverseIndex = graph[to].Count;
@@ -127,8 +126,7 @@ namespace TMD.Algo.Algorithms
         {
             ValidateNode(u, nameof(u));
             ValidateNode(v, nameof(v));
-            if (capacity < 0)
-                throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be non-negative.");
+            ArgumentOutOfRangeException.ThrowIfNegative(capacity);
 
             int forwardIndex = graph[u].Count;
             int reverseIndex = graph[v].Count;
@@ -179,19 +177,19 @@ namespace TMD.Algo.Algorithms
             ValidateNode(source, nameof(source));
 
             bool[] inSource = new bool[nodeCount];
-            Queue<int> queue = new Queue<int>();
+            bfsQueue.Clear();
             inSource[source] = true;
-            queue.Enqueue(source);
+            bfsQueue.Enqueue(source);
 
-            while (queue.Count > 0)
+            while (bfsQueue.Count > 0)
             {
-                int u = queue.Dequeue();
+                int u = bfsQueue.Dequeue();
                 foreach (Edge edge in graph[u])
                 {
                     if (edge.Capacity - edge.Flow > 0 && !inSource[edge.To])
                     {
                         inSource[edge.To] = true;
-                        queue.Enqueue(edge.To);
+                        bfsQueue.Enqueue(edge.To);
                     }
                 }
             }
@@ -202,18 +200,18 @@ namespace TMD.Algo.Algorithms
         {
             Array.Fill(level, -1);
             level[source] = 0;
-            Queue<int> queue = new Queue<int>();
-            queue.Enqueue(source);
+            bfsQueue.Clear();
+            bfsQueue.Enqueue(source);
 
-            while (queue.Count > 0)
+            while (bfsQueue.Count > 0)
             {
-                int u = queue.Dequeue();
+                int u = bfsQueue.Dequeue();
                 foreach (Edge edge in graph[u])
                 {
                     if (edge.Capacity - edge.Flow > 0 && level[edge.To] < 0)
                     {
                         level[edge.To] = level[u] + 1;
-                        queue.Enqueue(edge.To);
+                        bfsQueue.Enqueue(edge.To);
                     }
                 }
             }

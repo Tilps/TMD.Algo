@@ -41,7 +41,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static long[,] Power(long[,] input, long power, Modulo modulo)
         {
-            if (input == null) throw new ArgumentNullException(nameof(input));
+            ArgumentNullException.ThrowIfNull(input);
             int iMax = input.GetLength(0);
             int jMax = input.GetLength(1);
             if (iMax != jMax)

@@ -58,7 +58,8 @@ namespace TMD.Algo.Algorithms
         /// </param>
         public DigitCollection(IEnumerable<int> digits, int digitBase)
         {
-            Digits = digits.ToArray();
+            ArgumentNullException.ThrowIfNull(digits);
+            Digits = [.. digits];
             DigitBase = digitBase;
             foreach (int digit in Digits)
             {
@@ -77,7 +78,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public DigitCollection SwitchBase(int newBase)
         {
-            return new DigitCollection((int[])Digits.Clone(), newBase);
+            return new DigitCollection([.. Digits], newBase);
         }
 
         /// <summary>
@@ -252,6 +253,7 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static BigInteger ToValueAsDigits(this IEnumerable<int> digits, int digitBase)
         {
+            ArgumentNullException.ThrowIfNull(digits);
             BigInteger exponent = 1;
             BigInteger result = 0;
             foreach (int digit in digits)

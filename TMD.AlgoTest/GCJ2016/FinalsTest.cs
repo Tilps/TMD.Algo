@@ -272,7 +272,7 @@ namespace TMD.AlgoTest.GCJ2016
         private const int MOD_Q2 = 1_000_000_007;
         private static readonly Modulo modQ2 = new Modulo(MOD_Q2);
         private static int[]? fPrecomputed;
-        private static readonly object fLock = new object();
+        private static readonly System.Threading.Lock fLock = new();
 
         private static int[] GetF()
         {
@@ -342,7 +342,7 @@ namespace TMD.AlgoTest.GCJ2016
         #region Question 3 - Gallery of Pillars
 
         private static int[]? mobiusPrecomputed;
-        private static readonly object mobiusLock = new object();
+        private static readonly System.Threading.Lock mobiusLock = new();
 
         private static int[] GetMobius()
         {

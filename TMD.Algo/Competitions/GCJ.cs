@@ -45,7 +45,7 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, Func<GCJTestCase, T> testCaseHandler)
         {
-            if (args == null) throw new ArgumentNullException(nameof(args));
+            ArgumentNullException.ThrowIfNull(args);
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             string[] lines = File.ReadAllLines(inputFile);
@@ -72,7 +72,7 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, int threads, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            if (args == null) throw new ArgumentNullException(nameof(args));
+            ArgumentNullException.ThrowIfNull(args);
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             if (threads < 1) threads = Environment.ProcessorCount;
@@ -81,29 +81,33 @@ namespace TMD.Algo.Competitions
             File.WriteAllLines(outputFile, output);
         }
 
+        private static readonly char[] LineSeparators = ['\n', '\r'];
+
+        private static string[] SplitLines(string lines)
+        {
+            return lines.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         internal static List<string> ___TESTRunTestsTEST<T>(string lines, Func<GCJTestCase, T> testCaseHandler)
         {
-            string[] bits = lines.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            return RunTests(bits, testCaseHandler);
+            return RunTests(SplitLines(lines), testCaseHandler);
         }
 
         internal static List<string> ___TESTRunTestsTEST<T>(string lines, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            string[] bits = lines.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            return RunTestsParallel(1, bits, testCaseHandler);
+            return RunTestsParallel(1, SplitLines(lines), testCaseHandler);
         }
 
         internal static List<string> ___TESTRunParallelTestsTEST<T>(string lines,
             Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            string[] bits = lines.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            return RunTestsParallel(Environment.ProcessorCount, bits, testCaseHandler);
+            return RunTestsParallel(Environment.ProcessorCount, SplitLines(lines), testCaseHandler);
         }
 
         private static List<string> RunTests<T>(string[] lines, Func<GCJTestCase, T> testCaseHandler)
         {
-            List<string> output = new List<string>();
             int testCount = int.Parse(lines[0]);
+            List<string> output = [with(capacity: testCount)];
             GCJTestCase test = new GCJTestCase(1, lines);
             for (int i = 0; i < testCount; i++)
             {
@@ -163,21 +167,19 @@ namespace TMD.Algo.Competitions
                     Monitor.Wait(counterLock);
                 }
             }
-            return new List<string>(output);
+            return [.. output];
         }
 
         private static string Format(object? input)
         {
             // TODO: further specializations for char[] and char[][] and Tuples.
-            var stringInput = input as string;
-            if (stringInput != null)
+            if (input is string stringInput)
             {
                 return stringInput;
             }
-            var stringEnumerable = input as IEnumerable<string>;
-            if (stringEnumerable != null)
+            if (input is IEnumerable<string> stringEnumerable)
             {
-                StringBuilder result = new StringBuilder();
+                StringBuilder result = new();
                 foreach (string i in stringEnumerable)
                 {
                     result.AppendLine();
@@ -185,8 +187,7 @@ namespace TMD.Algo.Competitions
                 }
                 return result.ToString();
             }
-            var enumerable = input as IEnumerable;
-            if (enumerable != null)
+            if (input is IEnumerable enumerable)
             {
                 return string.Join(" ", enumerable.Cast<object?>().Select(Format));
             }

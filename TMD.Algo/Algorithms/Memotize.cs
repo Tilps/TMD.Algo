@@ -46,7 +46,8 @@ namespace TMD.Algo.Algorithms
         public static Func<TState, TResult> CreateMemotized<TState, TResult>(this Func<TState, TResult> inputFunction)
             where TState : notnull
         {
-            Dictionary<TState, TResult> lookup = new Dictionary<TState, TResult>();
+            ArgumentNullException.ThrowIfNull(inputFunction);
+            Dictionary<TState, TResult> lookup = [];
             return input =>
             {
                 if (lookup.TryGetValue(input, out var result))
@@ -70,7 +71,8 @@ namespace TMD.Algo.Algorithms
             where T1 : notnull
             where T2 : notnull
         {
-            Dictionary<(T1, T2), TResult> lookup = new Dictionary<(T1, T2), TResult>();
+            ArgumentNullException.ThrowIfNull(inputFunction);
+            Dictionary<(T1, T2), TResult> lookup = [];
             return (arg1, arg2) =>
             {
                 var key = (arg1, arg2);
@@ -172,7 +174,8 @@ namespace TMD.Algo.Algorithms
             Func<Func<TState, TResult>, TState, TResult> recursiveFunction)
             where TState : notnull
         {
-            Dictionary<TState, TResult> lookup = new Dictionary<TState, TResult>();
+            ArgumentNullException.ThrowIfNull(recursiveFunction);
+            Dictionary<TState, TResult> lookup = [];
             Func<TState, TResult> self = null!;
             self = input =>
             {
@@ -202,7 +205,8 @@ namespace TMD.Algo.Algorithms
             where T1 : notnull
             where T2 : notnull
         {
-            Dictionary<(T1, T2), TResult> lookup = new Dictionary<(T1, T2), TResult>();
+            ArgumentNullException.ThrowIfNull(recursiveFunction);
+            Dictionary<(T1, T2), TResult> lookup = [];
             Func<T1, T2, TResult> self = null!;
             self = (arg1, arg2) =>
             {

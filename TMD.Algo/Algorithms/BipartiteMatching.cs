@@ -98,9 +98,9 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             IReadOnlyList<IReadOnlyList<int>> adj)
         {
-            if (leftCount < 0) throw new ArgumentOutOfRangeException(nameof(leftCount));
-            if (rightCount < 0) throw new ArgumentOutOfRangeException(nameof(rightCount));
-            if (adj == null) throw new ArgumentNullException(nameof(adj));
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(adj);
 
             int[] pairU = new int[leftCount];
             int[] pairV = new int[rightCount];
@@ -110,9 +110,9 @@ namespace TMD.Algo.Algorithms
             if (leftCount == 0 || rightCount == 0)
                 return new BipartiteMatchingResult(0, pairU, pairV);
 
-            int[] dist = new int[leftCount + 1];
+            int[] dist = new int[leftCount];
             int nilDist;
-            Queue<int> queue = new Queue<int>(leftCount);
+            Queue<int> queue = new(leftCount);
 
             bool Bfs()
             {
@@ -207,10 +207,12 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             Func<int, IEnumerable<int>> getNeighbors)
         {
-            if (getNeighbors == null) throw new ArgumentNullException(nameof(getNeighbors));
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(getNeighbors);
             var adj = new List<int>[leftCount];
             for (int u = 0; u < leftCount; u++)
-                adj[u] = new List<int>(getNeighbors(u));
+                adj[u] = [.. getNeighbors(u)];
             return FindMaximumMatching(leftCount, rightCount, adj);
         }
 
@@ -226,10 +228,12 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             IEnumerable<(int Left, int Right)> edges)
         {
-            if (edges == null) throw new ArgumentNullException(nameof(edges));
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(edges);
             var adj = new List<int>[leftCount];
             for (int i = 0; i < leftCount; i++)
-                adj[i] = new List<int>();
+                adj[i] = [];
             foreach (var (u, v) in edges)
             {
                 if (u >= 0 && u < leftCount && v >= 0 && v < rightCount)
@@ -251,9 +255,11 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             IReadOnlyList<IReadOnlyList<int>> adj)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(adj);
             if (leftCount > rightCount) return false;
             if (leftCount == 0) return true;
-            if (adj == null) throw new ArgumentNullException(nameof(adj));
 
             int[] matchRight = new int[rightCount];
             Array.Fill(matchRight, Nil);
@@ -300,13 +306,15 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             Func<int, IEnumerable<int>> getNeighbors)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(getNeighbors);
             if (leftCount > rightCount) return false;
             if (leftCount == 0) return true;
-            if (getNeighbors == null) throw new ArgumentNullException(nameof(getNeighbors));
 
             var adj = new List<int>[leftCount];
             for (int u = 0; u < leftCount; u++)
-                adj[u] = new List<int>(getNeighbors(u));
+                adj[u] = [.. getNeighbors(u)];
 
             return CanMatchAllLeft(leftCount, rightCount, adj);
         }
@@ -323,14 +331,16 @@ namespace TMD.Algo.Algorithms
             int rightCount,
             Func<int, int, bool> hasEdge)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(leftCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightCount);
+            ArgumentNullException.ThrowIfNull(hasEdge);
             if (leftCount > rightCount) return false;
             if (leftCount == 0) return true;
-            if (hasEdge == null) throw new ArgumentNullException(nameof(hasEdge));
 
             var adj = new List<int>[leftCount];
             for (int u = 0; u < leftCount; u++)
             {
-                adj[u] = new List<int>();
+                adj[u] = [];
                 for (int v = 0; v < rightCount; v++)
                 {
                     if (hasEdge(u, v))

@@ -44,11 +44,10 @@ namespace TMD.Algo.Collections.Generic
         /// </param>
         public DisjointTracker(IEqualityComparer<T>? comparer)
         {
-            if (comparer == null)
-                comparer = EqualityComparer<T>.Default;
+            comparer ??= EqualityComparer<T>.Default;
             this.comparer = comparer;
-            tracker = new Dictionary<T, T>(comparer);
-            ranker = new Dictionary<T, int>(comparer);
+            tracker = [with(comparer)];
+            ranker = [with(comparer)];
         }
 
 

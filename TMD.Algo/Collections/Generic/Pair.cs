@@ -30,7 +30,7 @@ namespace TMD.Algo.Collections.Generic
     /// <typeparam name="T2">
     /// Type of the second item in the pair.
     /// </typeparam>
-    public struct Pair<T1, T2> : IEquatable<Pair<T1, T2>>
+    public readonly struct Pair<T1, T2> : IEquatable<Pair<T1, T2>>
     {
         /// <summary>
         /// First item in the pair.
@@ -85,8 +85,7 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public override bool Equals(object? obj)
         {
-            if (obj == null || obj.GetType() != GetType()) return false;
-            return Equals((Pair<T1, T2>)obj);
+            return obj is Pair<T1, T2> other && Equals(other);
         }
 
         /// <summary>
@@ -99,7 +98,7 @@ namespace TMD.Algo.Collections.Generic
         {
             int h1 = Item1 is null ? 0 : t1Comparer.GetHashCode(Item1);
             int h2 = Item2 is null ? 0 : t2Comparer.GetHashCode(Item2);
-            return h1 * 33 ^ h2;
+            return HashCode.Combine(h1, h2);
         }
     }
 
@@ -133,9 +132,9 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="item1Comparer">
         /// Comparer to compare the Item1 values.
         /// </param>
-        public Item1Comparer(IComparer<T1> item1Comparer)
+        public Item1Comparer(IComparer<T1>? item1Comparer)
         {
-            this.item1Comparer = item1Comparer;
+            this.item1Comparer = item1Comparer ?? Comparer<T1>.Default;
         }
 
         private readonly IComparer<T1> item1Comparer;

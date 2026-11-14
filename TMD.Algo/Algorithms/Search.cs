@@ -55,10 +55,7 @@ namespace TMD.Algo.Algorithms
         public static int Bfs<T>(T first, T last, Func<T, IEnumerable<T>> neighbourFunc, Action<T>? pathObserver = null,
             IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
+            equalityComparer ??= EqualityComparer<T>.Default;
             return Bfs(first, other => equalityComparer.Equals(last, other), neighbourFunc, pathObserver,
                 equalityComparer);
         }
@@ -90,18 +87,15 @@ namespace TMD.Algo.Algorithms
         public static int Bfs<T>(T first, Func<T, bool> lastFoundFunc, Func<T, IEnumerable<T>> neighbourFunc,
             Action<T>? pathObserver = null, IEqualityComparer<T>? equalityComparer = null) where T : notnull
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
+            equalityComparer ??= EqualityComparer<T>.Default;
             if (lastFoundFunc(first))
             {
                 pathObserver?.Invoke(first);
                 return 0;
             }
-            Queue<T> toSearch = new Queue<T>();
+            Queue<T> toSearch = new();
             toSearch.Enqueue(first);
-            Dictionary<T, KeyValuePair<T, int>> seen = new Dictionary<T, KeyValuePair<T, int>>(equalityComparer)
+            Dictionary<T, KeyValuePair<T, int>> seen = new(equalityComparer)
             {
                 {first, new KeyValuePair<T, int>(default!, 0)}
             };
@@ -117,7 +111,7 @@ namespace TMD.Algo.Algorithms
                         {
                             if (pathObserver != null)
                             {
-                                List<T> path = new List<T> {next};
+                                List<T> path = [next];
                                 while (true)
                                 {
                                     path.Add(cur);
@@ -151,7 +145,7 @@ namespace TMD.Algo.Algorithms
         public static void Bfs<T>(T first, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
             IEqualityComparer<T>? equalityComparer = null)
         {
-            Bfs(new[] { first }, visitor, neighbourFunc, equalityComparer);
+            Bfs([first], visitor, neighbourFunc, equalityComparer);
         }
 
         /// <summary>
@@ -165,10 +159,7 @@ namespace TMD.Algo.Algorithms
         public static void Bfs<T>(IEnumerable<T> initialStates, Action<T> visitor, Func<T, IEnumerable<T>> neighbourFunc,
             IEqualityComparer<T>? equalityComparer = null)
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
+            equalityComparer ??= EqualityComparer<T>.Default;
             Queue<T> toSearch = new Queue<T>();
             HashSet<T> seen = new HashSet<T>(equalityComparer);
             if (initialStates != null)
@@ -210,13 +201,9 @@ namespace TMD.Algo.Algorithms
             Func<T, IEnumerable<T>> neighbourFunc,
             IEqualityComparer<T>? equalityComparer = null)
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
-            Queue<(T Current, T? Parent, int Depth)> toSearch = new Queue<(T Current, T? Parent, int Depth)>();
-            HashSet<T> seen = new HashSet<T>(equalityComparer);
-            seen.Add(first);
+            equalityComparer ??= EqualityComparer<T>.Default;
+            Queue<(T Current, T? Parent, int Depth)> toSearch = new();
+            HashSet<T> seen = [with(equalityComparer), first];
             toSearch.Enqueue((first, default, 0));
 
             while (toSearch.Count != 0)
@@ -249,13 +236,9 @@ namespace TMD.Algo.Algorithms
             Func<T, IEnumerable<T>> neighbourFunc,
             IEqualityComparer<T>? equalityComparer = null)
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
-            Queue<(T Current, T? Parent, int Depth)> toSearch = new Queue<(T Current, T? Parent, int Depth)>();
-            HashSet<T> seen = new HashSet<T>(equalityComparer);
-            seen.Add(first);
+            equalityComparer ??= EqualityComparer<T>.Default;
+            Queue<(T Current, T? Parent, int Depth)> toSearch = new();
+            HashSet<T> seen = [with(equalityComparer), first];
             toSearch.Enqueue((first, default, 0));
 
             while (toSearch.Count != 0)
@@ -291,12 +274,9 @@ namespace TMD.Algo.Algorithms
             Func<T, IEnumerable<T>> triggerFunc,
             IEqualityComparer<T>? equalityComparer = null)
         {
-            if (equalityComparer == null)
-            {
-                equalityComparer = EqualityComparer<T>.Default;
-            }
-            Queue<T> queue = new Queue<T>();
-            HashSet<T> inQueue = new HashSet<T>(equalityComparer);
+            equalityComparer ??= EqualityComparer<T>.Default;
+            Queue<T> queue = new();
+            HashSet<T> inQueue = [with(equalityComparer)];
 
             void Enqueue(T item)
             {
