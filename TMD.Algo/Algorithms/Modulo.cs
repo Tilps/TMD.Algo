@@ -242,9 +242,7 @@ namespace TMD.Algo.Algorithms
                 }
                 if (invertCache[number] == 0)
                 {
-                    long firstProduct;
-                    long secondProduct;
-                    long divisor = ExtendedGcd(number, basis, out firstProduct, out secondProduct);
+                    long divisor = MathFormulas.ExtendedGcd(number, basis, out long firstProduct, out _);
                     if (divisor == 1)
                         invertCache[number] = Mod(firstProduct);
                     else
@@ -263,9 +261,7 @@ namespace TMD.Algo.Algorithms
                 }
                 if (!invertDict.TryGetValue(number, out long inv))
                 {
-                    long firstProduct;
-                    long secondProduct;
-                    long divisor = ExtendedGcd(number, basis, out firstProduct, out secondProduct);
+                    long divisor = MathFormulas.ExtendedGcd(number, basis, out long firstProduct, out _);
                     if (divisor == 1)
                     {
                         inv = Mod(firstProduct);
@@ -282,6 +278,26 @@ namespace TMD.Algo.Algorithms
                         nameof(number));
                 return inv;
             }
+        }
+
+        /// <summary>
+        /// Calculates the modular multiplicative inverse of <paramref name="number"/> modulo <paramref name="basis"/>
+        /// in the range [0, <paramref name="basis"/> - 1] without allocating a cache or constructing a <see cref="Modulo"/> instance.
+        /// Runs in O(log basis) time.
+        /// </summary>
+        /// <param name="number">Number to invert.</param>
+        /// <param name="basis">Positive modulus.</param>
+        /// <returns>An integer inv in [0, basis - 1] such that (number * inv) % basis == 1 % basis.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="basis"/> &lt;= 0.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="number"/> is not coprime with <paramref name="basis"/>.</exception>
+        public static long Invert(long number, long basis)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(basis);
+            long v = ((number % basis) + basis) % basis;
+            long gcd = MathFormulas.ExtendedGcd(v, basis, out long x, out _);
+            if (gcd != 1)
+                throw new ArgumentException("Specified number is not coprime with the basis, it has no inverse.", nameof(number));
+            return ((x % basis) + basis) % basis;
         }
 
         private long[]? invertCache;
@@ -302,9 +318,7 @@ namespace TMD.Algo.Algorithms
         public List<long> SolveLinearEquation(long multiplier, long result)
         {
             List<long> results = new List<long>();
-            long firstProduct;
-            long secondProudct;
-            long d = ExtendedGcd(Mod(multiplier), basis, out firstProduct, out secondProudct);
+            long d = MathFormulas.ExtendedGcd(Mod(multiplier), basis, out long firstProduct, out _);
             result = Mod(result);
             if (result%d == 0)
             {
@@ -315,22 +329,6 @@ namespace TMD.Algo.Algorithms
                 }
             }
             return results;
-        }
-
-        private long ExtendedGcd(long first, long second, out long firstProduct, out long secondProduct)
-        {
-            if (second == 0)
-            {
-                firstProduct = 1;
-                secondProduct = 0;
-                return first;
-            }
-            long firstTemp;
-            long secondTemp;
-            long divisor = ExtendedGcd(second, first%second, out firstTemp, out secondTemp);
-            firstProduct = secondTemp;
-            secondProduct = firstTemp - (first/second)*secondTemp;
-            return divisor;
         }
 
         /// <summary>

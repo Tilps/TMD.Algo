@@ -60,5 +60,25 @@ namespace TMD.AlgoTest
                 heap.___TESTValidateTEST();
             }
         }
+
+        [Test]
+        public void RemoveLastElementDoesNotCorruptLookup()
+        {
+            LookupHeap<int> single = new LookupHeap<int>();
+            single.Add(42);
+            Assert.IsTrue(single.Remove(42));
+            Assert.AreEqual(0, single.Count);
+            Assert.IsFalse(single.Contains(42));
+            single.___TESTValidateTEST();
+
+            LookupHeap<int> heap = new LookupHeap<int>();
+            heap.Add(10);
+            heap.Add(5);
+            heap.Add(3);
+            Assert.IsTrue(heap.Remove(3));
+            Assert.AreEqual(2, heap.Count);
+            Assert.IsFalse(heap.Contains(3));
+            heap.___TESTValidateTEST();
+        }
     }
 }

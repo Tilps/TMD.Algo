@@ -482,6 +482,63 @@ namespace TMD.Algo.Collections.Generic
             Array.Sort(result, comparer);
             return result;
         }
+
+        /// <summary>
+        /// Counts the number of inversions in <paramref name="items"/> in O(n log n) time,
+        /// i.e., pairs (i, j) with i &lt; j and comparer.Compare(items[i], items[j]) &gt; 0.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="items">Input sequence of elements.</param>
+        /// <param name="comparer">Comparer defining element ordering, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>The total number of inversions in <paramref name="items"/>.</returns>
+        public static long CountInversions<T>(ReadOnlySpan<T> items, IComparer<T>? comparer = null)
+        {
+            int n = items.Length;
+            if (n < 2)
+                return 0;
+
+            IComparer<T> cmp = comparer ?? Comparer<T>.Default;
+            T[] uniqueSorted = items.ToArray();
+            Array.Sort(uniqueSorted, cmp);
+            int uniqueCount = 1;
+            for (int i = 1; i < n; i++)
+            {
+                if (cmp.Compare(uniqueSorted[i], uniqueSorted[uniqueCount - 1]) != 0)
+                {
+                    uniqueSorted[uniqueCount++] = uniqueSorted[i];
+                }
+            }
+
+            FenwickTree bit = new(uniqueCount);
+            long inversions = 0;
+            for (int i = 0; i < n; i++)
+            {
+                int rank = Array.BinarySearch(uniqueSorted, 0, uniqueCount, items[i], cmp);
+                inversions += i - bit.PrefixSum(rank);
+                bit.Add(rank, 1);
+            }
+            return inversions;
+        }
+
+        /// <summary>
+        /// Counts the number of inversions in <paramref name="items"/> in O(n log n) time,
+        /// i.e., pairs (i, j) with i &lt; j and comparer.Compare(items[i], items[j]) &gt; 0.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="items">Input list of elements.</param>
+        /// <param name="comparer">Comparer defining element ordering, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>The total number of inversions in <paramref name="items"/>.</returns>
+        public static long CountInversions<T>(IReadOnlyList<T> items, IComparer<T>? comparer = null)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+            if (items.Count < 2)
+                return 0;
+
+            T[] buffer = new T[items.Count];
+            for (int i = 0; i < buffer.Length; i++)
+                buffer[i] = items[i];
+            return CountInversions((ReadOnlySpan<T>)buffer, comparer);
+        }
     }
 
     /// <summary>

@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using TMD.Algo.Algorithms.Generic;
 
@@ -25,6 +26,160 @@ namespace TMD.Algo.Algorithms
     /// </summary>
     public static class OptimalFinding
     {
+        /// <summary>
+        /// Computes the minimum value in every contiguous window of length <paramref name="windowSize"/>
+        /// across <paramref name="values"/> in O(n) time using a monotonic deque.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input values.</param>
+        /// <param name="windowSize">Window size (must be between 1 and values.Length, inclusive).</param>
+        /// <param name="comparer">Element comparer, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>An array of length values.Length - windowSize + 1 containing the minimum of each window.</returns>
+        public static T[] SlidingWindowMin<T>(
+            ReadOnlySpan<T> values,
+            int windowSize,
+            IComparer<T>? comparer = null)
+        {
+            return SlidingWindowFixed(values, windowSize, comparer, findMax: false);
+        }
+
+        /// <summary>
+        /// Computes the maximum value in every contiguous window of length <paramref name="windowSize"/>
+        /// across <paramref name="values"/> in O(n) time using a monotonic deque.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input values.</param>
+        /// <param name="windowSize">Window size (must be between 1 and values.Length, inclusive).</param>
+        /// <param name="comparer">Element comparer, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>An array of length values.Length - windowSize + 1 containing the maximum of each window.</returns>
+        public static T[] SlidingWindowMax<T>(
+            ReadOnlySpan<T> values,
+            int windowSize,
+            IComparer<T>? comparer = null)
+        {
+            return SlidingWindowFixed(values, windowSize, comparer, findMax: true);
+        }
+
+        /// <summary>
+        /// Computes for each index i in <paramref name="values"/> the minimum over the clamped window
+        /// [max(0, i - <paramref name="leftRadius"/>) .. min(n - 1, i + <paramref name="rightRadius"/>)]
+        /// in O(n) time, writing results into <paramref name="destination"/>.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input values.</param>
+        /// <param name="leftRadius">Non-negative radius extending left of each index.</param>
+        /// <param name="rightRadius">Non-negative radius extending right of each index.</param>
+        /// <param name="destination">Output span receiving at least values.Length elements.</param>
+        /// <param name="comparer">Element comparer, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        public static void SlidingWindowMin<T>(
+            ReadOnlySpan<T> values,
+            int leftRadius,
+            int rightRadius,
+            Span<T> destination,
+            IComparer<T>? comparer = null)
+        {
+            SlidingWindowRadius(values, leftRadius, rightRadius, destination, comparer, findMax: false);
+        }
+
+        /// <summary>
+        /// Computes for each index i in <paramref name="values"/> the maximum over the clamped window
+        /// [max(0, i - <paramref name="leftRadius"/>) .. min(n - 1, i + <paramref name="rightRadius"/>)]
+        /// in O(n) time, writing results into <paramref name="destination"/>.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input values.</param>
+        /// <param name="leftRadius">Non-negative radius extending left of each index.</param>
+        /// <param name="rightRadius">Non-negative radius extending right of each index.</param>
+        /// <param name="destination">Output span receiving at least values.Length elements.</param>
+        /// <param name="comparer">Element comparer, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        public static void SlidingWindowMax<T>(
+            ReadOnlySpan<T> values,
+            int leftRadius,
+            int rightRadius,
+            Span<T> destination,
+            IComparer<T>? comparer = null)
+        {
+            SlidingWindowRadius(values, leftRadius, rightRadius, destination, comparer, findMax: true);
+        }
+
+        private static T[] SlidingWindowFixed<T>(
+            ReadOnlySpan<T> values,
+            int windowSize,
+            IComparer<T>? comparer,
+            bool findMax)
+        {
+            if (windowSize <= 0 || windowSize > values.Length)
+                throw new ArgumentOutOfRangeException(nameof(windowSize), "Window size must be between 1 and values.Length.");
+
+            T[] result = new T[values.Length - windowSize + 1];
+            SlidingWindowCore(values, windowSize - 1, 0, windowSize - 1, result, comparer, findMax);
+            return result;
+        }
+
+        private static void SlidingWindowRadius<T>(
+            ReadOnlySpan<T> values,
+            int leftRadius,
+            int rightRadius,
+            Span<T> destination,
+            IComparer<T>? comparer,
+            bool findMax)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(leftRadius);
+            ArgumentOutOfRangeException.ThrowIfNegative(rightRadius);
+            if (destination.Length < values.Length)
+                throw new ArgumentException("Destination span must be at least as long as values.", nameof(destination));
+
+            SlidingWindowCore(values, leftRadius, rightRadius, 0, destination, comparer, findMax);
+        }
+
+        private static void SlidingWindowCore<T>(
+            ReadOnlySpan<T> values,
+            int leftRadius,
+            int rightRadius,
+            int startOutputIndex,
+            Span<T> destination,
+            IComparer<T>? comparer,
+            bool findMax)
+        {
+            if (values.IsEmpty)
+                return;
+
+            int n = values.Length;
+            IComparer<T> cmp = comparer ?? Comparer<T>.Default;
+            int[] deque = new int[n];
+            int head = 0;
+            int tail = 0;
+            int nextPush = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                int rightEnd = (int)Math.Min(n - 1, (long)i + rightRadius);
+                while (nextPush <= rightEnd)
+                {
+                    T incoming = values[nextPush];
+                    while (tail > head)
+                    {
+                        int c = cmp.Compare(values[deque[tail - 1]], incoming);
+                        if (findMax ? c <= 0 : c >= 0)
+                            tail--;
+                        else
+                            break;
+                    }
+                    deque[tail++] = nextPush++;
+                }
+
+                long leftStart = (long)i - leftRadius;
+                while (head < tail && deque[head] < leftStart)
+                {
+                    head++;
+                }
+
+                if (i >= startOutputIndex)
+                {
+                    destination[i - startOutputIndex] = values[deque[head]];
+                }
+            }
+        }
         /// <summary>
         /// Finds the set of items which has minimal cost but reaches target value.
         /// </summary>

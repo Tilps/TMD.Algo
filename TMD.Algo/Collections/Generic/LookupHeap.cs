@@ -376,6 +376,13 @@ namespace TMD.Algo.Collections.Generic
             if (lookup.TryGetValue(item, out i))
             {
                 lookup.Remove(item);
+                if (i == count)
+                {
+                    array[count] = default!;
+                    count--;
+                    version++;
+                    return true;
+                }
                 array[i] = array[count];
                 lookup[array[i]] = i;
                 count--;

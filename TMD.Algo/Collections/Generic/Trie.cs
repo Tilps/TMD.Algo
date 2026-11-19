@@ -76,6 +76,11 @@ namespace TMD.Algo.Collections.Generic
         public int UniqueCount { get; private set; }
 
         /// <summary>
+        /// Gets the number of active nodes currently in the trie (including the root node).
+        /// </summary>
+        public int NodeCount { get; private set; } = 1;
+
+        /// <summary>
         /// Inserts a sequence of symbols into the trie.
         /// </summary>
         /// <param name="sequence">The symbol sequence to insert.</param>
@@ -181,9 +186,9 @@ namespace TMD.Algo.Collections.Generic
             for (int i = 0; i < sequence.Length; i++)
             {
                 int childIdx = path[i + 1];
-                if (nodes[childIdx].PrefixCount == 0)
+                if (nodes[childIdx].PrefixCount == 0 && nodes[path[i]].Children.Remove(sequence[i]))
                 {
-                    nodes[path[i]].Children.Remove(sequence[i]);
+                    NodeCount--;
                 }
             }
 
@@ -212,6 +217,7 @@ namespace TMD.Algo.Collections.Generic
             nodes.Add(CreateNode());
             Count = 0;
             UniqueCount = 0;
+            NodeCount = 1;
         }
 
         /// <summary>
@@ -357,6 +363,7 @@ namespace TMD.Algo.Collections.Generic
                 childIdx = nodes.Count;
                 nodes.Add(CreateNode());
                 children[symbol] = childIdx;
+                NodeCount++;
             }
             return childIdx;
         }

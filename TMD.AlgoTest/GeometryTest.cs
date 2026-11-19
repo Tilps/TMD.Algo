@@ -159,5 +159,77 @@ namespace TMD.AlgoTest
                 collinear[i] = new Point2D(i, i);
             Assert.AreEqual(4.0 * Math.Sqrt(2.0), Geometry.MinimumTrianglePerimeter(collinear), 1e-9);
         }
+
+        [Test]
+        public void CircularSegmentAndCommonPointCirclesIntersection()
+        {
+            // Full circle and semicircle segments.
+            Assert.AreEqual(0.0, Geometry.CircularSegmentArea(5.0, 0.0), 1e-12);
+            Assert.AreEqual(Math.PI * 0.5 * 4.0, Geometry.CircularSegmentArea(2.0, Math.PI), 1e-12);
+            Assert.AreEqual(Math.PI * 9.0, Geometry.CircularSegmentArea(3.0, 2.0 * Math.PI), 1e-12);
+            // Tiny angle avoids cancellation.
+            Assert.AreEqual(0.5 * 100.0 * Math.Pow(1e-5, 3) / 6.0, Geometry.CircularSegmentArea(10.0, 1e-5), 1e-22);
+
+            // Empty and single circle.
+            Assert.AreEqual(0.0, Geometry.CommonPointCirclesIntersectionArea(new Point2D(0, 0), ReadOnlySpan<Point2D>.Empty));
+            Assert.AreEqual(Math.PI * 25.0, Geometry.CommonPointCirclesIntersectionArea(new Point2D(1, 2), [new Point2D(4, 6)]), 1e-9);
+
+            // Collinear same-ray circles: intersection equals smallest circle.
+            Assert.AreEqual(Math.PI * 4.0, Geometry.CommonPointCirclesIntersectionArea(
+                new Point2D(0, 0),
+                [new Point2D(2, 0), new Point2D(5, 0), new Point2D(10, 0)]), 1e-9);
+
+            // Common point inside convex hull of centers -> zero area.
+            Assert.AreEqual(0.0, Geometry.CommonPointCirclesIntersectionArea(
+                new Point2D(10, 5),
+                [new Point2D(0, 0), new Point2D(10, 10), new Point2D(20, 0)]), 1e-9);
+
+            // Two equal orthogonal unit disks centered at (1, 0) and (0, 1) through (0, 0): pi/2 - 1.
+            Assert.AreEqual(Math.PI * 0.5 - 1.0, Geometry.CommonPointCirclesIntersectionArea(
+                new Point2D(0, 0),
+                [new Point2D(1, 0), new Point2D(0, 1)]), 1e-11);
+
+            // GCJ 2010 R2 Grazing Google Goats Sample #1 & #2 (tests reflex interior arc > pi).
+            Point2D[] poles1 = [new(0, 20), new(20, 0)];
+            Assert.AreEqual(1264.9865911, Geometry.CommonPointCirclesIntersectionArea(new Point2D(-20, 10), poles1), 1e-6);
+            Assert.AreEqual(1713.2741229, Geometry.CommonPointCirclesIntersectionArea(new Point2D(40, 20), poles1), 1e-6);
+            Assert.AreEqual(0.2939440, Geometry.CommonPointCirclesIntersectionArea(new Point2D(0, 19), poles1), 1e-6);
+
+            Point2D[] poles2 = [new(0, 0), new(100, 100), new(300, 0), new(380, 90)];
+            Assert.AreEqual(1518.9063729, Geometry.CommonPointCirclesIntersectionArea(new Point2D(400, 100), poles2), 1e-6);
+            Assert.AreEqual(1193932.9692206, Geometry.CommonPointCirclesIntersectionArea(new Point2D(1000, 5), poles2), 1e-6);
+
+            // Multi-circle asymmetric case checked against Monte-Carlo / grid midpoint quadrature.
+            Point2D q = new(0, 0);
+            Point2D[] multi = [new(3, 0), new(2, 1), new(1, 2), new(0, 4), new(5, 2)];
+            double computed = Geometry.CommonPointCirclesIntersectionArea(q, multi);
+            // Notice (2,1) and (1,2) keep the intersection strictly bounded and include 3+ active arcs.
+            const int steps = 800;
+            double minX = -2.0, maxX = 4.0, minY = -2.0, maxY = 4.0;
+            double dx = (maxX - minX) / steps;
+            double dy = (maxY - minY) / steps;
+            int inside = 0;
+            for (int ix = 0; ix < steps; ix++)
+            {
+                double x = minX + (ix + 0.5) * dx;
+                for (int iy = 0; iy < steps; iy++)
+                {
+                    double y = minY + (iy + 0.5) * dy;
+                    bool ok = true;
+                    foreach (Point2D c in multi)
+                    {
+                        double r2 = c.X * c.X + c.Y * c.Y;
+                        if ((x - c.X) * (x - c.X) + (y - c.Y) * (y - c.Y) > r2)
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (ok) inside++;
+                }
+            }
+            double approx = inside * dx * dy;
+            Assert.AreEqual(approx, computed, 0.02);
+        }
     }
 }

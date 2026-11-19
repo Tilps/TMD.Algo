@@ -41,6 +41,29 @@ namespace TMD.AlgoTest
         }
 
         [Test]
+        public void StaticInvertTest()
+        {
+            Assert.AreEqual(4L, Modulo.Invert(3, 11));
+            Assert.AreEqual(4L, Modulo.Invert(-8, 11));
+            Assert.AreEqual(7L, Modulo.Invert(7, 12));
+            Assert.AreEqual(0L, Modulo.Invert(5, 1));
+
+            foreach ((long x, long p) in new[]
+            {
+                (123_456_789L, 1_000_000_007L),
+                (900_000_000_000L, 1_000_000_000_039L)
+            })
+            {
+                Assert.AreEqual(1L, BigIntegerMultiply(x, Modulo.Invert(x, p), p));
+            }
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Invert(1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Invert(1, -5));
+            Assert.Throws<ArgumentException>(() => Modulo.Invert(6, 9));
+            Assert.Throws<ArgumentException>(() => Modulo.Invert(0, 7));
+        }
+
+        [Test]
         public void DistTest()
         {
             Modulo mod10 = new Modulo(10);

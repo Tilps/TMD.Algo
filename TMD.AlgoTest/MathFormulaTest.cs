@@ -181,5 +181,16 @@ namespace TMD.AlgoTest
             Assert.Throws<DivideByZeroException>(() => MathFormulas.DivFloor(1L, 0L));
             Assert.Throws<DivideByZeroException>(() => MathFormulas.DivCeil(1L, 0L));
         }
+
+        [Test]
+        public void ExtendedGcdTest()
+        {
+            foreach ((long a, long b) in new[] { (12L, 18L), (-10L, 15L), (0L, -7L), (0L, 0L), (101L, 37L), (-42L, -30L) })
+            {
+                long g = MathFormulas.ExtendedGcd(a, b, out long x, out long y);
+                Assert.AreEqual(MathFormulas.Gcd(a, b), g);
+                Assert.AreEqual(g, a * x + b * y);
+            }
+        }
     }
 }

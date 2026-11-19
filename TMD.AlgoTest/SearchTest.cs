@@ -216,6 +216,45 @@ namespace TMD.AlgoTest
             Assert.AreEqual(3, earlyVisited.Count);
             CollectionAssert.AreEqual(new[] { 1, 2, 3 }, earlyVisited);
         }
+
+        [Test]
+        public void TestZeroOnePfsAndDistances()
+        {
+            // Graph where 0->1 (1), 0->2 (1), 2->3 (0), 3->1 (0), 1->4 (1), 3->5 (1), node 6 isolated.
+            (int, int)[][] adj =
+            [
+                [(1, 1), (2, 1)],
+                [(4, 1)],
+                [(3, 0)],
+                [(1, 0), (5, 1)],
+                [],
+                [],
+                []
+            ];
+
+            int[] dist = Search.ZeroOnePfsDistances(7, 0, u => adj[u]);
+            CollectionAssert.AreEqual(new[] { 0, 1, 1, 1, 2, 2, -1 }, dist);
+
+            // Re-relaxation test: shorter 0-weight path beats earlier 1-weight path (0->1 cost 1, then 0->2 (0) ->1 (0) cost 0).
+            (int, int)[][] adj2 =
+            [
+                [(1, 1), (2, 0)],
+                [(3, 1)],
+                [(1, 0)],
+                [],
+                []
+            ];
+            int[] dist2 = Search.ZeroOnePfsDistances(5, 0, u => adj2[u]);
+            CollectionAssert.AreEqual(new[] { 0, 0, 0, 1, -1 }, dist2);
+            Assert.AreEqual(1, Search.ZeroOnePfs(5, 0, 3, u => adj2[u]));
+            Assert.AreEqual(-1, Search.ZeroOnePfs(5, 0, 4, u => adj2[u]));
+            Assert.AreEqual(0, Search.ZeroOnePfs(5, 0, 0, u => adj2[u]));
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                Search.ZeroOnePfsDistances(2, 0, _ => [(1, 2)]));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                Search.ZeroOnePfs(2, 0, -1, u => adj2[u]));
+        }
     }
 }
 

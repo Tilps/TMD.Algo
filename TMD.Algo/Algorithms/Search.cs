@@ -555,5 +555,88 @@ namespace TMD.Algo.Algorithms
                 comparer,
                 equalityComparer);
         }
+
+        /// <summary>
+        /// Computes the shortest-path distance from <paramref name="startVertex"/> to <paramref name="targetVertex"/>
+        /// on a graph with 0/1 edge weights in O(V + E) time using deque-based priority-first search (also known as 0-1 BFS).
+        /// </summary>
+        /// <param name="vertexCount">Total number of vertices (0-indexed: 0 .. vertexCount - 1).</param>
+        /// <param name="startVertex">Starting vertex index.</param>
+        /// <param name="targetVertex">Target vertex index.</param>
+        /// <param name="neighborFunc">Returns directed outgoing (Neighbor, Weight) pairs with weight 0 or 1.</param>
+        /// <returns>The shortest distance to <paramref name="targetVertex"/>, or -1 if unreachable.</returns>
+        public static int ZeroOnePfs(
+            int vertexCount,
+            int startVertex,
+            int targetVertex,
+            Func<int, IEnumerable<(int Neighbor, int Weight)>> neighborFunc)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(targetVertex);
+            if (vertexCount <= 0 || targetVertex >= vertexCount)
+                throw new ArgumentOutOfRangeException(nameof(targetVertex), "Target vertex must be a valid vertex index.");
+            return ZeroOnePfsDistances(vertexCount, startVertex, neighborFunc, targetVertex)[targetVertex];
+        }
+
+        /// <summary>
+        /// Computes shortest-path distances from <paramref name="startVertex"/> on a graph with 0/1 edge weights
+        /// in O(V + E) time using deque-based priority-first search (also known as 0-1 BFS).
+        /// </summary>
+        /// <param name="vertexCount">Total number of vertices (0-indexed: 0 .. vertexCount - 1).</param>
+        /// <param name="startVertex">Starting vertex index.</param>
+        /// <param name="neighborFunc">Returns directed outgoing (Neighbor, Weight) pairs with weight 0 or 1.</param>
+        /// <param name="targetVertex">Optional target vertex for early exit, or -1 to compute distances to all reachable vertices.</param>
+        /// <returns>Array of length <paramref name="vertexCount"/> containing shortest distances or -1 if unreachable (or unreached after early stop).</returns>
+        public static int[] ZeroOnePfsDistances(
+            int vertexCount,
+            int startVertex,
+            Func<int, IEnumerable<(int Neighbor, int Weight)>> neighborFunc,
+            int targetVertex = -1)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(vertexCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(startVertex);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startVertex, vertexCount);
+            if (targetVertex < -1 || targetVertex >= vertexCount)
+                throw new ArgumentOutOfRangeException(nameof(targetVertex), "Target vertex must be -1 or a valid vertex index.");
+            ArgumentNullException.ThrowIfNull(neighborFunc);
+
+            int[] dist = new int[vertexCount];
+            Array.Fill(dist, -1);
+            bool[] settled = new bool[vertexCount];
+            Dequeue<int> deque = new();
+
+            dist[startVertex] = 0;
+            deque.PushFront(startVertex);
+
+            while (deque.Count > 0)
+            {
+                int u = deque.PopFront();
+                if (settled[u])
+                    continue;
+                settled[u] = true;
+                if (u == targetVertex)
+                    break;
+
+                int du = dist[u];
+                foreach (var (v, w) in neighborFunc(u))
+                {
+                    if ((uint)v >= (uint)vertexCount)
+                        throw new ArgumentOutOfRangeException(nameof(neighborFunc), "Neighbor vertex index is out of range.");
+                    if ((uint)w > 1u)
+                        throw new ArgumentOutOfRangeException(nameof(neighborFunc), "Edge weight in 0-1 PFS must be 0 or 1.");
+
+                    int nd = du + w;
+                    if (dist[v] == -1 || nd < dist[v])
+                    {
+                        dist[v] = nd;
+                        if (w == 0)
+                            deque.PushFront(v);
+                        else
+                            deque.PushBack(v);
+                    }
+                }
+            }
+
+            return dist;
+        }
     }
 }

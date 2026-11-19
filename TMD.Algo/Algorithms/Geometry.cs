@@ -679,6 +679,200 @@ namespace TMD.Algo.Algorithms
 
             return Solve(0, points.Count, 0, points.Count);
         }
+
+        /// <summary>
+        /// Computes the area of a circular segment of radius <paramref name="radius"/>
+        /// subtended by a central angle of <paramref name="centralAngle"/> radians.
+        /// </summary>
+        /// <param name="radius">Non-negative radius of the circle.</param>
+        /// <param name="centralAngle">Central angle in radians in [0, 2*pi].</param>
+        /// <returns>The area of the circular segment.</returns>
+        public static double CircularSegmentArea(double radius, double centralAngle)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(radius);
+            if (centralAngle < -1e-12 || centralAngle > 2.0 * Math.PI + 1e-12)
+                throw new ArgumentOutOfRangeException(nameof(centralAngle), "Central angle must be in [0, 2*pi].");
+
+            double angle = Math.Clamp(centralAngle, 0.0, 2.0 * Math.PI);
+            if (radius == 0.0 || angle == 0.0)
+                return 0.0;
+
+            if (angle < 1e-3)
+            {
+                double a2 = angle * angle;
+                double diff = angle * a2 * (1.0 / 6.0 - a2 * (1.0 / 120.0 - a2 / 5040.0));
+                return 0.5 * radius * radius * diff;
+            }
+
+            return 0.5 * radius * radius * (angle - Math.Sin(angle));
+        }
+
+        /// <summary>
+        /// Computes the intersection area in O(N log N) time of disks centered at <paramref name="centers"/>,
+        /// where each disk passes through <paramref name="commonPoint"/>.
+        /// </summary>
+        /// <param name="commonPoint">The point lying on the boundary of every disk.</param>
+        /// <param name="centers">Centers of the disks.</param>
+        /// <returns>The intersection area of all disks.</returns>
+        public static double CommonPointCirclesIntersectionArea(
+            Point2D commonPoint,
+            IReadOnlyList<Point2D> centers)
+        {
+            ArgumentNullException.ThrowIfNull(centers);
+            if (centers.Count == 0)
+                return 0.0;
+
+            Point2D[] buffer = new Point2D[centers.Count];
+            for (int i = 0; i < centers.Count; i++)
+                buffer[i] = centers[i];
+            return CommonPointCirclesIntersectionArea(commonPoint, (ReadOnlySpan<Point2D>)buffer);
+        }
+
+        /// <summary>
+        /// Computes the intersection area in O(N log N) time of disks centered at <paramref name="centers"/>,
+        /// where each disk passes through <paramref name="commonPoint"/>.
+        /// </summary>
+        /// <param name="commonPoint">The point lying on the boundary of every disk.</param>
+        /// <param name="centers">Centers of the disks.</param>
+        /// <returns>The intersection area of all disks.</returns>
+        public static double CommonPointCirclesIntersectionArea(
+            Point2D commonPoint,
+            ReadOnlySpan<Point2D> centers)
+        {
+            if (centers.IsEmpty)
+                return 0.0;
+
+            int n = centers.Length;
+            Point2D[] shifted = new Point2D[n];
+            for (int i = 0; i < n; i++)
+            {
+                double x = centers[i].X - commonPoint.X;
+                double y = centers[i].Y - commonPoint.Y;
+                if (x == 0.0 && y == 0.0)
+                    return 0.0;
+                shifted[i] = new Point2D(x, y);
+            }
+
+            Array.Sort(shifted, ComparePolarCCW);
+
+            // Deduplicate collinear rays, retaining the smallest radius (smallest disk).
+            int uniqueCount = 0;
+            for (int i = 1; i < n; i++)
+            {
+                Point2D prev = shifted[uniqueCount];
+                Point2D cur = shifted[i];
+                double lenSqPrev = prev.X * prev.X + prev.Y * prev.Y;
+                double lenSqCur = cur.X * cur.X + cur.Y * cur.Y;
+                double cross = prev.X * cur.Y - prev.Y * cur.X;
+                bool sameHalf = IsUpperHalf(prev) == IsUpperHalf(cur);
+                if (sameHalf && Math.Abs(cross) <= 1e-12 * Math.Sqrt(lenSqPrev * lenSqCur))
+                {
+                    if (lenSqCur < lenSqPrev)
+                        shifted[uniqueCount] = cur;
+                }
+                else
+                {
+                    shifted[++uniqueCount] = cur;
+                }
+            }
+
+            int m = uniqueCount + 1;
+            if (m == 1)
+            {
+                Point2D p0 = shifted[0];
+                return Math.PI * (p0.X * p0.X + p0.Y * p0.Y);
+            }
+
+            // Locate the unique angular gap > pi around the origin.
+            int gapIdx = -1;
+            for (int i = 0; i < m; i++)
+            {
+                Point2D a = shifted[i];
+                Point2D b = shifted[(i + 1) % m];
+                double cross = a.X * b.Y - a.Y * b.X;
+                double scale = Math.Sqrt((a.X * a.X + a.Y * a.Y) * (b.X * b.X + b.Y * b.Y));
+                if (cross < -1e-15 * scale)
+                {
+                    gapIdx = i;
+                    break;
+                }
+            }
+
+            if (gapIdx < 0)
+                return 0.0;
+
+            Point2D[] hull = new Point2D[m];
+            int k = 0;
+            for (int offset = 1; offset <= m; offset++)
+            {
+                Point2D pt = shifted[(gapIdx + offset) % m];
+                while (k >= 2 && Cross(hull[k - 2], hull[k - 1], pt) >= 0.0)
+                {
+                    k--;
+                }
+                hull[k++] = pt;
+            }
+
+            Point2D[] poly = new Point2D[k];
+            poly[0] = new Point2D(0.0, 0.0);
+            for (int j = 1; j < k; j++)
+            {
+                Point2D a = hull[k - 1 - j];
+                Point2D b = hull[k - j];
+                double det = a.X * b.Y - a.Y * b.X;
+                double dx = b.X - a.X;
+                double dy = b.Y - a.Y;
+                double invDistSq = 1.0 / (dx * dx + dy * dy);
+                double factor = 2.0 * det * invDistSq;
+                poly[j] = new Point2D(factor * dy, -factor * dx);
+            }
+
+            double area = PolygonArea(poly);
+            for (int e = 0; e < k; e++)
+            {
+                Point2D c = hull[k - 1 - e];
+                Point2D p1 = poly[e];
+                Point2D p2 = poly[(e + 1) % k];
+
+                double r = Math.Sqrt(c.X * c.X + c.Y * c.Y);
+                double ux = p1.X - c.X;
+                double uy = p1.Y - c.Y;
+                double vx = p2.X - c.X;
+                double vy = p2.Y - c.Y;
+                double arcCross = ux * vy - uy * vx;
+                double arcDot = ux * vx + uy * vy;
+                double theta = Math.Atan2(arcCross, arcDot);
+                if (theta < 0.0)
+                {
+                    theta = arcDot > 0.0 && p1.DistanceSquaredTo(p2) <= 1e-24 * (c.X * c.X + c.Y * c.Y)
+                        ? 0.0
+                        : theta + 2.0 * Math.PI;
+                }
+                area += CircularSegmentArea(r, theta);
+            }
+
+            return area;
+        }
+
+        private static bool IsUpperHalf(Point2D p) => p.Y > 0.0 || (p.Y == 0.0 && p.X > 0.0);
+
+        private static int ComparePolarCCW(Point2D a, Point2D b)
+        {
+            bool ua = IsUpperHalf(a);
+            bool ub = IsUpperHalf(b);
+            if (ua != ub)
+                return ua ? -1 : 1;
+
+            double cross = a.X * b.Y - a.Y * b.X;
+            if (cross > 0.0)
+                return -1;
+            if (cross < 0.0)
+                return 1;
+
+            double lenA = a.X * a.X + a.Y * a.Y;
+            double lenB = b.X * b.X + b.Y * b.Y;
+            return lenA.CompareTo(lenB);
+        }
     }
 
     /// <summary>

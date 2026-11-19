@@ -158,5 +158,35 @@ namespace TMD.AlgoTest
                 Assert.AreEqual(baseline[i], buckets[i]);
             }
         }
+
+        [Test]
+        public void CountInversionsTest()
+        {
+            Assert.AreEqual(0, SpecialtySort.CountInversions(ReadOnlySpan<int>.Empty));
+            Assert.AreEqual(0, SpecialtySort.CountInversions((ReadOnlySpan<int>)[42]));
+            Assert.AreEqual(0, SpecialtySort.CountInversions((ReadOnlySpan<int>)[1, 2, 2, 3]));
+            Assert.AreEqual(6, SpecialtySort.CountInversions((ReadOnlySpan<int>)[4, 3, 2, 1]));
+            Assert.AreEqual(3, SpecialtySort.CountInversions((ReadOnlySpan<int>)[2, 4, 1, 3, 5], null));
+
+            // Custom reverse comparer flips order cleanly (strictly equal items don't form inversions).
+            var desc = Comparer<int>.Create((a, b) => b.CompareTo(a));
+            Assert.AreEqual(2, SpecialtySort.CountInversions((IReadOnlyList<int>)[1, 2, 2], desc));
+
+            Random rnd = new(99);
+            int[] arr = new int[80];
+            for (int trial = 0; trial < 20; trial++)
+            {
+                for (int i = 0; i < arr.Length; i++)
+                    arr[i] = rnd.Next(-15, 16);
+
+                long expected = 0;
+                for (int i = 0; i < arr.Length; i++)
+                    for (int j = i + 1; j < arr.Length; j++)
+                        if (arr[i] > arr[j]) expected++;
+
+                Assert.AreEqual(expected, SpecialtySort.CountInversions((ReadOnlySpan<int>)arr));
+                Assert.AreEqual(expected, SpecialtySort.CountInversions((IReadOnlyList<int>)arr));
+            }
+        }
     }
 }

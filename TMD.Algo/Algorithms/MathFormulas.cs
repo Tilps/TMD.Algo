@@ -415,6 +415,38 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Computes the non-negative greatest common divisor of <paramref name="a"/> and <paramref name="b"/>
+        /// together with Bézout coefficients satisfying a * x + b * y = gcd(a, b).
+        /// </summary>
+        /// <param name="a">First integer.</param>
+        /// <param name="b">Second integer.</param>
+        /// <param name="x">Coefficient multiplying <paramref name="a"/>.</param>
+        /// <param name="y">Coefficient multiplying <paramref name="b"/>.</param>
+        /// <returns>The non-negative greatest common divisor of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        public static long ExtendedGcd(long a, long b, out long x, out long y)
+        {
+            long oldR = a, r = b;
+            long oldS = 1, s = 0;
+            long oldT = 0, t = 1;
+            while (r != 0)
+            {
+                long q = oldR / r;
+                (oldR, r) = (r, oldR - q * r);
+                (oldS, s) = (s, oldS - q * s);
+                (oldT, t) = (t, oldT - q * t);
+            }
+            if (oldR < 0)
+            {
+                oldR = -oldR;
+                oldS = -oldS;
+                oldT = -oldT;
+            }
+            x = oldS;
+            y = oldT;
+            return oldR;
+        }
+
+        /// <summary>
         /// Computes integer division rounded down towards negative infinity (floor division).
         /// </summary>
         /// <param name="num">The dividend numerator.</param>

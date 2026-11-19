@@ -38,6 +38,7 @@ namespace TMD.AlgoTest
             var trie = new Trie<char>();
             Assert.AreEqual(0, trie.Count);
             Assert.AreEqual(0, trie.UniqueCount);
+            Assert.AreEqual(1, trie.NodeCount);
             Assert.IsFalse(trie.Contains("".AsSpan()));
             Assert.IsFalse(trie.Contains("a".AsSpan()));
             Assert.IsFalse(trie.StartsWith("".AsSpan()));
@@ -55,6 +56,7 @@ namespace TMD.AlgoTest
 
             Assert.AreEqual(6, trie.Count);
             Assert.AreEqual(5, trie.UniqueCount);
+            Assert.AreEqual(14, trie.NodeCount);
 
             Assert.IsTrue(trie.Contains("".AsSpan()));
             Assert.AreEqual(1, trie.CountExact("".AsSpan()));
@@ -74,17 +76,19 @@ namespace TMD.AlgoTest
             Assert.IsFalse(trie.Remove("ap".AsSpan()));
             Assert.IsFalse(trie.Remove("zebra".AsSpan()));
 
-            // Remove one duplicate of "apple": UniqueCount remains 5.
+            // Remove one duplicate of "apple": UniqueCount remains 5, NodeCount unchanged.
             Assert.IsTrue(trie.Remove("apple".AsSpan()));
             Assert.AreEqual(5, trie.Count);
             Assert.AreEqual(5, trie.UniqueCount);
+            Assert.AreEqual(14, trie.NodeCount);
             Assert.AreEqual(1, trie.CountExact("apple".AsSpan()));
             Assert.AreEqual(2, trie.CountPrefix("app".AsSpan()));
 
-            // Remove second "apple": UniqueCount drops to 4, "app" remains.
+            // Remove second "apple": UniqueCount drops to 4, "le" branch pruned (NodeCount 14 -> 12).
             Assert.IsTrue(trie.Remove("apple".AsSpan()));
             Assert.AreEqual(4, trie.Count);
             Assert.AreEqual(4, trie.UniqueCount);
+            Assert.AreEqual(12, trie.NodeCount);
             Assert.IsFalse(trie.Contains("apple".AsSpan()));
             Assert.IsTrue(trie.Contains("app".AsSpan()));
             Assert.AreEqual(1, trie.CountPrefix("app".AsSpan()));
@@ -94,10 +98,12 @@ namespace TMD.AlgoTest
             Assert.IsFalse(trie.Contains((IEnumerable<char>)""));
             Assert.AreEqual(3, trie.Count);
             Assert.AreEqual(3, trie.UniqueCount);
+            Assert.AreEqual(12, trie.NodeCount);
 
             trie.Clear();
             Assert.AreEqual(0, trie.Count);
             Assert.AreEqual(0, trie.UniqueCount);
+            Assert.AreEqual(1, trie.NodeCount);
             Assert.IsFalse(trie.StartsWith("a".AsSpan()));
         }
 
