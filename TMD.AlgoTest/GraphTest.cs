@@ -309,5 +309,40 @@ namespace TMD.AlgoTest
             int[] left4 = { u0, u1, u2, u3 };
             Assert.IsFalse(g.CanMatchAllLeft(left4, right));
         }
+
+        [Test]
+        public void TestArticulationPointsBridgesAndBiconnectedComponents()
+        {
+            // Two triangles (0-1-2) and (3-4-5) joined by bridge (2-3), plus triangle (5-6-7) sharing cut vertex 5, plus isolated vertex 8.
+            var g = new Graph<int, int>();
+            for (int i = 0; i < 9; i++)
+                g.AddVertex(i);
+
+            g.AddUndirectedEdge(0, 1, 1);
+            g.AddUndirectedEdge(1, 2, 1);
+            g.AddUndirectedEdge(2, 0, 1);
+
+            g.AddUndirectedEdge(2, 3, 1);
+
+            g.AddUndirectedEdge(3, 4, 1);
+            g.AddUndirectedEdge(4, 5, 1);
+            g.AddUndirectedEdge(5, 3, 1);
+
+            g.AddUndirectedEdge(5, 6, 1);
+            g.AddUndirectedEdge(6, 7, 1);
+            g.AddUndirectedEdge(7, 5, 1);
+
+            g.GetArticulationPointsAndBridges(out var art, out var bridges);
+            Assert.AreEqual(new[] { 2, 3, 5 }, art);
+            Assert.AreEqual(1, bridges.Count);
+            Assert.AreEqual((2, 3), bridges[0]);
+
+            var bcc = g.GetBiconnectedVertexComponents();
+            var normalized = bcc
+                .Select(c => string.Join(",", c.OrderBy(x => x)))
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .ToArray();
+            Assert.AreEqual(new[] { "0,1,2", "2,3", "3,4,5", "5,6,7", "8" }, normalized);
+        }
     }
 }

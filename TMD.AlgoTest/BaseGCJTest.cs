@@ -47,6 +47,28 @@ namespace TMD.AlgoTest
             Validate(expectedOutput, result);
         }
 
+        protected void Test<T>(
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setup,
+            [CallerMemberName] string caller = "")
+        {
+            string input = Load(caller + ".txt");
+            string expectedOutput = Load(caller + "Output.txt");
+
+            var result = GCJ.___TESTRunTestsTEST(input, setup);
+            Validate(expectedOutput, result);
+        }
+
+        protected void SlowTest<T>(
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setup,
+            [CallerMemberName] string caller = "")
+        {
+            string input = Load(caller + ".txt");
+            string expectedOutput = Load(caller + "Output.txt");
+
+            var result = GCJ.___TESTRunParallelTestsTEST(input, setup);
+            Validate(expectedOutput, result);
+        }
+
         protected void Test<T>(Func<GCJTestCase, Func<T>> target, double error, [CallerMemberName] string caller = "")
         {
             string input = Load(caller + ".txt");
@@ -102,24 +124,31 @@ namespace TMD.AlgoTest
             }
         }
 
+        private static readonly char[] LineSeparators = ['\n', '\r'];
+
         protected static void Validate(string expectedOutput, List<string> result)
         {
             DebugPoint(expectedOutput, result);
-            string[] bits = expectedOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            List<string> resultSplat = new List<string>();
-            // Each test might have multiple lines of output, expand it out.
-            foreach (var resultPart in result)
-            {
-                resultSplat.AddRange(resultPart.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-            Validate(bits, resultSplat);
+            string[] bits = expectedOutput.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+            Validate(bits, ExpandLines(result));
         }
 
         protected static void Validate(string expectedOutput, List<string> result, double error)
         {
             DebugPoint(expectedOutput, result);
-            string[] bits = expectedOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-            Validate(bits, result, error);
+            string[] bits = expectedOutput.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+            Validate(bits, ExpandLines(result), error);
+        }
+
+        private static List<string> ExpandLines(List<string> result)
+        {
+            List<string> resultSplat = [with(capacity: result.Count)];
+            // Each test might have multiple lines of output, expand it out.
+            foreach (var resultPart in result)
+            {
+                resultSplat.AddRange(resultPart.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries));
+            }
+            return resultSplat;
         }
 
         private static void DebugPoint(string expectedOutput, List<string> result)

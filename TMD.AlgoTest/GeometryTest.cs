@@ -79,5 +79,85 @@ namespace TMD.AlgoTest
             Assert.AreEqual(new KeyValuePair<long, long>(10, 10), hull[2]);
             Assert.AreEqual(new KeyValuePair<long, long>(0, 10), hull[3]);
         }
+
+        [Test]
+        public void PolygonAreaAndConvexIntersectionAndCircleIntersection()
+        {
+            Point2D[] square =
+            [
+                new(0, 0),
+                new(4, 0),
+                new(4, 4),
+                new(0, 4)
+            ];
+            Assert.AreEqual(16.0, Geometry.PolygonArea(square), 1e-12);
+
+            Point2D[] shiftedSquare =
+            [
+                new(2, 2),
+                new(6, 2),
+                new(6, 6),
+                new(2, 6)
+            ];
+            List<Point2D> intersection = Geometry.ConvexPolygonIntersection(square, shiftedSquare);
+            Assert.AreEqual(4.0, Geometry.PolygonArea(intersection), 1e-12);
+
+            Point2D[] disjoint =
+            [
+                new(10, 10),
+                new(12, 10),
+                new(12, 12),
+                new(10, 12)
+            ];
+            Assert.AreEqual(0, Geometry.ConvexPolygonIntersection(square, disjoint).Count);
+
+            // Unit square [0,1]^2 intersected with unit disk centered at (0,0) = pi/4.
+            Point2D[] unitSquare = [new(0, 0), new(1, 0), new(1, 1), new(0, 1)];
+            Assert.AreEqual(Math.PI * 0.25, Geometry.CirclePolygonIntersectionArea(new Point2D(0, 0), 1.0, unitSquare), 1e-12);
+
+            // Disk completely inside square -> circle area.
+            Assert.AreEqual(Math.PI, Geometry.CirclePolygonIntersectionArea(new Point2D(2, 2), 1.0, square), 1e-12);
+
+            // Disk completely containing square -> square area.
+            Assert.AreEqual(16.0, Geometry.CirclePolygonIntersectionArea(new Point2D(2, 2), 10.0, square), 1e-12);
+        }
+
+        [Test]
+        public void ClosestPairAndMinimumTrianglePerimeterAgainstBruteForce()
+        {
+            Random rnd = new(42);
+            Point2D[] pts = new Point2D[45];
+            for (int i = 0; i < pts.Length; i++)
+            {
+                pts[i] = new Point2D(rnd.Next(-500, 500), rnd.Next(-500, 500));
+            }
+
+            double expectedPair = double.PositiveInfinity;
+            double expectedPerim = double.PositiveInfinity;
+            for (int i = 0; i < pts.Length; i++)
+            {
+                for (int j = i + 1; j < pts.Length; j++)
+                {
+                    double dij = pts[i].DistanceTo(pts[j]);
+                    if (dij < expectedPair)
+                        expectedPair = dij;
+                    for (int k = j + 1; k < pts.Length; k++)
+                    {
+                        double p = dij + pts[j].DistanceTo(pts[k]) + pts[i].DistanceTo(pts[k]);
+                        if (p < expectedPerim)
+                            expectedPerim = p;
+                    }
+                }
+            }
+
+            Assert.AreEqual(expectedPair, Geometry.ClosestPairDistance(pts), 1e-9);
+            Assert.AreEqual(expectedPerim, Geometry.MinimumTrianglePerimeter(pts), 1e-9);
+
+            // Collinear sample from GCJ 2009 Finals Min Perimeter.
+            Point2D[] collinear = new Point2D[10];
+            for (int i = 0; i < 10; i++)
+                collinear[i] = new Point2D(i, i);
+            Assert.AreEqual(4.0 * Math.Sqrt(2.0), Geometry.MinimumTrianglePerimeter(collinear), 1e-9);
+        }
     }
 }

@@ -45,11 +45,36 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, Func<GCJTestCase, T> testCaseHandler)
         {
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
+            Run(args, header =>
+            {
+                header.Get(out int testCount);
+                return (testCount, testCaseHandler);
+            });
+        }
+
+        /// <summary>
+        /// Processes an input with global header initialization before reading test cases.
+        /// </summary>
+        /// <param name="args">
+        /// Optional arguments {input file name} {output file name}.
+        /// Default value of input.txt and output.txt respectively.
+        /// </param>
+        /// <param name="setupHandler">
+        /// Callback invoked once with the header test case reader, returning the test case count and per-case handler.
+        /// </param>
+        /// <typeparam name="T">
+        /// Return type of the test case handler.
+        /// </typeparam>
+        public static void Run<T>(string[] args,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, T> TestCaseHandler)> setupHandler)
+        {
             ArgumentNullException.ThrowIfNull(args);
+            ArgumentNullException.ThrowIfNull(setupHandler);
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             string[] lines = File.ReadAllLines(inputFile);
-            var output = RunTests(lines, testCaseHandler);
+            var output = RunTests(lines, setupHandler);
             File.WriteAllLines(outputFile, output);
         }
 
@@ -72,12 +97,41 @@ namespace TMD.Algo.Competitions
         /// </typeparam>
         public static void Run<T>(string[] args, int threads, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
+            Run(args, threads, header =>
+            {
+                header.Get(out int testCount);
+                return (testCount, testCaseHandler);
+            });
+        }
+
+        /// <summary>
+        /// Processes an input with global header initialization before reading test cases concurrently.
+        /// Return values from the per-case handler are invoked concurrently, so must be thread safe with respect to each other.
+        /// </summary>
+        /// <param name="args">
+        /// Optional arguments {input file name} {output file name}.
+        /// Default value of input.txt and output.txt respectively.
+        /// </param>
+        /// <param name="threads">
+        /// Maximum number of threads to use. If less than 1 the value will be selected automatically.
+        /// </param>
+        /// <param name="setupHandler">
+        /// Callback invoked once with the header test case reader, returning the test case count and per-case handler.
+        /// </param>
+        /// <typeparam name="T">
+        /// Return type of the test case handler.
+        /// </typeparam>
+        public static void Run<T>(string[] args, int threads,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setupHandler)
+        {
             ArgumentNullException.ThrowIfNull(args);
+            ArgumentNullException.ThrowIfNull(setupHandler);
             string inputFile = args.Length < 1 ? "input.txt" : args[0];
             string outputFile = args.Length < 2 ? "output.txt" : args[1];
             if (threads < 1) threads = Environment.ProcessorCount;
             string[] lines = File.ReadAllLines(inputFile);
-            var output = RunTestsParallel(threads, lines, testCaseHandler);
+            var output = RunTestsParallel(threads, lines, setupHandler);
             File.WriteAllLines(outputFile, output);
         }
 
@@ -90,25 +144,63 @@ namespace TMD.Algo.Competitions
 
         internal static List<string> ___TESTRunTestsTEST<T>(string lines, Func<GCJTestCase, T> testCaseHandler)
         {
-            return RunTests(SplitLines(lines), testCaseHandler);
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
+            return ___TESTRunTestsTEST(lines, header =>
+            {
+                header.Get(out int testCount);
+                return (testCount, testCaseHandler);
+            });
+        }
+
+        internal static List<string> ___TESTRunTestsTEST<T>(string lines,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, T> TestCaseHandler)> setupHandler)
+        {
+            ArgumentNullException.ThrowIfNull(setupHandler);
+            return RunTests(SplitLines(lines), setupHandler);
         }
 
         internal static List<string> ___TESTRunTestsTEST<T>(string lines, Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            return RunTestsParallel(1, SplitLines(lines), testCaseHandler);
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
+            return ___TESTRunTestsTEST(lines, header =>
+            {
+                header.Get(out int testCount);
+                return (testCount, testCaseHandler);
+            });
+        }
+
+        internal static List<string> ___TESTRunTestsTEST<T>(string lines,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setupHandler)
+        {
+            ArgumentNullException.ThrowIfNull(setupHandler);
+            return RunTestsParallel(1, SplitLines(lines), setupHandler);
         }
 
         internal static List<string> ___TESTRunParallelTestsTEST<T>(string lines,
             Func<GCJTestCase, Func<T>> testCaseHandler)
         {
-            return RunTestsParallel(Environment.ProcessorCount, SplitLines(lines), testCaseHandler);
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
+            return ___TESTRunParallelTestsTEST(lines, header =>
+            {
+                header.Get(out int testCount);
+                return (testCount, testCaseHandler);
+            });
         }
 
-        private static List<string> RunTests<T>(string[] lines, Func<GCJTestCase, T> testCaseHandler)
+        internal static List<string> ___TESTRunParallelTestsTEST<T>(string lines,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setupHandler)
         {
-            int testCount = int.Parse(lines[0]);
+            ArgumentNullException.ThrowIfNull(setupHandler);
+            return RunTestsParallel(Environment.ProcessorCount, SplitLines(lines), setupHandler);
+        }
+
+        private static List<string> RunTests<T>(string[] lines,
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, T> TestCaseHandler)> setupHandler)
+        {
+            GCJTestCase test = new(0, lines);
+            var (testCount, testCaseHandler) = setupHandler(test);
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
             List<string> output = [with(capacity: testCount)];
-            GCJTestCase test = new GCJTestCase(1, lines);
             for (int i = 0; i < testCount; i++)
             {
                 T result = testCaseHandler(test);
@@ -118,11 +210,12 @@ namespace TMD.Algo.Competitions
         }
 
         private static List<string> RunTestsParallel<T>(int threads, string[] lines,
-            Func<GCJTestCase, Func<T>> testCaseHandler)
+            Func<GCJTestCase, (int TestCount, Func<GCJTestCase, Func<T>> TestCaseHandler)> setupHandler)
         {
-            int testCount = int.Parse(lines[0]);
+            GCJTestCase test = new(0, lines);
+            var (testCount, testCaseHandler) = setupHandler(test);
+            ArgumentNullException.ThrowIfNull(testCaseHandler);
             string[] output = new string[testCount];
-            GCJTestCase test = new GCJTestCase(1, lines);
             object counterLock = new object();
             int counter = 0;
             object dispatchLock = new object();

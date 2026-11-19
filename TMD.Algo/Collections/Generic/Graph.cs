@@ -1591,6 +1591,200 @@ namespace TMD.Algo.Collections.Generic
             }
             return true;
         }
+
+        private struct BiconnectedFrame
+        {
+            public int U;
+            public int Parent;
+            public int ParentEdgeId;
+            public int AdjIndex;
+            public int ChildCount;
+        }
+
+        private void AnalyzeBiconnectivity(
+            out bool[] isArticulation,
+            out List<(int U, int V)> bridges,
+            List<List<int>>? vertexComponents)
+        {
+            int n = vertices.Count;
+            isArticulation = new bool[n];
+            bridges = [];
+            if (n == 0)
+                return;
+
+            int[] tin = new int[n];
+            int[] low = new int[n];
+            bool[] inAnyComponent = vertexComponents != null ? new bool[n] : [];
+            int[] vertexStamp = vertexComponents != null ? new int[n] : [];
+            int stampId = 0;
+            int timer = 0;
+
+            Stack<(int U, int V)> edgeStack = new();
+
+            void FlushComponentUntil(int targetU, int targetV)
+            {
+                if (vertexComponents == null)
+                {
+                    while (edgeStack.Count > 0)
+                    {
+                        var popped = edgeStack.Pop();
+                        if (popped.U == targetU && popped.V == targetV)
+                            break;
+                    }
+                    return;
+                }
+
+                stampId++;
+                List<int> block = [];
+                while (edgeStack.Count > 0)
+                {
+                    var (eu, ev) = edgeStack.Pop();
+                    if (vertexStamp[eu] != stampId)
+                    {
+                        vertexStamp[eu] = stampId;
+                        inAnyComponent[eu] = true;
+                        block.Add(eu);
+                    }
+                    if (vertexStamp[ev] != stampId)
+                    {
+                        vertexStamp[ev] = stampId;
+                        inAnyComponent[ev] = true;
+                        block.Add(ev);
+                    }
+                    if (eu == targetU && ev == targetV)
+                        break;
+                }
+                if (block.Count > 0)
+                    vertexComponents.Add(block);
+            }
+
+            BiconnectedFrame[] frameBuffer = new BiconnectedFrame[n];
+            for (int start = 0; start < n; start++)
+            {
+                if (tin[start] != 0)
+                    continue;
+
+                tin[start] = low[start] = ++timer;
+                int depth = 0;
+                frameBuffer[0] = new BiconnectedFrame
+                {
+                    U = start,
+                    Parent = -1,
+                    ParentEdgeId = -1,
+                    AdjIndex = 0,
+                    ChildCount = 0
+                };
+
+                while (depth >= 0)
+                {
+                    ref BiconnectedFrame f = ref frameBuffer[depth];
+                    int u = f.U;
+                    List<KeyValuePair<int, int>> neighbors = adjacencyList[u];
+
+                    if (f.AdjIndex < neighbors.Count)
+                    {
+                        KeyValuePair<int, int> edge = neighbors[f.AdjIndex++];
+                        int v = edge.Key;
+                        int edgeId = edge.Value;
+
+                        if (edgeId == f.ParentEdgeId)
+                            continue;
+
+                        if (tin[v] == 0)
+                        {
+                            if (vertexComponents != null)
+                                edgeStack.Push((u, v));
+                            f.ChildCount++;
+                            tin[v] = low[v] = ++timer;
+                            depth++;
+                            frameBuffer[depth] = new BiconnectedFrame
+                            {
+                                U = v,
+                                Parent = u,
+                                ParentEdgeId = edgeId,
+                                AdjIndex = 0,
+                                ChildCount = 0
+                            };
+                        }
+                        else if (tin[v] < tin[u])
+                        {
+                            if (vertexComponents != null)
+                                edgeStack.Push((u, v));
+                            if (tin[v] < low[u])
+                                low[u] = tin[v];
+                        }
+                    }
+                    else
+                    {
+                        int parent = f.Parent;
+                        int childCount = f.ChildCount;
+                        depth--;
+
+                        if (parent >= 0)
+                        {
+                            if (low[u] < low[parent])
+                                low[parent] = low[u];
+
+                            if (low[u] > tin[parent])
+                                bridges.Add((parent, u));
+
+                            if (low[u] >= tin[parent])
+                            {
+                                if (parent != start)
+                                    isArticulation[parent] = true;
+
+                                if (vertexComponents != null)
+                                    FlushComponentUntil(parent, u);
+                            }
+                        }
+                        else if (childCount > 1)
+                        {
+                            isArticulation[u] = true;
+                        }
+                    }
+                }
+            }
+
+            if (vertexComponents != null)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (!inAnyComponent[i])
+                        vertexComponents.Add([i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds all articulation points (cut vertices) and bridges (cut edges) in the undirected graph.
+        /// Assumes edges were added symmetrically as undirected edges.
+        /// </summary>
+        /// <param name="articulationPoints">Receives the sorted list of articulation point vertex IDs.</param>
+        /// <param name="bridges">Receives the list of bridge edges as (U, V) vertex ID pairs.</param>
+        public void GetArticulationPointsAndBridges(
+            out List<int> articulationPoints,
+            out List<(int U, int V)> bridges)
+        {
+            AnalyzeBiconnectivity(out bool[] isArticulation, out bridges, null);
+            articulationPoints = [];
+            for (int i = 0; i < isArticulation.Length; i++)
+            {
+                if (isArticulation[i])
+                    articulationPoints.Add(i);
+            }
+        }
+
+        /// <summary>
+        /// Decomposes an undirected graph into its vertex-biconnected components (blocks).
+        /// Isolated vertices are returned as single-vertex components; articulation points appear in multiple components.
+        /// </summary>
+        /// <returns>A list of vertex ID lists, one for each biconnected component.</returns>
+        public List<List<int>> GetBiconnectedVertexComponents()
+        {
+            List<List<int>> components = [];
+            AnalyzeBiconnectivity(out _, out _, components);
+            return components;
+        }
     }
 
 

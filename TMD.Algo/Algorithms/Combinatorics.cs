@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace TMD.Algo.Algorithms
 {
@@ -256,6 +257,8 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static long Choose(long n, long k)
         {
+            if (k < 0 || k > n)
+                return 0;
             long res = 1;
             long currentK = k;
             for (long i = n; i >= n - k + 1; i--)
@@ -311,17 +314,20 @@ namespace TMD.Algo.Algorithms
         /// </returns>
         public static long Choose(long n, long k, ref long[,] cache)
         {
+            if (k < 0 || k > n)
+                return 0;
             // This version only supports positive integers.
             if (n < 1 || k < 1)
                 return Choose(n, k);
             if (cache == null || cache.GetLength(0) <= n)
             {
                 cache = new long[n + 1, n + 1];
+                cache[0, 0] = 1;
                 for (int i = 1; i <= n; i++)
                 {
-                    cache[i, 1] = 1;
+                    cache[i, 0] = 1;
                     cache[i, i] = 1;
-                    for (int j = 2; j < i; j++)
+                    for (int j = 1; j < i; j++)
                     {
                         cache[i, j] = cache[i - 1, j] + cache[i - 1, j - 1];
                     }
@@ -375,6 +381,91 @@ namespace TMD.Algo.Algorithms
             if (n == k + 1)
                 return 0;
             return Choose(n, k, ref cache)*Derangements(n - k);
+        }
+
+        /// <summary>
+        /// Transforms <paramref name="items"/> in-place into its next lexicographical permutation according to <paramref name="comparer"/>.
+        /// If <paramref name="items"/> is already the last permutation, wraps around to the smallest permutation and returns false.
+        /// </summary>
+        /// <typeparam name="T">Type of elements in the sequence.</typeparam>
+        /// <param name="items">Span of elements to permute in-place.</param>
+        /// <param name="comparer">Comparer defining element ordering, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>True if a strictly greater next permutation existed; false if it wrapped around to the first permutation.</returns>
+        public static bool NextPermutation<T>(Span<T> items, IComparer<T>? comparer = null)
+        {
+            if (items.Length < 2)
+                return false;
+
+            comparer ??= Comparer<T>.Default;
+            int pivot = items.Length - 2;
+            while (pivot >= 0 && comparer.Compare(items[pivot], items[pivot + 1]) >= 0)
+            {
+                pivot--;
+            }
+
+            if (pivot < 0)
+            {
+                items.Reverse();
+                return false;
+            }
+
+            int swapIdx = items.Length - 1;
+            while (comparer.Compare(items[pivot], items[swapIdx]) >= 0)
+            {
+                swapIdx--;
+            }
+
+            (items[pivot], items[swapIdx]) = (items[swapIdx], items[pivot]);
+            items[(pivot + 1)..].Reverse();
+            return true;
+        }
+
+        /// <summary>
+        /// Transforms <paramref name="items"/> in-place into its next lexicographical permutation according to <paramref name="comparer"/>.
+        /// If <paramref name="items"/> is already the last permutation, wraps around to the smallest permutation and returns false.
+        /// </summary>
+        /// <typeparam name="T">Type of elements in the list.</typeparam>
+        /// <param name="items">List of elements to permute in-place.</param>
+        /// <param name="comparer">Comparer defining element ordering, or null to use <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>True if a strictly greater next permutation existed; false if it wrapped around to the first permutation.</returns>
+        public static bool NextPermutation<T>(IList<T> items, IComparer<T>? comparer = null)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+            if (items.Count < 2)
+                return false;
+
+            comparer ??= Comparer<T>.Default;
+            int pivot = items.Count - 2;
+            while (pivot >= 0 && comparer.Compare(items[pivot], items[pivot + 1]) >= 0)
+            {
+                pivot--;
+            }
+
+            if (pivot < 0)
+            {
+                ReverseRange(items, 0, items.Count - 1);
+                return false;
+            }
+
+            int swapIdx = items.Count - 1;
+            while (comparer.Compare(items[pivot], items[swapIdx]) >= 0)
+            {
+                swapIdx--;
+            }
+
+            (items[pivot], items[swapIdx]) = (items[swapIdx], items[pivot]);
+            ReverseRange(items, pivot + 1, items.Count - 1);
+            return true;
+        }
+
+        private static void ReverseRange<T>(IList<T> items, int left, int right)
+        {
+            while (left < right)
+            {
+                (items[left], items[right]) = (items[right], items[left]);
+                left++;
+                right--;
+            }
         }
     }
 }
