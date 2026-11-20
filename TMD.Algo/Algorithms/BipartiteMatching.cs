@@ -350,6 +350,183 @@ namespace TMD.Algo.Algorithms
 
             return CanMatchAllLeft(leftCount, rightCount, adj);
         }
+
+        /// <summary>
+        /// Counts the number of independent cycles remaining after degree-1 peeling in a balanced bipartite graph
+        /// where every left vertex connects to two distinct right vertices. Each remaining cycle doubles the number
+        /// of perfect matchings.
+        /// </summary>
+        /// <param name="count">Number of vertices in each partition.</param>
+        /// <param name="edges">Span of length <paramref name="count"/> giving each left vertex's two distinct right neighbors.</param>
+        /// <returns>
+        /// The cycle count K &gt;= 0 (meaning 2^K perfect matchings), or -1 if no perfect matching exists.
+        /// Returns 0 for <paramref name="count"/> == 0.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> &lt; 0 or a vertex index is out of range.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="edges"/> length mismatches <paramref name="count"/> or a left vertex has duplicate endpoints.</exception>
+        public static int CountPerfectMatchingsLeftDegreeTwoCycles(
+            int count,
+            ReadOnlySpan<(int First, int Second)> edges)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            if (edges.Length != count)
+                throw new ArgumentException("Edges length must equal count.", nameof(edges));
+            if (count == 0)
+                return 0;
+
+            List<int>[] rightAdj = new List<int>[count];
+            for (int v = 0; v < count; v++)
+                rightAdj[v] = [];
+
+            for (int u = 0; u < count; u++)
+            {
+                var (v0, v1) = edges[u];
+                if ((uint)v0 >= (uint)count || (uint)v1 >= (uint)count)
+                    throw new ArgumentOutOfRangeException(nameof(edges), "Right vertex index is out of range.");
+                if (v0 == v1)
+                    throw new ArgumentException("Each left vertex must connect to two distinct right vertices.", nameof(edges));
+                rightAdj[v0].Add(u);
+                rightAdj[v1].Add(u);
+            }
+
+            int[] deg = new int[count];
+            bool[] leftRemoved = new bool[count];
+            bool[] rightRemoved = new bool[count];
+            Queue<int> queue = new();
+
+            for (int v = 0; v < count; v++)
+            {
+                deg[v] = rightAdj[v].Count;
+                if (deg[v] == 0)
+                    return -1;
+                if (deg[v] == 1)
+                    queue.Enqueue(v);
+            }
+
+            while (queue.Count > 0)
+            {
+                int v = queue.Dequeue();
+                if (rightRemoved[v])
+                    continue;
+                if (deg[v] == 0)
+                    return -1;
+
+                int matchedU = -1;
+                foreach (int u in rightAdj[v])
+                {
+                    if (!leftRemoved[u])
+                    {
+                        matchedU = u;
+                        break;
+                    }
+                }
+                if (matchedU < 0)
+                    return -1;
+
+                leftRemoved[matchedU] = true;
+                rightRemoved[v] = true;
+
+                var (first, second) = edges[matchedU];
+                int otherV = first == v ? second : first;
+                if (!rightRemoved[otherV])
+                {
+                    deg[otherV]--;
+                    if (deg[otherV] == 0)
+                        return -1;
+                    if (deg[otherV] == 1)
+                        queue.Enqueue(otherV);
+                }
+            }
+
+            // Every remaining active vertex on both sides now has degree exactly 2, forming disjoint cycles.
+            int cycles = 0;
+            Queue<int> bfs = new();
+            for (int v = 0; v < count; v++)
+            {
+                if (rightRemoved[v])
+                    continue;
+
+                cycles++;
+                rightRemoved[v] = true;
+                bfs.Enqueue(v);
+                while (bfs.Count > 0)
+                {
+                    int curV = bfs.Dequeue();
+                    foreach (int u in rightAdj[curV])
+                    {
+                        if (leftRemoved[u])
+                            continue;
+                        leftRemoved[u] = true;
+                        var (first, second) = edges[u];
+                        int nextV = first == curV ? second : first;
+                        if (!rightRemoved[nextV])
+                        {
+                            rightRemoved[nextV] = true;
+                            bfs.Enqueue(nextV);
+                        }
+                    }
+                }
+            }
+
+            return cycles;
+        }
+
+        /// <summary>
+        /// Counts the number of independent cycles remaining after degree-1 peeling in a balanced bipartite graph
+        /// where every left vertex connects to two distinct right vertices.
+        /// </summary>
+        /// <param name="count">Number of vertices in each partition.</param>
+        /// <param name="edges">List of length <paramref name="count"/> giving each left vertex's two distinct right neighbors.</param>
+        /// <returns>The cycle count K &gt;= 0 (meaning 2^K perfect matchings), or -1 if no perfect matching exists.</returns>
+        public static int CountPerfectMatchingsLeftDegreeTwoCycles(
+            int count,
+            IReadOnlyList<(int First, int Second)> edges)
+        {
+            ArgumentNullException.ThrowIfNull(edges);
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            if (edges.Count != count)
+                throw new ArgumentException("Edges count must equal count.", nameof(edges));
+            var arr = new (int First, int Second)[count];
+            for (int i = 0; i < count; i++)
+                arr[i] = edges[i];
+            return CountPerfectMatchingsLeftDegreeTwoCycles(count, arr.AsSpan());
+        }
+
+        /// <summary>
+        /// Counts the number of perfect matchings modulo <paramref name="modulus"/> in a balanced bipartite graph
+        /// where every left vertex connects to two distinct right vertices, in O(V) time.
+        /// </summary>
+        /// <param name="count">Number of vertices in each partition.</param>
+        /// <param name="edges">Span of length <paramref name="count"/> giving each left vertex's two distinct right neighbors.</param>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <returns>Number of perfect matchings modulo <paramref name="modulus"/>.</returns>
+        public static long CountPerfectMatchingsLeftDegreeTwo(
+            int count,
+            ReadOnlySpan<(int First, int Second)> edges,
+            long modulus)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(modulus);
+            int cycles = CountPerfectMatchingsLeftDegreeTwoCycles(count, edges);
+            return cycles < 0 ? 0 : Modulo.Pow(2, cycles, modulus);
+        }
+
+        /// <summary>
+        /// Counts the number of perfect matchings modulo <paramref name="modulus"/> in a balanced bipartite graph
+        /// where every left vertex connects to two distinct right vertices, in O(V) time.
+        /// </summary>
+        /// <param name="count">Number of vertices in each partition.</param>
+        /// <param name="edges">List of length <paramref name="count"/> giving each left vertex's two distinct right neighbors.</param>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <returns>Number of perfect matchings modulo <paramref name="modulus"/>.</returns>
+        public static long CountPerfectMatchingsLeftDegreeTwo(
+            int count,
+            IReadOnlyList<(int First, int Second)> edges,
+            long modulus)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(modulus);
+            int cycles = CountPerfectMatchingsLeftDegreeTwoCycles(count, edges);
+            return cycles < 0 ? 0 : Modulo.Pow(2, cycles, modulus);
+        }
     }
 }
 

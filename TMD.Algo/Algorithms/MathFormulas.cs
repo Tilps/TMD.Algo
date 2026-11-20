@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -486,6 +487,339 @@ namespace TMD.Algo.Algorithms
             if (den == 0) throw new DivideByZeroException("Denominator cannot be zero.");
             if (den < 0) { num = -num; den = -den; }
             return num >= 0 ? num / den : (num - den + 1) / den;
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="value"/> is a prime number using deterministic 64-bit Miller-Rabin.
+        /// </summary>
+        /// <param name="value">Integer to test for primality.</param>
+        /// <returns>True if <paramref name="value"/> is prime; otherwise, false.</returns>
+        public static bool IsPrime(long value)
+        {
+            if (value < 2)
+                return false;
+
+            ReadOnlySpan<long> smallPrimes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+            foreach (long p in smallPrimes)
+            {
+                if (value == p)
+                    return true;
+                if (value % p == 0)
+                    return false;
+            }
+            if (value < 41L * 41L)
+                return true;
+
+            long d = value - 1;
+            int s = BitOperations.TrailingZeroCount((ulong)d);
+            d >>= s;
+
+            ReadOnlySpan<long> bases = [2L, 325L, 9375L, 28178L, 450775L, 9780504L, 1795265022L];
+            foreach (long a in bases)
+            {
+                if (a % value == 0)
+                    continue;
+                long x = Modulo.Pow(a, d, value);
+                if (x == 1 || x == value - 1)
+                    continue;
+                bool composite = true;
+                for (int r = 1; r < s; r++)
+                {
+                    x = Modulo.Multiply(x, x, value);
+                    if (x == value - 1)
+                    {
+                        composite = false;
+                        break;
+                    }
+                }
+                if (composite)
+                    return false;
+            }
+            return true;
+        }
+
+        private static ulong GcdUInt64(ulong a, ulong b)
+        {
+            while (b != 0)
+            {
+                ulong t = a % b;
+                a = b;
+                b = t;
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Finds a non-trivial divisor of an odd composite integer <paramref name="n"/> using Brent's cycle-detection
+        /// variant of Pollard's rho algorithm in expected O(n^(1/4)) time.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The iteration generates a pseudorandom walk <c>z_{k+1} = (z_k^2 + c) mod n</c>. Modulo any unknown prime
+        /// factor <c>p | n</c>, the sequence enters a cycle after roughly <c>O(sqrt(p)) &lt;= O(n^(1/4))</c> steps by
+        /// the birthday paradox, so two indices separated by the cycle length have <c>|x - y|</c> divisible by <c>p</c>.
+        /// </para>
+        /// <para>
+        /// Brent's variant improves on Floyd's tortoise-and-hare by teleporting the tortoise <c>x</c> to the hare
+        /// <c>y</c> at powers of two (<c>r = 1, 2, 4, ...</c>) and batching modular differences in a product <c>q</c>
+        /// before taking <c>Gcd(q, n)</c> once every <c>m = 128</c> steps. If batching overshoots (<c>gcd == n</c>),
+        /// it rewinds to checkpoint <c>ys</c> and steps singly until a factor emerges; if all factors collide at once
+        /// (<c>gcd == n</c>), it restarts with the next constant <c>c</c>.
+        /// </para>
+        /// </remarks>
+        /// <param name="n">Composite positive integer with no small prime factors.</param>
+        /// <returns>A non-trivial divisor <c>d</c> satisfying <c>1 &lt; d &lt; n</c>.</returns>
+        private static long PollardRhoBrent(long n)
+        {
+            for (long c = 1; ; c++)
+            {
+                long cMod = c % n;
+
+                long Step(long val)
+                {
+                    long sq = Modulo.Multiply(val, val, n);
+                    return sq >= n - cMod ? sq - (n - cMod) : sq + cMod;
+                }
+
+                long y = (c % (n - 1)) + 1;
+                long x = y;
+                long q = 1;
+                const long m = 128;
+                long g = 1;
+                long r = 1;
+                long ys = 0;
+
+                while (g == 1)
+                {
+                    // Teleport tortoise x to hare y and expand the search horizon r by a factor of 2.
+                    x = y;
+                    for (long i = 0; i < r; i++)
+                        y = Step(y);
+
+                    long k = 0;
+                    while (k < r && g == 1)
+                    {
+                        // Save checkpoint ys before processing a batch of m steps for rollback if gcd overshoots to n.
+                        ys = y;
+                        long lim = Math.Min(m, r - k);
+                        for (long i = 0; i < lim; i++)
+                        {
+                            y = Step(y);
+                            long diff = x > y ? x - y : y - x;
+                            q = Modulo.Multiply(q, diff, n);
+                        }
+                        g = Gcd(q, n);
+                        k += m;
+                    }
+                    r <<= 1;
+                }
+
+                // Batch product captured n (or diff == 0); rewind to ys and inspect single steps.
+                if (g == n)
+                {
+                    do
+                    {
+                        ys = Step(ys);
+                        long diff = x > ys ? x - ys : ys - x;
+                        g = Gcd(diff, n);
+                    }
+                    while (g == 1);
+                }
+
+                // If g is a proper divisor, return it; otherwise try a different polynomial offset c.
+                if (g != n)
+                    return g;
+            }
+        }
+
+        private static void FactorRecursive(long n, List<long> factors)
+        {
+            if (n <= 1)
+                return;
+            if (IsPrime(n))
+            {
+                factors.Add(n);
+                return;
+            }
+            long d = PollardRhoBrent(n);
+            FactorRecursive(d, factors);
+            FactorRecursive(n / d, factors);
+        }
+
+        /// <summary>
+        /// Computes the prime factorization of a positive 64-bit integer using small-prime trial division
+        /// followed by deterministic Miller-Rabin and Brent's Pollard's rho algorithm.
+        /// </summary>
+        /// <remarks>
+        /// Factors are extracted in three stages: (1) trial division by primes up to 97, (2) deterministic
+        /// 64-bit Miller-Rabin primality testing, and (3) recursive splitting via Brent's variant of Pollard's rho.
+        /// </remarks>
+        /// <param name="value">Positive integer to factorize.</param>
+        /// <returns>List of (Prime, Exponent) pairs ordered by ascending prime.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> &lt;= 0.</exception>
+        public static List<(long Prime, int Exponent)> PrimeFactorize(long value)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            List<(long Prime, int Exponent)> result = [];
+            if (value == 1)
+                return result;
+
+            ReadOnlySpan<int> smallPrimes =
+            [
+                2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37,
+                41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97
+            ];
+
+            long rem = value;
+            foreach (int p in smallPrimes)
+            {
+                if ((long)p * p > rem)
+                    break;
+                if (rem % p == 0)
+                {
+                    int exp = 0;
+                    do
+                    {
+                        rem /= p;
+                        exp++;
+                    }
+                    while (rem % p == 0);
+                    result.Add((p, exp));
+                }
+            }
+
+            if (rem > 1)
+            {
+                List<long> largeFactors = [];
+                FactorRecursive(rem, largeFactors);
+                largeFactors.Sort();
+                for (int i = 0; i < largeFactors.Count;)
+                {
+                    long p = largeFactors[i];
+                    int j = i + 1;
+                    while (j < largeFactors.Count && largeFactors[j] == p)
+                        j++;
+                    result.Add((p, j - i));
+                    i = j;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns all positive divisors of <paramref name="value"/> in ascending order.
+        /// </summary>
+        /// <param name="value">Positive integer whose divisors to enumerate.</param>
+        /// <returns>Sorted array of positive divisors of <paramref name="value"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> &lt;= 0.</exception>
+        public static long[] GetDivisors(long value)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            List<(long Prime, int Exponent)> factors = PrimeFactorize(value);
+            List<long> divisors = [1L];
+            foreach (var (prime, exp) in factors)
+            {
+                int curCount = divisors.Count;
+                long mult = prime;
+                for (int e = 1; e <= exp; e++)
+                {
+                    for (int i = 0; i < curCount; i++)
+                        divisors.Add(divisors[i] * mult);
+                    if (e < exp)
+                        mult *= prime;
+                }
+            }
+            long[] sorted = [.. divisors];
+            Array.Sort(sorted);
+            return sorted;
+        }
+
+        /// <summary>
+        /// Computes the least common multiple of <paramref name="a"/> and <paramref name="b"/> without overflow
+        /// if the non-negative result does not exceed <paramref name="maxValue"/>.
+        /// </summary>
+        /// <param name="a">First integer.</param>
+        /// <param name="b">Second integer.</param>
+        /// <param name="maxValue">Maximum allowed non-negative result.</param>
+        /// <param name="lcm">When this method returns true, contains the non-negative LCM; otherwise 0.</param>
+        /// <returns>True if the LCM is at most <paramref name="maxValue"/>; otherwise false.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxValue"/> &lt; 0.</exception>
+        public static bool TryLcm(long a, long b, long maxValue, out long lcm)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(maxValue);
+            if (a == 0 || b == 0)
+            {
+                lcm = 0;
+                return true;
+            }
+            ulong ua = (ulong)(a < 0 ? -(Int128)a : (Int128)a);
+            ulong ub = (ulong)(b < 0 ? -(Int128)b : (Int128)b);
+            ulong g = GcdUInt64(ua, ub);
+            UInt128 prod = (UInt128)(ua / g) * ub;
+            if (prod > (UInt128)maxValue)
+            {
+                lcm = 0;
+                return false;
+            }
+            lcm = (long)prod;
+            return true;
+        }
+
+        /// <summary>
+        /// Computes the exact integer floor square root of a non-negative 64-bit integer.
+        /// </summary>
+        /// <param name="value">Non-negative integer.</param>
+        /// <returns>Largest integer y such that y * y &lt;= <paramref name="value"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> &lt; 0.</exception>
+        public static long IntegerSqrt(long value)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            return (long)IntegerSqrt((UInt128)(ulong)value);
+        }
+
+        /// <summary>
+        /// Computes the exact integer floor square root of an unsigned 128-bit integer.
+        /// </summary>
+        /// <param name="value">Unsigned 128-bit integer.</param>
+        /// <returns>Largest 64-bit unsigned integer y such that y * y &lt;= <paramref name="value"/>.</returns>
+        [CLSCompliant(false)]
+        public static ulong IntegerSqrt(UInt128 value)
+        {
+            if (value == 0)
+                return 0;
+            int shift = (128 - (int)UInt128.LeadingZeroCount(value) + 1) >> 1;
+            UInt128 x = (UInt128)1 << shift;
+            while (true)
+            {
+                UInt128 y = (x + value / x) >> 1;
+                if (y >= x)
+                    return (ulong)x;
+                x = y;
+            }
+        }
+
+        /// <summary>
+        /// Computes the exact integer floor square root of a non-negative arbitrary-precision integer.
+        /// </summary>
+        /// <param name="value">Non-negative <see cref="BigInteger"/>.</param>
+        /// <returns>Largest integer y such that y * y &lt;= <paramref name="value"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> &lt; 0.</exception>
+        public static BigInteger IntegerSqrt(BigInteger value)
+        {
+            if (value.Sign < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), "Value must be non-negative.");
+            if (value.IsZero)
+                return BigInteger.Zero;
+            int shift = checked((int)((value.GetBitLength() + 1) >> 1));
+            BigInteger x = BigInteger.One << shift;
+            while (true)
+            {
+                BigInteger y = (x + value / x) >> 1;
+                if (y >= x)
+                    return x;
+                x = y;
+            }
         }
 
         /// <summary>

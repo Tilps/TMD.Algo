@@ -179,6 +179,42 @@ namespace TMD.AlgoTest
         {
             Assert.IsTrue(BipartiteMatching.CanMatchAllLeft(0, 5, (u, v) => true));
         }
+
+        [Test]
+        public void CountPerfectMatchingsLeftDegreeTwo_VariousGraphs()
+        {
+            const long Mod = 1_000_003L;
+
+            // Empty
+            Assert.AreEqual(0, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(0, System.Array.Empty<(int, int)>()));
+            Assert.AreEqual(1L, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(0, System.Array.Empty<(int, int)>(), Mod));
+
+            // Single cycle of length 4 (2 vertices per side): 1 cycle => 2 matchings
+            (int, int)[] singleCycle = [(0, 1), (0, 1)];
+            Assert.AreEqual(1, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(2, singleCycle));
+            Assert.AreEqual(2L, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(2, singleCycle, Mod));
+
+            // Right 0 has degree 1 (forced 0->0), leaving {1,2}->{1,2} cycle => 1 cycle => 2 matchings
+            (int, int)[] peelAndCycle = [(0, 1), (1, 2), (1, 2)];
+            Assert.AreEqual(1, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(3, peelAndCycle));
+            Assert.AreEqual(2L, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(3, peelAndCycle, Mod));
+
+            // Unsolvable: Hall violation (3 left vertices all only touching right 0 and 1, right 2 isolated)
+            (int, int)[] unsolvable = [(0, 1), (0, 1), (0, 1)];
+            Assert.AreEqual(-1, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(3, unsolvable));
+            Assert.AreEqual(0L, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(3, unsolvable, Mod));
+
+            // Disjoint 2 cycles: 2 * 2 = 4
+            (int, int)[] twoCycles = [(0, 1), (0, 1), (2, 3), (2, 3)];
+            Assert.AreEqual(2, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(4, twoCycles));
+            Assert.AreEqual(4L, BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(4, twoCycles, Mod));
+
+            // Validation errors
+            Assert.Throws<System.ArgumentException>(() =>
+                BipartiteMatching.CountPerfectMatchingsLeftDegreeTwoCycles(2, new[] { (0, 0), (0, 1) }));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                BipartiteMatching.CountPerfectMatchingsLeftDegreeTwo(2, twoCycles[..2], 0));
+        }
     }
 }
 

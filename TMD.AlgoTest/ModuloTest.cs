@@ -157,6 +157,81 @@ namespace TMD.AlgoTest
             }
         }
 
+        [Test]
+        public void StaticMultiplyTest()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Multiply(2, 3, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Multiply(2, 3, -7));
+
+            Assert.AreEqual(0L, Modulo.Multiply(5, 9, 1));
+            Assert.AreEqual(6L, Modulo.Multiply(2, 3, 10));
+            Assert.AreEqual(BigIntegerMultiply(-123, 456, 11), Modulo.Multiply(-123, 456, 11));
+            Assert.AreEqual(BigIntegerMultiply(-1, -1, 5), Modulo.Multiply(-1, -1, 5));
+
+            long bigMod = 1_000_000_000_039L;
+            Assert.AreEqual(
+                BigIntegerMultiply(900_000_000_000L, 800_000_000_000L, bigMod),
+                Modulo.Multiply(900_000_000_000L, 800_000_000_000L, bigMod));
+
+            long hugeMod = long.MaxValue - 24;
+            Assert.AreEqual(
+                BigIntegerMultiply(long.MaxValue, long.MaxValue - 1, hugeMod),
+                Modulo.Multiply(long.MaxValue, long.MaxValue - 1, hugeMod));
+        }
+
+        [Test]
+        public void PowTest()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Pow(2, 3, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.Pow(2, -1, 7));
+
+            Assert.AreEqual(0L, Modulo.Pow(5, 3, 1));
+            Assert.AreEqual(0L, Modulo.Pow(0, 0, 1));
+            Assert.AreEqual(1L, Modulo.Pow(0, 0, 7));
+            Assert.AreEqual(1L, Modulo.Pow(5, 0, 7));
+            Assert.AreEqual(32L, Modulo.Pow(2, 5, 100));
+            Assert.AreEqual(BigIntegerMod(BigInteger.ModPow(-3, 5, 11), 11), Modulo.Pow(-3, 5, 11));
+
+            long largePrime = 1_000_000_000_039L;
+            Modulo mod = new Modulo(largePrime);
+            Assert.AreEqual((long)BigInteger.ModPow(987_654_321_012L, 123_456_789L, largePrime), mod.Pow(987_654_321_012L, 123_456_789L));
+            Assert.AreEqual(1L, mod.Pow(42, largePrime - 1));
+        }
+
+        [Test]
+        public void PrecomputeFactorialsAndLargePrimeTest()
+        {
+            long p1 = 1_000_003L;
+            Modulo m1 = new Modulo(p1);
+            m1.PrecomputeFactorials(1000);
+
+            for (int i = 0; i <= 25; i++)
+                Assert.AreEqual(1L, m1.Multiply(m1.Factorial(i), m1.InverseFactorial(i)));
+
+            Assert.AreEqual(BigIntegerChoose(500, 123, p1), m1.Choose(500, 123));
+            Assert.AreEqual(BigIntegerPermutations(500, 20, p1), m1.Permutations(500, 20));
+            Assert.AreEqual(0L, m1.Choose(10, 12));
+
+            // Prime > int.MaxValue previously overflowed int i * i in private IsPrime
+            long bigPrime = 4_294_967_291L;
+            Modulo mBig = new Modulo(bigPrime);
+            mBig.PrecomputeFactorials(50);
+            Assert.AreEqual(BigIntegerChoose(45, 17, bigPrime), mBig.Choose(45, 17));
+            Assert.AreEqual(BigIntegerPermutations(45, 17, bigPrime), mBig.Permutations(45, 17));
+            Assert.AreEqual(1L, mBig.Multiply(mBig.Factorial(45), mBig.InverseFactorial(45)));
+
+            // Large prime 10^9+7 with Lucas + precompute
+            long p2 = 1_000_000_007L;
+            Modulo m2 = new Modulo(p2);
+            m2.PrecomputeFactorials(100);
+            Assert.AreEqual(BigIntegerChoose(100, 37, p2), m2.Choose(100, 37));
+
+            // Non-prime basis rejects InverseFactorial
+            Modulo comp = new Modulo(10);
+            comp.PrecomputeFactorials(5);
+            Assert.Throws<InvalidOperationException>(() => comp.InverseFactorial(2));
+        }
+
         private static long BigIntegerMod(BigInteger value, long basis)
         {
             BigInteger mod = value % basis;

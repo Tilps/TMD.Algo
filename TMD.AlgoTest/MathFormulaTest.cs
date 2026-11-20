@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Numerics;
 using NUnit.Framework;
 using TMD.Algo.Algorithms;
 
@@ -191,6 +193,120 @@ namespace TMD.AlgoTest
                 Assert.AreEqual(MathFormulas.Gcd(a, b), g);
                 Assert.AreEqual(g, a * x + b * y);
             }
+        }
+
+        [Test]
+        public void IsPrimeTest()
+        {
+            // Non-primes including negatives, 0, 1, composites, and Carmichael numbers
+            foreach (long v in new[]
+            {
+                -7L, 0L, 1L, 4L, 9L, 25L, 561L, 1105L, 1729L, 2465L, 2821L,
+                341550071728321L, 9_223_372_036_854_775_807L
+            })
+            {
+                Assert.IsFalse(MathFormulas.IsPrime(v), $"Expected {v} to be composite.");
+            }
+            Assert.IsFalse(MathFormulas.IsPrime(999_999_937L * 999_999_929L));
+
+            foreach (long p in new[]
+            {
+                2L, 3L, 5L, 37L, 41L, 1681L - 2L, 1000003L, 1_000_000_007L,
+                1_000_000_000_039L, 2_147_483_647L, 9_223_372_036_854_775_783L
+            })
+            {
+                bool expectedPrime = p != 1679L; // 1679 = 23 * 73
+                Assert.AreEqual(expectedPrime, MathFormulas.IsPrime(p), $"Primality check failed for {p}");
+            }
+        }
+
+        [Test]
+        public void PrimeFactorizeAndDivisorsTest()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.PrimeFactorize(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.PrimeFactorize(-10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.GetDivisors(0));
+
+            Assert.IsEmpty(MathFormulas.PrimeFactorize(1));
+            CollectionAssert.AreEqual(new[] { 1L }, MathFormulas.GetDivisors(1));
+
+            var f360 = MathFormulas.PrimeFactorize(360);
+            CollectionAssert.AreEqual(new[] { (2L, 3), (3L, 2), (5L, 1) }, f360);
+            CollectionAssert.AreEqual(
+                new[] { 1L, 2L, 3L, 4L, 5L, 6L, 8L, 9L, 10L, 12L, 15L, 18L, 20L, 24L, 30L, 36L, 40L, 45L, 60L, 72L, 90L, 120L, 180L, 360L },
+                MathFormulas.GetDivisors(360));
+
+            long semiprime = 100_000_007L * 100_000_037L;
+            var fSemi = MathFormulas.PrimeFactorize(semiprime);
+            CollectionAssert.AreEqual(new[] { (100_000_007L, 1), (100_000_037L, 1) }, fSemi);
+            CollectionAssert.AreEqual(new[] { 1L, 100_000_007L, 100_000_037L, semiprime }, MathFormulas.GetDivisors(semiprime));
+
+            // long.MaxValue = 7^2 * 73 * 127 * 337 * 92737 * 649657
+            var fMax = MathFormulas.PrimeFactorize(long.MaxValue);
+            long reconstructed = 1;
+            foreach (var (prime, exp) in fMax)
+            {
+                Assert.IsTrue(MathFormulas.IsPrime(prime));
+                for (int i = 0; i < exp; i++) reconstructed *= prime;
+            }
+            Assert.AreEqual(long.MaxValue, reconstructed);
+        }
+
+        [Test]
+        public void TryLcmTest()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.TryLcm(2, 3, -1, out _));
+
+            Assert.IsTrue(MathFormulas.TryLcm(0, 123, 100, out long zeroLcm));
+            Assert.AreEqual(0L, zeroLcm);
+
+            Assert.IsTrue(MathFormulas.TryLcm(-12, 18, 36, out long lcm36));
+            Assert.AreEqual(36L, lcm36);
+
+            Assert.IsFalse(MathFormulas.TryLcm(12, 18, 35, out long over));
+            Assert.AreEqual(0L, over);
+
+            // Large values that overflow long if multiplied naively
+            Assert.IsFalse(MathFormulas.TryLcm(10_000_000_000_001L, 10_000_000_000_003L, 1_000_000_000_000_000_0L, out _));
+            Assert.IsTrue(MathFormulas.TryLcm(6_000_000_000L, 4_000_000_000L, 20_000_000_000L, out long lcmBig));
+            Assert.AreEqual(12_000_000_000L, lcmBig);
+        }
+
+        [Test]
+        public void IntegerSqrtTest()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.IntegerSqrt(-1L));
+            Assert.Throws<ArgumentOutOfRangeException>(() => MathFormulas.IntegerSqrt(new BigInteger(-1)));
+
+            Assert.AreEqual(0L, MathFormulas.IntegerSqrt(0L));
+            Assert.AreEqual(0UL, MathFormulas.IntegerSqrt((UInt128)0));
+            Assert.AreEqual(BigInteger.Zero, MathFormulas.IntegerSqrt(BigInteger.Zero));
+
+            for (long k = 1; k <= 20; k++)
+            {
+                long sq = k * k;
+                Assert.AreEqual(k - 1, MathFormulas.IntegerSqrt(sq - 1));
+                Assert.AreEqual(k, MathFormulas.IntegerSqrt(sq));
+                Assert.AreEqual(k, MathFormulas.IntegerSqrt(sq + 1));
+            }
+
+            long rootMax = MathFormulas.IntegerSqrt(long.MaxValue);
+            Assert.IsTrue((UInt128)rootMax * (UInt128)rootMax <= (UInt128)long.MaxValue);
+            Assert.IsTrue((UInt128)(rootMax + 1) * (UInt128)(rootMax + 1) > (UInt128)long.MaxValue);
+
+            ulong u128Root = MathFormulas.IntegerSqrt(UInt128.MaxValue);
+            Assert.AreEqual(ulong.MaxValue, u128Root);
+
+            UInt128 exact128 = (UInt128)123_456_789_012_345_678UL * 123_456_789_012_345_678UL;
+            Assert.AreEqual(123_456_789_012_345_677UL, MathFormulas.IntegerSqrt(exact128 - 1));
+            Assert.AreEqual(123_456_789_012_345_678UL, MathFormulas.IntegerSqrt(exact128));
+            Assert.AreEqual(123_456_789_012_345_678UL, MathFormulas.IntegerSqrt(exact128 + 1));
+
+            BigInteger bigBase = BigInteger.One << 100;
+            BigInteger bigSq = bigBase * bigBase;
+            Assert.AreEqual(bigBase - 1, MathFormulas.IntegerSqrt(bigSq - 1));
+            Assert.AreEqual(bigBase, MathFormulas.IntegerSqrt(bigSq));
+            Assert.AreEqual(bigBase, MathFormulas.IntegerSqrt(bigSq + 1));
         }
     }
 }

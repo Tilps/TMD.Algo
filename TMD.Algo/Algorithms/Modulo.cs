@@ -39,23 +39,7 @@ namespace TMD.Algo.Algorithms
             if (basis <= 0)
                 throw new ArgumentException("Basis must be positive.", nameof(basis));
             this.basis = basis;
-            basisIsPrime = IsPrime(basis);
-        }
-
-        private static bool IsPrime(long basis)
-        {
-            if (basis < 2)
-                return false;
-            if (basis == 2)
-                return true;
-            if (basis%2 == 0)
-                return false;
-            for (int i = 3; i*i <= basis; i += 2)
-            {
-                if (basis%i == 0)
-                    return false;
-            }
-            return true;
+            basisIsPrime = MathFormulas.IsPrime(basis);
         }
 
         private readonly long basis;
@@ -148,7 +132,6 @@ namespace TMD.Algo.Algorithms
 
         /// <summary>
         /// Calculates the factorial of number under the basis.
-        /// Running time is amortized O(1), with an O(basis) hidden cost in one call.
         /// </summary>
         /// <param name="number">
         /// Number to calculate the factorial of.
@@ -156,24 +139,132 @@ namespace TMD.Algo.Algorithms
         /// <returns>
         /// The factorial of the specified number modulo the basis.
         /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="number"/> &lt; 0.</exception>
         public long Factorial(long number)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(number);
             if (number >= basis)
                 return 0;
-            if (factCache == null)
+            if (factCache != null && number < factCache.Length)
+                return factCache[number];
+            long prevLen = factCache?.Length ?? 0;
+            long desired = Math.Max(number + 1, Math.Max(prevLen * 2, basis <= 100_000 ? basis : number + 1));
+            int targetLen = (int)Math.Min(basis, desired);
+            EnsureFactorialCache(targetLen);
+            return factCache![number];
+        }
+
+        /// <summary>
+        /// Precomputes factorials up to <paramref name="maxN"/> (and inverse factorials up to
+        /// <c>min(maxN, basis - 1)</c> when the basis is prime) in O(maxN + log basis) time.
+        /// Enables lock-free O(1) <see cref="Choose"/>, <see cref="Permutations"/>, and <see cref="InverseFactorial"/> lookups.
+        /// </summary>
+        /// <param name="maxN">Maximum factorial index to precompute.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxN"/> &lt; 0.</exception>
+        public void PrecomputeFactorials(int maxN)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(maxN);
+            EnsureFactorialCache(maxN + 1);
+            if (basisIsPrime)
             {
-                factCache = new long[basis];
-                factCache[0] = 1;
-                factCache[1] = 1;
-                for (long i = 2; i < basis; i++)
+                int invMax = (int)Math.Min(maxN, basis - 1);
+                if (invFactCache == null || invFactCache.Length <= invMax)
                 {
-                    factCache[i] = Multiply(factCache[i - 1], i);
+                    long[] newInv = new long[invMax + 1];
+                    newInv[invMax] = Invert(factCache![invMax], basis);
+                    for (int i = invMax; i >= 1; i--)
+                    {
+                        newInv[i - 1] = Multiply(newInv[i], i);
+                    }
+                    invFactCache = newInv;
                 }
             }
-            return factCache[number];
+        }
+
+        /// <summary>
+        /// Returns the modular inverse of <paramref name="number"/>! modulo the basis (which must be prime).
+        /// Uses O(1) lookup when within the range prepared by <see cref="PrecomputeFactorials"/>.
+        /// </summary>
+        /// <param name="number">Non-negative factorial argument strictly less than basis.</param>
+        /// <returns>Modular multiplicative inverse of <paramref name="number"/>!.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="number"/> &lt; 0.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the basis is not prime.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="number"/> &gt;= basis.</exception>
+        public long InverseFactorial(int number)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(number);
+            if (!basisIsPrime)
+                throw new InvalidOperationException("Modular inverse of factorial requires a prime basis.");
+            if (number >= basis)
+                throw new ArgumentException("Specified number is not coprime with the basis, its factorial has no inverse.", nameof(number));
+            if (invFactCache != null && number < invFactCache.Length)
+                return invFactCache[number];
+            return Invert(Factorial(number));
+        }
+
+        private void EnsureFactorialCache(int targetLength)
+        {
+            int prevLen = factCache?.Length ?? 0;
+            if (prevLen >= targetLength)
+                return;
+            if (factCache == null)
+            {
+                factCache = new long[targetLength];
+                factCache[0] = 1 % basis;
+                prevLen = 1;
+            }
+            else
+            {
+                Array.Resize(ref factCache, targetLength);
+            }
+            for (int i = prevLen; i < targetLength; i++)
+            {
+                factCache[i] = Multiply(factCache[i - 1], i);
+            }
         }
 
         private long[]? factCache;
+        private long[]? invFactCache;
+
+        /// <summary>
+        /// Computes <paramref name="value"/> raised to <paramref name="exponent"/> modulo <paramref name="basis"/>
+        /// in O(log exponent) time without overflow.
+        /// </summary>
+        /// <param name="value">Base integer.</param>
+        /// <param name="exponent">Non-negative exponent.</param>
+        /// <param name="basis">Positive modulus.</param>
+        /// <returns><paramref name="value"/>^<paramref name="exponent"/> mod <paramref name="basis"/> in [0, basis - 1].</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="basis"/> &lt;= 0 or <paramref name="exponent"/> &lt; 0.</exception>
+        public static long Pow(long value, long exponent, long basis)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(basis);
+            ArgumentOutOfRangeException.ThrowIfNegative(exponent);
+            if (basis == 1)
+                return 0;
+            long result = 1;
+            long baseVal = ((value % basis) + basis) % basis;
+            while (exponent > 0)
+            {
+                if ((exponent & 1) != 0)
+                    result = (long)((UInt128)(ulong)result * (UInt128)(ulong)baseVal % (UInt128)(ulong)basis);
+                baseVal = (long)((UInt128)(ulong)baseVal * (UInt128)(ulong)baseVal % (UInt128)(ulong)basis);
+                exponent >>= 1;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Computes <paramref name="value"/> raised to <paramref name="exponent"/> modulo this basis
+        /// in O(log exponent) time without overflow.
+        /// </summary>
+        /// <param name="value">Base integer.</param>
+        /// <param name="exponent">Non-negative exponent.</param>
+        /// <returns><paramref name="value"/>^<paramref name="exponent"/> mod basis in [0, basis - 1].</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="exponent"/> &lt; 0.</exception>
+        public long Pow(long value, long exponent)
+        {
+            return Pow(value, exponent, basis);
+        }
 
         /// <summary>
         /// Multiplies two numbers together under the basis without overflow.
@@ -187,9 +278,23 @@ namespace TMD.Algo.Algorithms
         /// <returns>The product modulo the basis.</returns>
         public long Multiply(long first, long second)
         {
-            first = Mod(first);
-            second = Mod(second);
-            return (long)((UInt128)(ulong)first * (UInt128)(ulong)second % (UInt128)(ulong)basis);
+            return Multiply(first, second, basis);
+        }
+
+        /// <summary>
+        /// Multiplies two numbers together modulo <paramref name="basis"/> without overflow.
+        /// </summary>
+        /// <param name="first">First number to multiply.</param>
+        /// <param name="second">Second number to multiply.</param>
+        /// <param name="basis">Positive modulus.</param>
+        /// <returns>The product modulo <paramref name="basis"/> in [0, basis - 1].</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="basis"/> &lt;= 0.</exception>
+        public static long Multiply(long first, long second, long basis)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(basis);
+            ulong a = (ulong)first < (ulong)basis ? (ulong)first : (ulong)(((first % basis) + basis) % basis);
+            ulong b = (ulong)second < (ulong)basis ? (ulong)second : (ulong)(((second % basis) + basis) % basis);
+            return (long)((UInt128)a * b % (ulong)basis);
         }
 
         /// <summary>
@@ -363,6 +468,8 @@ namespace TMD.Algo.Algorithms
                 return first;
             if (basisIsPrime)
             {
+                if (invFactCache != null && factCache != null && last < invFactCache.Length && last < factCache.Length)
+                    return Multiply(factCache[last], invFactCache[first - 1]);
                 return Multiply(Factorial(last), Invert(Factorial(first - 1)));
             }
             else
@@ -411,6 +518,10 @@ namespace TMD.Algo.Algorithms
 
         private long ChooseInternal(long n, long k)
         {
+            if (k > n)
+                return 0;
+            if (invFactCache != null && factCache != null && n < invFactCache.Length && n < factCache.Length)
+                return Multiply(Multiply(factCache[n], invFactCache[k]), invFactCache[n - k]);
             return Multiply(Permutations(n, k), Invert(Factorial(k)));
         }
     }
