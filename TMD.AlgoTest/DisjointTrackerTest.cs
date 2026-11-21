@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #endregion
 
+using System.Collections.Generic;
 using NUnit.Framework;
 using TMD.Algo.Collections.Generic;
 
@@ -127,6 +128,86 @@ namespace TMD.AlgoTest
                     Assert.IsFalse(tracker.GetRepresentative(i) == tracker.GetRepresentative(j));
                 }
             }
+        }
+
+        [Test]
+        public void UnionOutputsAndMetadataMerging()
+        {
+            DisjointTracker<int> dictTracker = new();
+            MappedDisjointTracker<int> mappedTracker = new(static i => i, 0, 5);
+            RevertibleDisjointTracker<int> revertibleTracker = new();
+
+            Dictionary<int, int> dictSums = [];
+            int[] mappedMasks = [1, 2, 4, 8, 16, 32];
+            int[] revSums = [10, 20, 30, 40, 50, 60];
+
+            for (int i = 0; i < 6; i++)
+            {
+                dictTracker.Add(i);
+                dictSums[i] = (i + 1) * 10;
+                mappedTracker.Add(i);
+                revertibleTracker.Add(i);
+            }
+
+            Assert.IsFalse(dictTracker.AreConnected(0, 1));
+            Assert.IsFalse(mappedTracker.AreConnected(0, 1));
+            Assert.IsFalse(revertibleTracker.AreConnected(0, 1));
+
+            // Merging distinct sets returns true and outputs surviving/absorbed roots.
+            Assert.IsTrue(dictTracker.Union(0, 1, out int dRoot, out int dAbsorbed));
+            Assert.AreNotEqual(dRoot, dAbsorbed);
+            Assert.AreEqual(dRoot, dictTracker.GetRepresentative(0));
+            Assert.AreEqual(dRoot, dictTracker.GetRepresentative(1));
+            Assert.IsTrue(dictTracker.AreConnected(0, 1));
+            dictSums[dRoot] += dictSums[dAbsorbed];
+            Assert.AreEqual(30, dictSums[dictTracker.GetRepresentative(0)]);
+
+            Assert.IsTrue(dictTracker.Union(2, 3, out dRoot, out dAbsorbed));
+            dictSums[dRoot] += dictSums[dAbsorbed];
+            Assert.IsTrue(dictTracker.Union(1, 3, out dRoot, out dAbsorbed));
+            dictSums[dRoot] += dictSums[dAbsorbed];
+            Assert.AreEqual(100, dictSums[dictTracker.GetRepresentative(2)]);
+
+            // No-op union returns false with both out parameters set to the existing representative.
+            Assert.IsFalse(dictTracker.Union(0, 2, out int dSameRoot, out int dSameAbsorbed));
+            Assert.AreEqual(dictTracker.GetRepresentative(0), dSameRoot);
+            Assert.AreEqual(dSameRoot, dSameAbsorbed);
+            Assert.AreEqual(100, dictSums[dictTracker.GetRepresentative(0)]);
+
+            // MappedDisjointTracker with bitmask merging.
+            Assert.IsTrue(mappedTracker.Union(0, 2, out int mRoot, out int mAbsorbed));
+            mappedMasks[mRoot] |= mappedMasks[mAbsorbed];
+            Assert.AreEqual(5, mappedMasks[mappedTracker.GetRepresentative(0)]);
+            Assert.IsTrue(mappedTracker.AreConnected(0, 2));
+            Assert.IsFalse(mappedTracker.Union(0, 2, out int mSameRoot, out int mSameAbsorbed));
+            Assert.AreEqual(mappedTracker.GetRepresentative(2), mSameRoot);
+            Assert.AreEqual(mSameRoot, mSameAbsorbed);
+            Assert.IsTrue(mappedTracker.Union(2, 4, out mRoot, out mAbsorbed));
+            mappedMasks[mRoot] |= mappedMasks[mAbsorbed];
+            Assert.AreEqual(21, mappedMasks[mappedTracker.GetRepresentative(4)]);
+
+            // RevertibleDisjointTracker including no-op Union followed by Revert().
+            Assert.IsTrue(revertibleTracker.Union(0, 1, out int rRoot, out int rAbsorbed));
+            revSums[rRoot] += revSums[rAbsorbed];
+            Assert.AreEqual(30, revSums[revertibleTracker.GetRepresentative(1)]);
+            Assert.IsTrue(revertibleTracker.AreConnected(0, 1));
+
+            // No-op Union still pushes an undo frame balanced by Revert().
+            Assert.IsFalse(revertibleTracker.Union(0, 1, out int rSameRoot, out int rSameAbsorbed));
+            Assert.AreEqual(revertibleTracker.GetRepresentative(0), rSameRoot);
+            Assert.AreEqual(rSameRoot, rSameAbsorbed);
+            Assert.IsTrue(revertibleTracker.Union(1, 2));
+            Assert.IsTrue(revertibleTracker.AreConnected(0, 2));
+
+            revertibleTracker.Revert(); // Undoes Union(1, 2)
+            Assert.IsFalse(revertibleTracker.AreConnected(0, 2));
+            Assert.IsTrue(revertibleTracker.AreConnected(0, 1));
+
+            revertibleTracker.Revert(); // Undoes no-op Union(0, 1)
+            Assert.IsTrue(revertibleTracker.AreConnected(0, 1));
+
+            revertibleTracker.Revert(); // Undoes Union(0, 1)
+            Assert.IsFalse(revertibleTracker.AreConnected(0, 1));
         }
     }
 }

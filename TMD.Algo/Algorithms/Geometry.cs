@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -90,6 +91,103 @@ namespace TMD.Algo.Algorithms
         /// <param name="right">The second point.</param>
         /// <returns>True if coordinates differ; otherwise, false.</returns>
         public static bool operator !=(Point2D left, Point2D right) => !left.Equals(right);
+
+        /// <inheritdoc />
+        public override string ToString() =>
+            $"({X.ToString(CultureInfo.InvariantCulture)}, {Y.ToString(CultureInfo.InvariantCulture)})";
+    }
+
+    /// <summary>
+    /// Represents an immutable point or vector with exact 64-bit integer coordinates.
+    /// </summary>
+    public readonly struct Point2L : IEquatable<Point2L>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Point2L"/> struct.
+        /// </summary>
+        /// <param name="x">The X coordinate.</param>
+        /// <param name="y">The Y coordinate.</param>
+        public Point2L(long x, long y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        /// <summary>
+        /// Gets the X coordinate.
+        /// </summary>
+        public long X { get; }
+
+        /// <summary>
+        /// Gets the Y coordinate.
+        /// </summary>
+        public long Y { get; }
+
+        /// <summary>
+        /// Returns the exact squared Euclidean norm as a <see cref="BigInteger"/>.
+        /// </summary>
+        public BigInteger LengthSquared()
+        {
+            BigInteger bx = X;
+            BigInteger by = Y;
+            return bx * bx + by * by;
+        }
+
+        /// <summary>
+        /// Returns the exact squared Euclidean norm as an <see cref="Int128"/>.
+        /// </summary>
+        [CLSCompliant(false)]
+        public Int128 LengthSquared128() => (Int128)X * X + (Int128)Y * Y;
+
+        /// <summary>
+        /// Returns the Euclidean norm as a double without intermediate 64-bit integer overflow.
+        /// </summary>
+        public double Length() => Math.Sqrt((double)LengthSquared128());
+
+        /// <summary>
+        /// Returns the Euclidean distance from this point to <paramref name="other"/> without intermediate 64-bit integer overflow.
+        /// </summary>
+        /// <param name="other">The other point.</param>
+        public double DistanceTo(Point2L other) => (this - other).Length();
+
+        /// <summary>
+        /// Adds two points/vectors coordinate-wise.
+        /// </summary>
+        public static Point2L operator +(Point2L left, Point2L right) => new(left.X + right.X, left.Y + right.Y);
+
+        /// <summary>
+        /// Subtracts <paramref name="right"/> from <paramref name="left"/> coordinate-wise.
+        /// </summary>
+        public static Point2L operator -(Point2L left, Point2L right) => new(left.X - right.X, left.Y - right.Y);
+
+        /// <summary>
+        /// Scales a vector by an integer scalar.
+        /// </summary>
+        public static Point2L operator *(Point2L point, long scalar) => new(point.X * scalar, point.Y * scalar);
+
+        /// <summary>
+        /// Scales a vector by an integer scalar.
+        /// </summary>
+        public static Point2L operator *(long scalar, Point2L point) => new(scalar * point.X, scalar * point.Y);
+
+        /// <inheritdoc />
+        public bool Equals(Point2L other) => X == other.X && Y == other.Y;
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) => obj is Point2L other && Equals(other);
+
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCode.Combine(X, Y);
+
+        /// <summary>
+        /// Determines whether two <see cref="Point2L"/> instances have equal coordinates.
+        /// </summary>
+        public static bool operator ==(Point2L left, Point2L right) => left.Equals(right);
+
+        /// <summary>
+        /// Determines whether two <see cref="Point2L"/> instances do not have equal coordinates.
+        /// </summary>
+        public static bool operator !=(Point2L left, Point2L right) => !left.Equals(right);
 
         /// <inheritdoc />
         public override string ToString() =>
@@ -872,6 +970,187 @@ namespace TMD.Algo.Algorithms
             double lenA = a.X * a.X + a.Y * a.Y;
             double lenB = b.X * b.X + b.Y * b.Y;
             return lenA.CompareTo(lenB);
+        }
+
+        private static Int128 Cross128(Point2L o, Point2L a, Point2L b) =>
+            (Int128)(a.X - o.X) * (b.Y - o.Y) - (Int128)(a.Y - o.Y) * (b.X - o.X);
+
+        private static int CompareDirectionCCW(Point2L u, Point2L v)
+        {
+            bool hu = u.Y > 0 || (u.Y == 0 && u.X > 0);
+            bool hv = v.Y > 0 || (v.Y == 0 && v.X > 0);
+            if (hu != hv)
+                return hu ? -1 : 1;
+            Int128 cross = (Int128)u.X * v.Y - (Int128)u.Y * v.X;
+            return cross > 0 ? -1 : cross < 0 ? 1 : 0;
+        }
+
+        /// <summary>
+        /// Computes the strict counterclockwise convex hull of <paramref name="points"/> using Andrew's monotone chain.
+        /// Handles 0, 1, duplicate, and all-collinear point sets without throwing.
+        /// </summary>
+        /// <param name="points">Input points.</param>
+        /// <returns>List of strict convex hull vertices in counterclockwise order.</returns>
+        public static List<Point2L> ConvexHull(ReadOnlySpan<Point2L> points)
+        {
+            if (points.Length == 0)
+                return [];
+
+            Point2L[] sorted = points.ToArray();
+            Array.Sort(sorted, static (a, b) =>
+            {
+                int cmpX = a.X.CompareTo(b.X);
+                return cmpX != 0 ? cmpX : a.Y.CompareTo(b.Y);
+            });
+
+            List<Point2L> unique = [sorted[0]];
+            for (int i = 1; i < sorted.Length; i++)
+            {
+                if (sorted[i] != sorted[i - 1])
+                    unique.Add(sorted[i]);
+            }
+
+            if (unique.Count <= 2)
+                return unique;
+
+            List<Point2L> hull = [with(capacity: unique.Count + 1)];
+            foreach (Point2L p in unique)
+            {
+                while (hull.Count >= 2 && Cross128(hull[^2], hull[^1], p) <= 0)
+                    hull.RemoveAt(hull.Count - 1);
+                hull.Add(p);
+            }
+
+            int lowerSize = hull.Count;
+            for (int i = unique.Count - 2; i >= 0; i--)
+            {
+                Point2L p = unique[i];
+                while (hull.Count > lowerSize && Cross128(hull[^2], hull[^1], p) <= 0)
+                    hull.RemoveAt(hull.Count - 1);
+                hull.Add(p);
+            }
+
+            hull.RemoveAt(hull.Count - 1);
+            return hull;
+        }
+
+        /// <summary>
+        /// Computes the strict counterclockwise convex hull of <paramref name="points"/> using Andrew's monotone chain.
+        /// </summary>
+        /// <param name="points">Input points.</param>
+        /// <returns>List of strict convex hull vertices in counterclockwise order.</returns>
+        public static List<Point2L> ConvexHull(IReadOnlyList<Point2L> points)
+        {
+            ArgumentNullException.ThrowIfNull(points);
+            Point2L[] copy = new Point2L[points.Count];
+            for (int i = 0; i < points.Count; i++)
+                copy[i] = points[i];
+            return ConvexHull(copy.AsSpan());
+        }
+
+        private static List<Point2L> BuildCcwEdges(ReadOnlySpan<Point2L> poly, out Point2L bottomLeft)
+        {
+            int n = poly.Length;
+            int start = 0;
+            for (int i = 1; i < n; i++)
+            {
+                if (poly[i].Y < poly[start].Y || (poly[i].Y == poly[start].Y && poly[i].X < poly[start].X))
+                    start = i;
+            }
+            bottomLeft = poly[start];
+            List<Point2L> edges = [with(capacity: n)];
+            for (int i = 0; i < n; i++)
+            {
+                Point2L edge = poly[(start + i + 1) % n] - poly[(start + i) % n];
+                if (edge.X != 0 || edge.Y != 0)
+                    edges.Add(edge);
+            }
+            return edges;
+        }
+
+        /// <summary>
+        /// Computes the Minkowski sum <c>A + B = { a + b : a in A, b in B }</c> of two counterclockwise convex polygons
+        /// (including 1-point and 2-point degenerate convex sets) in O(|A| + |B|) time using exact <see cref="Int128"/> cross products.
+        /// </summary>
+        /// <param name="a">First counterclockwise convex polygon (or point/segment).</param>
+        /// <param name="b">Second counterclockwise convex polygon (or point/segment).</param>
+        /// <returns>Counterclockwise convex hull vertices of the Minkowski sum.</returns>
+        public static List<Point2L> MinkowskiSum(ReadOnlySpan<Point2L> a, ReadOnlySpan<Point2L> b)
+        {
+            if (a.Length == 0 || b.Length == 0)
+                return [];
+            if (a.Length == 1)
+            {
+                Point2L offset = a[0];
+                List<Point2L> shifted = [with(capacity: b.Length)];
+                for (int i = 0; i < b.Length; i++)
+                    shifted.Add(b[i] + offset);
+                return shifted;
+            }
+            if (b.Length == 1)
+            {
+                Point2L offset = b[0];
+                List<Point2L> shifted = [with(capacity: a.Length)];
+                for (int i = 0; i < a.Length; i++)
+                    shifted.Add(a[i] + offset);
+                return shifted;
+            }
+
+            List<Point2L> ea = BuildCcwEdges(a, out Point2L startA);
+            List<Point2L> eb = BuildCcwEdges(b, out Point2L startB);
+            Point2L cur = startA + startB;
+            if (ea.Count == 0 && eb.Count == 0)
+                return [cur];
+
+            List<Point2L> result = [with(capacity: ea.Count + eb.Count)];
+            int ia = 0, ib = 0;
+            while (ia < ea.Count || ib < eb.Count)
+            {
+                result.Add(cur);
+                if (ia == ea.Count)
+                {
+                    cur += eb[ib++];
+                }
+                else if (ib == eb.Count)
+                {
+                    cur += ea[ia++];
+                }
+                else
+                {
+                    int cmp = CompareDirectionCCW(ea[ia], eb[ib]);
+                    if (cmp < 0)
+                    {
+                        cur += ea[ia++];
+                    }
+                    else if (cmp > 0)
+                    {
+                        cur += eb[ib++];
+                    }
+                    else
+                    {
+                        cur += ea[ia++] + eb[ib++];
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Computes the Minkowski sum <c>A + B</c> of two counterclockwise convex polygons in O(|A| + |B|) time.
+        /// </summary>
+        /// <param name="a">First counterclockwise convex polygon.</param>
+        /// <param name="b">Second counterclockwise convex polygon.</param>
+        /// <returns>Counterclockwise convex hull vertices of the Minkowski sum.</returns>
+        public static List<Point2L> MinkowskiSum(IReadOnlyList<Point2L> a, IReadOnlyList<Point2L> b)
+        {
+            ArgumentNullException.ThrowIfNull(a);
+            ArgumentNullException.ThrowIfNull(b);
+            Point2L[] arrA = new Point2L[a.Count];
+            for (int i = 0; i < a.Count; i++) arrA[i] = a[i];
+            Point2L[] arrB = new Point2L[b.Count];
+            for (int i = 0; i < b.Count; i++) arrB[i] = b[i];
+            return MinkowskiSum(arrA.AsSpan(), arrB.AsSpan());
         }
     }
 

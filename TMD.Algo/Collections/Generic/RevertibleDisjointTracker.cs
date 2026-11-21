@@ -101,11 +101,55 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="second">
         /// Second item to find set to union.
         /// </param>
-        public void Union(T first, T second)
+        /// <returns>
+        /// True if the two items belonged to different sets and were merged; false if they were already in the same set.
+        /// </returns>
+        public bool Union(T first, T second)
+        {
+            return Union(first, second, out _, out _);
+        }
+
+        /// <summary>
+        /// Unions the two sets which contain the specified items and outputs the surviving and absorbed representatives.
+        /// </summary>
+        /// <param name="first">
+        /// First item to find set to union.
+        /// </param>
+        /// <param name="second">
+        /// Second item to find set to union.
+        /// </param>
+        /// <param name="survivingRoot">
+        /// When this method returns, contains the representative of the resulting set.
+        /// </param>
+        /// <param name="absorbedRoot">
+        /// When this method returns, contains the former representative that was merged into <paramref name="survivingRoot"/>,
+        /// or <paramref name="survivingRoot"/> if the two items were already in the same set.
+        /// </param>
+        /// <returns>
+        /// True if the two items belonged to different sets and were merged; false if they were already in the same set.
+        /// </returns>
+        public bool Union(T first, T second, out T survivingRoot, out T absorbedRoot)
         {
             undoLists.Add(new List<Action>());
             CurrentUndo.Add(() => { undoLists.RemoveAt(undoLists.Count - 1); });
-            Link(GetRepresentative(first), GetRepresentative(second));
+            return Link(GetRepresentative(first), GetRepresentative(second), out survivingRoot, out absorbedRoot);
+        }
+
+        /// <summary>
+        /// Determines whether two tracked items currently belong to the same set.
+        /// </summary>
+        /// <param name="first">
+        /// First item to check.
+        /// </param>
+        /// <param name="second">
+        /// Second item to check.
+        /// </param>
+        /// <returns>
+        /// True if <paramref name="first"/> and <paramref name="second"/> have the same representative; otherwise false.
+        /// </returns>
+        public bool AreConnected(T first, T second)
+        {
+            return comparer.Equals(GetRepresentative(first), GetRepresentative(second));
         }
 
         /// <summary>
@@ -131,10 +175,14 @@ namespace TMD.Algo.Collections.Generic
             return realParent;
         }
 
-        private void Link(T first, T second)
+        private bool Link(T first, T second, out T survivingRoot, out T absorbedRoot)
         {
             if (comparer.Equals(first, second))
-                return;
+            {
+                survivingRoot = first;
+                absorbedRoot = first;
+                return false;
+            }
             int firstRank = ranker[first];
             int secondRank = ranker[second];
             if (firstRank > secondRank)
@@ -146,6 +194,8 @@ namespace TMD.Algo.Collections.Generic
                     if (exists) tracker[second] = oldTracker!;
                     else tracker.Remove(second);
                 });
+                survivingRoot = first;
+                absorbedRoot = second;
             }
             else
             {
@@ -161,7 +211,10 @@ namespace TMD.Algo.Collections.Generic
                     if (exists) tracker[first] = oldTracker!;
                     else tracker.Remove(first);
                 });
+                survivingRoot = second;
+                absorbedRoot = first;
             }
+            return true;
         }
     }
 }

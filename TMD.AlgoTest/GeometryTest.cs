@@ -231,5 +231,52 @@ namespace TMD.AlgoTest
             double approx = inside * dx * dy;
             Assert.AreEqual(approx, computed, 0.02);
         }
+
+        [Test]
+        public void Point2LConvexHullAndMinkowskiSum()
+        {
+            Point2L p0 = new(1_000_000_000_000L, -2_000_000_000_000L);
+            Assert.IsTrue(p0.Length() > 2.2e12);
+            Assert.AreEqual(5_000_000_000_000_000_000_000_000.0, (double)p0.LengthSquared128(), 1e12);
+            Assert.AreEqual((new Point2L(1, 2) + new Point2L(3, 4)) * 2L - new Point2L(1, 0), new Point2L(7, 12));
+
+            // Degenerate hulls: 0, 1, duplicates, collinear
+            Assert.IsEmpty(Geometry.ConvexHull(ReadOnlySpan<Point2L>.Empty));
+            CollectionAssert.AreEqual(new[] { new Point2L(5, 5) }, Geometry.ConvexHull([new Point2L(5, 5), new Point2L(5, 5)]));
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(0, 0), new Point2L(4, 2) },
+                Geometry.ConvexHull([new Point2L(2, 1), new Point2L(0, 0), new Point2L(4, 2), new Point2L(2, 1)]));
+
+            // Square with interior and collinear boundary points
+            List<Point2L> sqHull = Geometry.ConvexHull(
+            [
+                new Point2L(0, 0), new Point2L(1, 0), new Point2L(2, 0),
+                new Point2L(2, 1), new Point2L(2, 2), new Point2L(1, 2),
+                new Point2L(0, 2), new Point2L(0, 1), new Point2L(1, 1)
+            ]);
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(0, 0), new Point2L(2, 0), new Point2L(2, 2), new Point2L(0, 2) },
+                sqHull);
+
+            // Minkowski sum degenerate cases: point + poly, segment + segment, segment + triangle
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(10, 20), new Point2L(12, 20), new Point2L(12, 22), new Point2L(10, 22) },
+                Geometry.MinkowskiSum([new Point2L(10, 20)], sqHull));
+
+            List<Point2L> seg1 = [new(0, 0), new(3, 0)];
+            List<Point2L> seg2 = [new(0, 0), new(0, 4)];
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(0, 0), new Point2L(3, 0), new Point2L(3, 4), new Point2L(0, 4) },
+                Geometry.MinkowskiSum(seg1, seg2));
+
+            List<Point2L> tri = Geometry.ConvexHull([new Point2L(0, 0), new Point2L(2, 0), new Point2L(1, 3)]);
+            List<Point2L> sumHull = Geometry.MinkowskiSum(sqHull, tri);
+            List<Point2L> bruteSums = [];
+            foreach (Point2L a in sqHull)
+                foreach (Point2L b in tri)
+                    bruteSums.Add(a + b);
+            List<Point2L> expected = Geometry.ConvexHull(bruteSums);
+            CollectionAssert.AreEqual(expected, sumHull);
+        }
     }
 }
