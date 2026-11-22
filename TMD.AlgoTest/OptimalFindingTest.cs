@@ -102,5 +102,34 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentOutOfRangeException>(() => OptimalFinding.SlidingWindowMax<int>(values, 1, -1, actualMax));
             Assert.Throws<ArgumentException>(() => OptimalFinding.SlidingWindowMin<int>(values, 1, 1, new int[values.Length - 1]));
         }
+
+        [Test]
+        public void LongestIncreasingSubsequenceTests()
+        {
+            Assert.AreEqual(0, OptimalFinding.LongestIncreasingSubsequenceLength<int>(ReadOnlySpan<int>.Empty));
+            Assert.AreEqual(0, OptimalFinding.LongestIncreasingSubsequenceLengths<int>(ReadOnlySpan<int>.Empty, Span<int>.Empty));
+            Assert.AreEqual(1, OptimalFinding.LongestIncreasingSubsequenceLength<int>([7]));
+
+            int[] seq = [3, 1, 2, 2, 4, 3, 5];
+            int[] strictEnds = new int[seq.Length];
+            int[] weakEnds = new int[seq.Length];
+
+            Assert.AreEqual(4, OptimalFinding.LongestIncreasingSubsequenceLength<int>(seq, strictlyIncreasing: true));
+            Assert.AreEqual(5, OptimalFinding.LongestIncreasingSubsequenceLength<int>(seq, strictlyIncreasing: false));
+            Assert.AreEqual(4, OptimalFinding.LongestIncreasingSubsequenceLengths<int>(seq, strictEnds, strictlyIncreasing: true));
+            Assert.AreEqual(5, OptimalFinding.LongestIncreasingSubsequenceLengths<int>(seq, weakEnds, strictlyIncreasing: false));
+
+            CollectionAssert.AreEqual(new[] { 1, 1, 2, 2, 3, 3, 4 }, strictEnds);
+            CollectionAssert.AreEqual(new[] { 1, 1, 2, 3, 4, 4, 5 }, weakEnds);
+
+            // Custom descending comparer checks longest decreasing subsequence.
+            Comparer<int> desc = Comparer<int>.Create((a, b) => b.CompareTo(a));
+            int[] decEnds = new int[seq.Length];
+            Assert.AreEqual(3, OptimalFinding.LongestIncreasingSubsequenceLengths<int>(seq, decEnds, strictlyIncreasing: false, desc));
+            CollectionAssert.AreEqual(new[] { 1, 2, 2, 3, 1, 2, 1 }, decEnds);
+
+            Assert.Throws<ArgumentException>(() =>
+                OptimalFinding.LongestIncreasingSubsequenceLengths<int>(seq, new int[seq.Length - 1]));
+        }
     }
 }

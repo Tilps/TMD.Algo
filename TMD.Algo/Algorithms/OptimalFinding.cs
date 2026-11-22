@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using TMD.Algo.Algorithms.Generic;
+using TMD.Algo.Collections.Generic;
 
 namespace TMD.Algo.Algorithms
 {
@@ -279,6 +280,76 @@ namespace TMD.Algo.Algorithms
             }
             else
                 return null;
+        }
+
+        /// <summary>
+        /// Computes the length of the longest increasing (or non-decreasing) subsequence of <paramref name="values"/>
+        /// in O(n log n) time using patience sorting.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input sequence.</param>
+        /// <param name="strictlyIncreasing">If true, strictly increasing (&lt;); if false, non-decreasing (&lt;=).</param>
+        /// <param name="comparer">Optional element comparer, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>The maximum subsequence length (0 if <paramref name="values"/> is empty).</returns>
+        public static int LongestIncreasingSubsequenceLength<T>(
+            ReadOnlySpan<T> values,
+            bool strictlyIncreasing = true,
+            IComparer<T>? comparer = null)
+        {
+            return LongestIncreasingSubsequenceCore(values, Span<int>.Empty, writePerElement: false, strictlyIncreasing, comparer);
+        }
+
+        /// <summary>
+        /// Computes for every index <c>i</c> in <paramref name="values"/> the length of the longest increasing
+        /// (or non-decreasing) subsequence ending at index <c>i</c>, storing them into <paramref name="lengthsEndingAt"/>,
+        /// in O(n log n) time.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="values">Input sequence.</param>
+        /// <param name="lengthsEndingAt">Destination span of length at least <c>values.Length</c>.</param>
+        /// <param name="strictlyIncreasing">If true, strictly increasing (&lt;); if false, non-decreasing (&lt;=).</param>
+        /// <param name="comparer">Optional element comparer, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>The overall maximum subsequence length (0 if <paramref name="values"/> is empty).</returns>
+        public static int LongestIncreasingSubsequenceLengths<T>(
+            ReadOnlySpan<T> values,
+            Span<int> lengthsEndingAt,
+            bool strictlyIncreasing = true,
+            IComparer<T>? comparer = null)
+        {
+            if (lengthsEndingAt.Length < values.Length)
+                throw new ArgumentException("Destination span must be at least as long as values.", nameof(lengthsEndingAt));
+            return LongestIncreasingSubsequenceCore(values, lengthsEndingAt, writePerElement: true, strictlyIncreasing, comparer);
+        }
+
+        private static int LongestIncreasingSubsequenceCore<T>(
+            ReadOnlySpan<T> values,
+            Span<int> lengthsEndingAt,
+            bool writePerElement,
+            bool strictlyIncreasing,
+            IComparer<T>? comparer)
+        {
+            if (values.IsEmpty)
+                return 0;
+
+            IComparer<T> cmp = comparer ?? Comparer<T>.Default;
+            T[] tails = new T[values.Length];
+            int len = 0;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                T val = values[i];
+                ReadOnlySpan<T> active = tails.AsSpan(0, len);
+                int pos = strictlyIncreasing
+                    ? SpecialtySelect.LowerBound(active, val, cmp)
+                    : SpecialtySelect.UpperBound(active, val, cmp);
+                tails[pos] = val;
+                if (pos == len)
+                    len++;
+                if (writePerElement)
+                    lengthsEndingAt[i] = pos + 1;
+            }
+
+            return len;
         }
     }
 }

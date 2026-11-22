@@ -789,5 +789,55 @@ namespace TMD.Algo.Collections.Generic
             reachedLimit = min != max;
             return min + (max - min)/2;
         }
+
+        /// <summary>
+        /// Finds the first index in sorted <paramref name="sortedValues"/> whose element is greater than or equal to
+        /// <paramref name="target"/> in O(log n) time, or <c>sortedValues.Length</c> if all elements are strictly less.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="sortedValues">Ascending-sorted span of values.</param>
+        /// <param name="target">Target value to search for.</param>
+        /// <param name="comparer">Element comparer matching the sort order, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>Insertion index in [0, <c>sortedValues.Length</c>] preserving sort order.</returns>
+        public static int LowerBound<T>(ReadOnlySpan<T> sortedValues, T target, IComparer<T>? comparer = null)
+        {
+            return BoundCore(sortedValues, target, comparer, upperBound: false);
+        }
+
+        /// <summary>
+        /// Finds the first index in sorted <paramref name="sortedValues"/> whose element is strictly greater than
+        /// <paramref name="target"/> in O(log n) time, or <c>sortedValues.Length</c> if all elements are less than or equal.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="sortedValues">Ascending-sorted span of values.</param>
+        /// <param name="target">Target value to search for.</param>
+        /// <param name="comparer">Element comparer matching the sort order, or null for <see cref="Comparer{T}.Default"/>.</param>
+        /// <returns>Insertion index in [0, <c>sortedValues.Length</c>] after all elements equal to <paramref name="target"/>.</returns>
+        public static int UpperBound<T>(ReadOnlySpan<T> sortedValues, T target, IComparer<T>? comparer = null)
+        {
+            return BoundCore(sortedValues, target, comparer, upperBound: true);
+        }
+
+        private static int BoundCore<T>(
+            ReadOnlySpan<T> sortedValues,
+            T target,
+            IComparer<T>? comparer,
+            bool upperBound)
+        {
+            IComparer<T> cmp = comparer ?? Comparer<T>.Default;
+            int lo = 0;
+            int hi = sortedValues.Length;
+            while (lo < hi)
+            {
+                int mid = lo + ((hi - lo) >> 1);
+                int c = cmp.Compare(sortedValues[mid], target);
+                bool goLeft = upperBound ? c > 0 : c >= 0;
+                if (goLeft)
+                    hi = mid;
+                else
+                    lo = mid + 1;
+            }
+            return lo;
+        }
     }
 }

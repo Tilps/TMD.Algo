@@ -993,15 +993,144 @@ namespace TMD.Algo.Algorithms
         /// <returns>List of strict convex hull vertices in counterclockwise order.</returns>
         public static List<Point2L> ConvexHull(ReadOnlySpan<Point2L> points)
         {
+            List<Point2L> unique = SortAndDeduplicate(points);
+            if (unique.Count <= 2)
+                return unique;
+
+            var (lower, upper) = BuildMonotoneHulls(unique, includeCollinear: false);
+            List<Point2L> hull = new List<Point2L>(lower.Count + upper.Count);
+            hull.AddRange(lower);
+            for (int i = upper.Count - 2; i >= 1; i--)
+                hull.Add(upper[i]);
+            return hull;
+        }
+
+        /// <summary>
+        /// Computes the lower and upper convex hull chains of <paramref name="points"/> ordered left-to-right
+        /// by <c>(X, Y)</c>.
+        /// </summary>
+        /// <param name="points">Input points.</param>
+        /// <param name="includeCollinear">
+        /// If true, retains collinear points lying along the lower and upper hull boundaries; otherwise excludes them.
+        /// </param>
+        /// <returns>
+        /// A tuple <c>(Lower, Upper)</c> where both chains start at the lexicographically smallest unique point
+        /// and end at the lexicographically largest unique point.
+        /// </returns>
+        public static (List<Point2L> Lower, List<Point2L> Upper) MonotoneChainHulls(
+            ReadOnlySpan<Point2L> points,
+            bool includeCollinear = false)
+        {
+            List<Point2L> unique = SortAndDeduplicate(points);
+            if (unique.Count == 0)
+                return ([], []);
+            if (unique.Count == 1)
+                return ([unique[0]], [unique[0]]);
+            return BuildMonotoneHulls(unique, includeCollinear);
+        }
+
+        /// <summary>
+        /// Computes the minimum vertical strip width <c>min_K (max_i(y_i - K*x_i) - min_i(y_i - K*x_i))</c>
+        /// over all real slopes <c>K</c> in O(n log n) time (or O(n) when <paramref name="points"/> are already sorted by X).
+        /// For 1D linear Chebyshev regression <c>min_{a, K} max_i |y_i - (a + K*x_i)|</c>, the minimum error is half this width.
+        /// </summary>
+        /// <param name="points">Input integer points.</param>
+        /// <returns>The minimum vertical width between two parallel lines enclosing all points.</returns>
+        public static double MinimumVerticalStripWidth(ReadOnlySpan<Point2L> points)
+        {
+            if (points.Length <= 1)
+                return 0.0;
+
+            Point2L[] sorted = points.ToArray();
+            Array.Sort(sorted, CompareLexXY);
+
+            List<Point2L> lowPts = [with(capacity: sorted.Length)];
+            List<Point2L> highPts = [with(capacity: sorted.Length)];
+            for (int i = 0; i < sorted.Length;)
+            {
+                long x = sorted[i].X;
+                long minY = sorted[i].Y;
+                long maxY = sorted[i].Y;
+                i++;
+                while (i < sorted.Length && sorted[i].X == x)
+                {
+                    if (sorted[i].Y < minY) minY = sorted[i].Y;
+                    if (sorted[i].Y > maxY) maxY = sorted[i].Y;
+                    i++;
+                }
+                lowPts.Add(new Point2L(x, minY));
+                highPts.Add(new Point2L(x, maxY));
+            }
+
+            if (lowPts.Count == 1)
+                return (double)((Int128)highPts[0].Y - lowPts[0].Y);
+
+            List<Point2L> lower = BuildHalfChain(lowPts, keepLeftTurns: true, includeCollinear: false);
+            List<Point2L> upper = BuildHalfChain(highPts, keepLeftTurns: false, includeCollinear: false);
+
+            int u = upper.Count - 1;
+            int l = 0;
+            double best = double.PositiveInfinity;
+
+            while (u > 0 || l < lower.Count - 1)
+            {
+                bool chooseUpper;
+                if (u == 0)
+                {
+                    chooseUpper = false;
+                }
+                else if (l == lower.Count - 1)
+                {
+                    chooseUpper = true;
+                }
+                else
+                {
+                    long dxU = upper[u].X - upper[u - 1].X;
+                    long dyU = upper[u].Y - upper[u - 1].Y;
+                    long dxL = lower[l + 1].X - lower[l].X;
+                    long dyL = lower[l + 1].Y - lower[l].Y;
+                    chooseUpper = (Int128)dyU * dxL <= (Int128)dyL * dxU;
+                }
+
+                long dx, dy;
+                if (chooseUpper)
+                {
+                    dx = upper[u].X - upper[u - 1].X;
+                    dy = upper[u].Y - upper[u - 1].Y;
+                }
+                else
+                {
+                    dx = lower[l + 1].X - lower[l].X;
+                    dy = lower[l + 1].Y - lower[l].Y;
+                }
+
+                Int128 num = (Int128)(upper[u].Y - lower[l].Y) * dx - (Int128)dy * (upper[u].X - lower[l].X);
+                double width = (double)num / dx;
+                if (width < best)
+                    best = width;
+
+                if (chooseUpper)
+                    u--;
+                else
+                    l++;
+            }
+
+            return best;
+        }
+
+        private static int CompareLexXY(Point2L a, Point2L b)
+        {
+            int cmpX = a.X.CompareTo(b.X);
+            return cmpX != 0 ? cmpX : a.Y.CompareTo(b.Y);
+        }
+
+        private static List<Point2L> SortAndDeduplicate(ReadOnlySpan<Point2L> points)
+        {
             if (points.Length == 0)
                 return [];
 
             Point2L[] sorted = points.ToArray();
-            Array.Sort(sorted, static (a, b) =>
-            {
-                int cmpX = a.X.CompareTo(b.X);
-                return cmpX != 0 ? cmpX : a.Y.CompareTo(b.Y);
-            });
+            Array.Sort(sorted, CompareLexXY);
 
             List<Point2L> unique = [sorted[0]];
             for (int i = 1; i < sorted.Length; i++)
@@ -1009,29 +1138,39 @@ namespace TMD.Algo.Algorithms
                 if (sorted[i] != sorted[i - 1])
                     unique.Add(sorted[i]);
             }
+            return unique;
+        }
 
-            if (unique.Count <= 2)
-                return unique;
+        private static (List<Point2L> Lower, List<Point2L> Upper) BuildMonotoneHulls(
+            List<Point2L> unique,
+            bool includeCollinear)
+        {
+            return (
+                BuildHalfChain(unique, keepLeftTurns: true, includeCollinear),
+                BuildHalfChain(unique, keepLeftTurns: false, includeCollinear));
+        }
 
-            List<Point2L> hull = [with(capacity: unique.Count + 1)];
-            foreach (Point2L p in unique)
+        private static List<Point2L> BuildHalfChain(
+            List<Point2L> sortedPoints,
+            bool keepLeftTurns,
+            bool includeCollinear)
+        {
+            List<Point2L> chain = [with(capacity: sortedPoints.Count)];
+            foreach (Point2L p in sortedPoints)
             {
-                while (hull.Count >= 2 && Cross128(hull[^2], hull[^1], p) <= 0)
-                    hull.RemoveAt(hull.Count - 1);
-                hull.Add(p);
+                while (chain.Count >= 2)
+                {
+                    Int128 cross = Cross128(chain[^2], chain[^1], p);
+                    bool shouldPop = keepLeftTurns
+                        ? (includeCollinear ? cross < 0 : cross <= 0)
+                        : (includeCollinear ? cross > 0 : cross >= 0);
+                    if (!shouldPop)
+                        break;
+                    chain.RemoveAt(chain.Count - 1);
+                }
+                chain.Add(p);
             }
-
-            int lowerSize = hull.Count;
-            for (int i = unique.Count - 2; i >= 0; i--)
-            {
-                Point2L p = unique[i];
-                while (hull.Count > lowerSize && Cross128(hull[^2], hull[^1], p) <= 0)
-                    hull.RemoveAt(hull.Count - 1);
-                hull.Add(p);
-            }
-
-            hull.RemoveAt(hull.Count - 1);
-            return hull;
+            return chain;
         }
 
         /// <summary>

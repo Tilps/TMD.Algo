@@ -344,5 +344,36 @@ namespace TMD.AlgoTest
                 .ToArray();
             Assert.AreEqual(new[] { "0,1,2", "2,3", "3,4,5", "5,6,7", "8" }, normalized);
         }
+
+        [Test]
+        public void TestLexicographicalTopologicalSort()
+        {
+            var g = new Graph<int, int>();
+            for (int i = 0; i < 6; i++)
+                g.AddVertex(i);
+
+            // Edges force 5->2, 5->0, 4->0, 4->1, 2->3, 3->1
+            // Lexicographically smallest topological order is [4, 5, 0, 2, 3, 1].
+            g.AddDirectedEdge(5, 2, 1);
+            g.AddDirectedEdge(5, 0, 1);
+            g.AddDirectedEdge(4, 0, 1);
+            g.AddDirectedEdge(4, 1, 1);
+            g.AddDirectedEdge(2, 3, 1);
+            g.AddDirectedEdge(3, 1, 1);
+
+            Assert.IsTrue(g.TryLexicographicalTopologicalSort(out List<int> order));
+            CollectionAssert.AreEqual(new[] { 4, 5, 0, 2, 3, 1 }, order);
+            CollectionAssert.AreEqual(new[] { 4, 5, 0, 2, 3, 1 }, g.LexicographicalTopologicalSort());
+
+            // Empty graph
+            var empty = new Graph<int, int>();
+            Assert.IsTrue(empty.TryLexicographicalTopologicalSort(out List<int> emptyOrder));
+            Assert.IsEmpty(emptyOrder);
+
+            // Cycle triggers false / InvalidOperationException
+            g.AddDirectedEdge(1, 5, 1);
+            Assert.IsFalse(g.TryLexicographicalTopologicalSort(out _));
+            Assert.Throws<InvalidOperationException>(() => g.LexicographicalTopologicalSort());
+        }
     }
 }

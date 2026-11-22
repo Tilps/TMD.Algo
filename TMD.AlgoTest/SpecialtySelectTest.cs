@@ -80,5 +80,36 @@ namespace TMD.AlgoTest
                 Assert.AreEqual(i/2, valuesCopy.SelectRandomizedInPlace(i));
             }
         }
+
+        [Test]
+        public void LowerAndUpperBoundTests()
+        {
+            Assert.AreEqual(0, SpecialtySelect.LowerBound<int>(ReadOnlySpan<int>.Empty, 5));
+            Assert.AreEqual(0, SpecialtySelect.UpperBound<int>(ReadOnlySpan<int>.Empty, 5));
+
+            int[] values = [1, 2, 2, 2, 5, 7, 7, 10];
+            Assert.AreEqual(0, SpecialtySelect.LowerBound<int>(values, 0));
+            Assert.AreEqual(0, SpecialtySelect.UpperBound<int>(values, 0));
+
+            Assert.AreEqual(1, SpecialtySelect.LowerBound<int>(values, 2));
+            Assert.AreEqual(4, SpecialtySelect.UpperBound<int>(values, 2));
+
+            Assert.AreEqual(4, SpecialtySelect.LowerBound<int>(values, 3));
+            Assert.AreEqual(4, SpecialtySelect.UpperBound<int>(values, 3));
+
+            Assert.AreEqual(5, SpecialtySelect.LowerBound<int>(values, 7));
+            Assert.AreEqual(7, SpecialtySelect.UpperBound<int>(values, 7));
+
+            Assert.AreEqual(8, SpecialtySelect.LowerBound<int>(values, 11));
+            Assert.AreEqual(8, SpecialtySelect.UpperBound<int>(values, 11));
+
+            // Custom descending comparer.
+            int[] descValues = [10, 7, 7, 5, 2, 2, 1];
+            Comparer<int> desc = Comparer<int>.Create((a, b) => b.CompareTo(a));
+            Assert.AreEqual(1, SpecialtySelect.LowerBound<int>(descValues, 7, desc));
+            Assert.AreEqual(3, SpecialtySelect.UpperBound<int>(descValues, 7, desc));
+            Assert.AreEqual(0, SpecialtySelect.LowerBound<int>(descValues, 20, desc));
+            Assert.AreEqual(7, SpecialtySelect.UpperBound<int>(descValues, 0, desc));
+        }
     }
 }

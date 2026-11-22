@@ -232,6 +232,64 @@ namespace TMD.AlgoTest
             Assert.Throws<InvalidOperationException>(() => comp.InverseFactorial(2));
         }
 
+        [Test]
+        public void MinStepInRangeTest()
+        {
+            // Exhaustive comparison against brute force over varied moduli, start offsets, steps, and wrapped intervals.
+            foreach (long m in new[] { 1L, 7L, 12L, 29L, 60L })
+            {
+                foreach (long start in new[] { -m - 1, 0L, 1L, m / 2, m - 1 })
+                {
+                    foreach (long step in new[] { -m - 2, 0L, 1L, 4L, m / 2 + 1, m - 1, 2 * m + 3 })
+                    {
+                        for (long l = 0; l < m; l += Math.Max(1L, m / 7))
+                        {
+                            for (long h = 0; h < m; h += Math.Max(1L, m / 7))
+                            {
+                                long? brute = null;
+                                for (long k = 0; k <= m; k++)
+                                {
+                                    long val = BigIntegerMod(new BigInteger(start) + k * step, m);
+                                    bool hit = l <= h ? (val >= l && val <= h) : (val >= l || val <= h);
+                                    if (hit)
+                                    {
+                                        brute = k;
+                                        break;
+                                    }
+                                }
+
+                                Assert.AreEqual(brute, Modulo.MinStepInRange(m, start, step, l, h));
+                                Assert.AreEqual(
+                                    brute.HasValue ? new BigInteger(brute.Value) : (BigInteger?)null,
+                                    Modulo.MinStepInRange((BigInteger)m, (BigInteger)start, (BigInteger)step, (BigInteger)l, (BigInteger)h));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Large 64-bit modulus without overflow.
+            long bigM = 4_000_000_000_000_000_001L;
+            long bigS = 1_234_567_890_123_456_789L;
+            long kExpected = 987_654_321L;
+            long target = (long)((new BigInteger(kExpected) * bigS) % bigM);
+            long? bigRes = Modulo.MinStepInRange(bigM, 0L, bigS, target, target);
+            Assert.IsTrue(bigRes.HasValue && bigRes.Value <= kExpected);
+            Assert.AreEqual(target, (long)((new BigInteger(bigRes!.Value) * bigS) % bigM));
+
+            // 100-digit BigInteger case.
+            BigInteger pow100 = BigInteger.Pow(10, 100) + 7;
+            BigInteger bStep = BigInteger.Pow(10, 99) + 123456789;
+            BigInteger kTrue = 1234567890123456789L;
+            BigInteger bTarget = (kTrue * bStep) % pow100;
+            BigInteger? bRes = Modulo.MinStepInRange(pow100, BigInteger.Zero, bStep, bTarget, bTarget);
+            Assert.IsTrue(bRes.HasValue && bRes.Value <= kTrue);
+            Assert.AreEqual(bTarget, (bRes!.Value * bStep) % pow100);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.MinStepInRange(0L, 1L, 0L, 0L));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.MinStepInRange(5L, 1L, 5L, 4L));
+        }
+
         private static long BigIntegerMod(BigInteger value, long basis)
         {
             BigInteger mod = value % basis;

@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -523,6 +524,159 @@ namespace TMD.Algo.Algorithms
             if (invFactCache != null && factCache != null && n < invFactCache.Length && n < factCache.Length)
                 return Multiply(Multiply(factCache[n], invFactCache[k]), invFactCache[n - k]);
             return Multiply(Permutations(n, k), Invert(Factorial(k)));
+        }
+
+        /// <summary>
+        /// Finds the smallest non-negative integer <c>k</c> such that <c>(k * step) mod modulus</c> lies in the
+        /// target modular interval determined by <paramref name="low"/> and <paramref name="high"/> in O(log modulus) time.
+        /// When <paramref name="low"/> &lt;= <paramref name="high"/>, the target interval is [<paramref name="low"/>, <paramref name="high"/>];
+        /// when <paramref name="low"/> &gt; <paramref name="high"/>, it wraps around: [<paramref name="low"/>, <paramref name="modulus"/> - 1] U [0, <paramref name="high"/>].
+        /// </summary>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <param name="step">Step added per iteration (may be negative or &gt;= <paramref name="modulus"/>).</param>
+        /// <param name="low">Inclusive lower endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <param name="high">Inclusive upper endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <returns>The smallest <c>k &gt;= 0</c>, or <c>null</c> if the target interval is never reached.</returns>
+        public static long? MinStepInRange(long modulus, long step, long low, long high)
+        {
+            return MinStepInRange(modulus, 0L, step, low, high);
+        }
+
+        /// <summary>
+        /// Finds the smallest non-negative integer <c>k</c> such that <c>(start + k * step) mod modulus</c> lies in the
+        /// target modular interval determined by <paramref name="low"/> and <paramref name="high"/> in O(log modulus) time.
+        /// When <paramref name="low"/> &lt;= <paramref name="high"/>, the target interval is [<paramref name="low"/>, <paramref name="high"/>];
+        /// when <paramref name="low"/> &gt; <paramref name="high"/>, it wraps around: [<paramref name="low"/>, <paramref name="modulus"/> - 1] U [0, <paramref name="high"/>].
+        /// </summary>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <param name="start">Initial value before taking any steps.</param>
+        /// <param name="step">Step added per iteration (may be negative or &gt;= <paramref name="modulus"/>).</param>
+        /// <param name="low">Inclusive lower endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <param name="high">Inclusive upper endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <returns>The smallest <c>k &gt;= 0</c>, or <c>null</c> if the target interval is never reached.</returns>
+        public static long? MinStepInRange(long modulus, long start, long step, long low, long high)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(modulus);
+            ValidateRangeEndpoints(modulus, low, high);
+
+            long s0 = NormalizeMod(start, modulus);
+            if (IsInModularInterval(s0, low, high))
+                return 0L;
+
+            long stepMod = NormalizeMod(step, modulus);
+            long shiftedLow = NormalizeMod(low - s0, modulus);
+            long shiftedHigh = NormalizeMod(high - s0, modulus);
+            Int128? res = MinStepPositive128(modulus, stepMod, shiftedLow, shiftedHigh);
+            return res.HasValue ? (long)res.Value : null;
+        }
+
+        /// <summary>
+        /// Finds the smallest non-negative <see cref="BigInteger"/> <c>k</c> such that <c>(k * step) mod modulus</c> lies in the
+        /// target modular interval determined by <paramref name="low"/> and <paramref name="high"/> in O(log modulus) operations.
+        /// When <paramref name="low"/> &lt;= <paramref name="high"/>, the target interval is [<paramref name="low"/>, <paramref name="high"/>];
+        /// when <paramref name="low"/> &gt; <paramref name="high"/>, it wraps around: [<paramref name="low"/>, <paramref name="modulus"/> - 1] U [0, <paramref name="high"/>].
+        /// </summary>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <param name="step">Step added per iteration (may be negative or &gt;= <paramref name="modulus"/>).</param>
+        /// <param name="low">Inclusive lower endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <param name="high">Inclusive upper endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <returns>The smallest <c>k &gt;= 0</c>, or <c>null</c> if the target interval is never reached.</returns>
+        public static BigInteger? MinStepInRange(BigInteger modulus, BigInteger step, BigInteger low, BigInteger high)
+        {
+            return MinStepInRange(modulus, BigInteger.Zero, step, low, high);
+        }
+
+        /// <summary>
+        /// Finds the smallest non-negative <see cref="BigInteger"/> <c>k</c> such that <c>(start + k * step) mod modulus</c> lies in the
+        /// target modular interval determined by <paramref name="low"/> and <paramref name="high"/> in O(log modulus) operations.
+        /// When <paramref name="low"/> &lt;= <paramref name="high"/>, the target interval is [<paramref name="low"/>, <paramref name="high"/>];
+        /// when <paramref name="low"/> &gt; <paramref name="high"/>, it wraps around: [<paramref name="low"/>, <paramref name="modulus"/> - 1] U [0, <paramref name="high"/>].
+        /// </summary>
+        /// <param name="modulus">Positive modulus.</param>
+        /// <param name="start">Initial value before taking any steps.</param>
+        /// <param name="step">Step added per iteration (may be negative or &gt;= <paramref name="modulus"/>).</param>
+        /// <param name="low">Inclusive lower endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <param name="high">Inclusive upper endpoint in [0, <paramref name="modulus"/> - 1].</param>
+        /// <returns>The smallest <c>k &gt;= 0</c>, or <c>null</c> if the target interval is never reached.</returns>
+        public static BigInteger? MinStepInRange(BigInteger modulus, BigInteger start, BigInteger step, BigInteger low, BigInteger high)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(modulus);
+            ValidateRangeEndpoints(modulus, low, high);
+
+            BigInteger s0 = NormalizeMod(start, modulus);
+            if (IsInModularInterval(s0, low, high))
+                return BigInteger.Zero;
+
+            BigInteger stepMod = NormalizeMod(step, modulus);
+            BigInteger shiftedLow = NormalizeMod(low - s0, modulus);
+            BigInteger shiftedHigh = NormalizeMod(high - s0, modulus);
+            return MinStepPositiveBig(modulus, stepMod, shiftedLow, shiftedHigh);
+        }
+
+        private static void ValidateRangeEndpoints(long modulus, long low, long high)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(low);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(low, modulus);
+            ArgumentOutOfRangeException.ThrowIfNegative(high);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(high, modulus);
+        }
+
+        private static void ValidateRangeEndpoints(BigInteger modulus, BigInteger low, BigInteger high)
+        {
+            if (low < 0 || low >= modulus)
+                throw new ArgumentOutOfRangeException(nameof(low), "Endpoint must be in [0, modulus - 1].");
+            if (high < 0 || high >= modulus)
+                throw new ArgumentOutOfRangeException(nameof(high), "Endpoint must be in [0, modulus - 1].");
+        }
+
+        private static long NormalizeMod(long value, long modulus)
+        {
+            long rem = value % modulus;
+            return rem < 0 ? rem + modulus : rem;
+        }
+
+        private static BigInteger NormalizeMod(BigInteger value, BigInteger modulus)
+        {
+            BigInteger rem = value % modulus;
+            return rem.Sign < 0 ? rem + modulus : rem;
+        }
+
+        private static bool IsInModularInterval(long value, long low, long high) =>
+            low <= high ? (value >= low && value <= high) : (value >= low || value <= high);
+
+        private static bool IsInModularInterval(BigInteger value, BigInteger low, BigInteger high) =>
+            low <= high ? (value >= low && value <= high) : (value >= low || value <= high);
+
+        private static Int128? MinStepPositive128(Int128 m, Int128 s, Int128 l, Int128 r)
+        {
+            if (s == 0)
+                return null;
+            if (2 * s > m)
+                return MinStepPositive128(m, m - s, m - r, m - l);
+            Int128 k0 = (l + s - 1) / s;
+            if (k0 * s <= r)
+                return k0;
+            Int128 nextS = s - (m % s);
+            if (nextS == s)
+                nextS = 0;
+            Int128? q = MinStepPositive128(s, nextS, l % s, r % s);
+            return q.HasValue ? (q.Value * m + l + s - 1) / s : null;
+        }
+
+        private static BigInteger? MinStepPositiveBig(BigInteger m, BigInteger s, BigInteger l, BigInteger r)
+        {
+            if (s.IsZero)
+                return null;
+            if ((s << 1) > m)
+                return MinStepPositiveBig(m, m - s, m - r, m - l);
+            BigInteger k0 = (l + s - 1) / s;
+            if (k0 * s <= r)
+                return k0;
+            BigInteger nextS = s - (m % s);
+            if (nextS == s)
+                nextS = BigInteger.Zero;
+            BigInteger? q = MinStepPositiveBig(s, nextS, l % s, r % s);
+            return q.HasValue ? (q.Value * m + l + s - 1) / s : null;
         }
     }
 }

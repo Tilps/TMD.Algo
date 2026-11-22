@@ -278,5 +278,39 @@ namespace TMD.AlgoTest
             List<Point2L> expected = Geometry.ConvexHull(bruteSums);
             CollectionAssert.AreEqual(expected, sumHull);
         }
+
+        [Test]
+        public void MonotoneHullsAndMinimumVerticalStripWidth()
+        {
+            // Collinear retention vs exclusion on square with boundary points.
+            Point2L[] sq =
+            [
+                new(0, 0), new(1, 0), new(2, 0),
+                new(2, 1), new(2, 2), new(1, 2),
+                new(0, 2), new(0, 1), new(1, 1)
+            ];
+            var (strictLow, strictHigh) = Geometry.MonotoneChainHulls(sq, includeCollinear: false);
+            CollectionAssert.AreEqual(new[] { new Point2L(0, 0), new Point2L(2, 0), new Point2L(2, 2) }, strictLow);
+            CollectionAssert.AreEqual(new[] { new Point2L(0, 0), new Point2L(0, 2), new Point2L(2, 2) }, strictHigh);
+
+            var (colLow, colHigh) = Geometry.MonotoneChainHulls(sq, includeCollinear: true);
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(0, 0), new Point2L(1, 0), new Point2L(2, 0), new Point2L(2, 1), new Point2L(2, 2) },
+                colLow);
+            CollectionAssert.AreEqual(
+                new[] { new Point2L(0, 0), new Point2L(0, 1), new Point2L(0, 2), new Point2L(1, 2), new Point2L(2, 2) },
+                colHigh);
+
+            // Minimum vertical strip width degenerate and drummer samples.
+            Assert.AreEqual(0.0, Geometry.MinimumVerticalStripWidth(ReadOnlySpan<Point2L>.Empty));
+            Assert.AreEqual(0.0, Geometry.MinimumVerticalStripWidth([new Point2L(5, 10)]));
+            Assert.AreEqual(7.0, Geometry.MinimumVerticalStripWidth([new Point2L(3, 2), new Point2L(3, 9), new Point2L(3, 5)]), 1e-12);
+            Assert.AreEqual(0.0, Geometry.MinimumVerticalStripWidth([new Point2L(0, 10), new Point2L(1, 70)]), 1e-12);
+            Assert.AreEqual(1.0, Geometry.MinimumVerticalStripWidth([new Point2L(0, 0), new Point2L(1, 10), new Point2L(2, 19), new Point2L(3, 30)]), 1e-12);
+            Assert.AreEqual(1.5, Geometry.MinimumVerticalStripWidth([new Point2L(0, 2), new Point2L(1, 5), new Point2L(2, 10), new Point2L(3, 15), new Point2L(4, 20), new Point2L(5, 24)]), 1e-12);
+
+            // Duplicate X coordinates (square + interior): best vertical strip is horizontal K=0 -> height 2.
+            Assert.AreEqual(2.0, Geometry.MinimumVerticalStripWidth(sq), 1e-12);
+        }
     }
 }

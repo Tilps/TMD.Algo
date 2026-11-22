@@ -230,6 +230,64 @@ namespace TMD.Algo.Collections.Generic
         }
 
         /// <summary>
+        /// Attempts to compute the lexicographically smallest topological ordering of vertex IDs
+        /// (0-based) using Kahn's algorithm with a min-heap. Running time O((V + E) log V).
+        /// </summary>
+        /// <param name="order">
+        /// When this method returns true, contains the lexicographically smallest topological order;
+        /// otherwise contains the partial order before hitting a cycle.
+        /// </param>
+        /// <returns>True if the graph is a DAG and a full topological order was found; false if a cycle exists.</returns>
+        public bool TryLexicographicalTopologicalSort(out List<int> order)
+        {
+            int n = vertices.Count;
+            order = new List<int>(n);
+            if (n == 0)
+                return true;
+
+            int[] inDegree = new int[n];
+            for (int u = 0; u < n; u++)
+            {
+                foreach (KeyValuePair<int, int> edge in adjacencyList[u])
+                    inDegree[edge.Key]++;
+            }
+
+            PriorityQueue<int, int> ready = new PriorityQueue<int, int>();
+            for (int u = 0; u < n; u++)
+            {
+                if (inDegree[u] == 0)
+                    ready.Enqueue(u, u);
+            }
+
+            while (ready.Count > 0)
+            {
+                int u = ready.Dequeue();
+                order.Add(u);
+                foreach (KeyValuePair<int, int> edge in adjacencyList[u])
+                {
+                    int v = edge.Key;
+                    if (--inDegree[v] == 0)
+                        ready.Enqueue(v, v);
+                }
+            }
+
+            return order.Count == n;
+        }
+
+        /// <summary>
+        /// Returns the lexicographically smallest topological ordering of vertex IDs (0-based).
+        /// Running time O((V + E) log V).
+        /// </summary>
+        /// <returns>The lexicographically smallest list of vertex IDs in topological order.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the graph contains a cycle.</exception>
+        public List<int> LexicographicalTopologicalSort()
+        {
+            if (!TryLexicographicalTopologicalSort(out List<int> order))
+                throw new InvalidOperationException("Graph contains a cycle.");
+            return order;
+        }
+
+        /// <summary>
         /// Returns the verticies in clumps that are strongly connected.
         /// </summary>
         /// <returns>
