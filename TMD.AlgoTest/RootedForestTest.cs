@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
@@ -118,6 +119,59 @@ namespace TMD.AlgoTest
         {
             int[] cyclic = { 1, 2, 0 };
             Assert.Throws<ArgumentException>(() => new RootedForest(cyclic));
+        }
+
+        [Test]
+        public void TestFindTreeCentersAndCanonicalSubtreeIds()
+        {
+            // Single node.
+            List<int>[] single = [[]];
+            Assert.AreEqual((0, -1), RootedForest.FindTreeCenters(single));
+            CollectionAssert.AreEqual(new[] { 1 }, RootedForest.ComputeCanonicalSubtreeIds(single, 0));
+
+            // 2 nodes -> two adjacent centers (odd diameter 1).
+            List<int>[] pair = [[1], [0]];
+            var pairCenters = RootedForest.FindTreeCenters(pair);
+            Assert.AreNotEqual(-1, pairCenters.Center2);
+            CollectionAssert.AreEquivalent(new[] { 0, 1 }, new[] { pairCenters.Center1, pairCenters.Center2 });
+
+            // 5-node path 0-1-2-3-4 -> single center 2 (even diameter 4).
+            List<int>[] path5 = [[1], [0, 2], [1, 3], [2, 4], [3]];
+            Assert.AreEqual((2, -1), RootedForest.FindTreeCenters(path5));
+            int[] pathIds = RootedForest.ComputeCanonicalSubtreeIds(path5, 2);
+            Assert.AreEqual(pathIds[1], pathIds[3]);
+            Assert.AreEqual(pathIds[0], pathIds[4]);
+            Assert.AreNotEqual(pathIds[0], pathIds[1]);
+
+            // Labeled distinction: symmetric shape with different labels produces distinct internal IDs while equal-label leaves share IDs.
+            int[] diffLabels = [10, 20, 30, 40, 10];
+            int[] labeledIds = RootedForest.ComputeCanonicalSubtreeIds(path5, 2, diffLabels);
+            Assert.AreEqual(labeledIds[0], labeledIds[4]);
+            Assert.AreNotEqual(labeledIds[1], labeledIds[3]);
+
+            int[] diffLeafLabels = [10, 20, 30, 20, 50];
+            int[] diffLeafIds = RootedForest.ComputeCanonicalSubtreeIds(path5, 2, diffLeafLabels);
+            Assert.AreNotEqual(diffLeafIds[0], diffLeafIds[4]);
+            Assert.AreNotEqual(diffLeafIds[1], diffLeafIds[3]);
+
+            // Deep path (N = 10,000) verifies iterative center finding & canonical IDs never stack overflow.
+            const int deepN = 10000;
+            List<int>[] deepPath = new List<int>[deepN];
+            for (int i = 0; i < deepN; i++) deepPath[i] = [];
+            for (int i = 0; i + 1 < deepN; i++)
+            {
+                deepPath[i].Add(i + 1);
+                deepPath[i + 1].Add(i);
+            }
+            var (dc1, dc2) = RootedForest.FindTreeCenters(deepPath);
+            CollectionAssert.AreEquivalent(new[] { 4999, 5000 }, new[] { dc1, dc2 });
+            int[] deepIds = RootedForest.ComputeCanonicalSubtreeIds(deepPath, 0);
+            Assert.AreEqual(deepN, deepIds.Length);
+
+            // Disconnected graph rejected.
+            List<int>[] disconnected = [[1], [0], []];
+            Assert.Throws<ArgumentException>(() => RootedForest.FindTreeCenters(disconnected));
+            Assert.Throws<ArgumentException>(() => RootedForest.ComputeCanonicalSubtreeIds(disconnected, 0));
         }
     }
 }

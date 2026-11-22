@@ -638,5 +638,99 @@ namespace TMD.Algo.Algorithms
 
             return dist;
         }
+
+        /// <summary>
+        /// Computes the shortest-path distance from <paramref name="startVertex"/> to <paramref name="targetVertex"/>
+        /// on a dense non-negative weighted graph of vertices <c>0 .. vertexCount - 1</c> in O(V^2) time
+        /// without allocating a heap or adjacency lists.
+        /// </summary>
+        /// <param name="vertexCount">Total number of vertices (must be positive).</param>
+        /// <param name="startVertex">Starting vertex index.</param>
+        /// <param name="targetVertex">Target vertex index.</param>
+        /// <param name="weightFunc">
+        /// Function returning the non-negative directed edge weight from <c>u</c> to <c>v</c>,
+        /// or a negative value (or <see cref="long.MaxValue"/>) if no edge exists.
+        /// </param>
+        /// <returns>The shortest distance to <paramref name="targetVertex"/>, or -1 if unreachable.</returns>
+        public static long DenseDijkstra(
+            int vertexCount,
+            int startVertex,
+            int targetVertex,
+            Func<int, int, long> weightFunc)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(targetVertex);
+            if (vertexCount <= 0 || targetVertex >= vertexCount)
+                throw new ArgumentOutOfRangeException(nameof(targetVertex), "Target vertex must be a valid vertex index.");
+            return DenseDijkstraDistances(vertexCount, startVertex, weightFunc, targetVertex)[targetVertex];
+        }
+
+        /// <summary>
+        /// Computes shortest-path distances from <paramref name="startVertex"/> on a dense non-negative weighted graph
+        /// in O(V^2) time without allocating a heap or adjacency lists.
+        /// </summary>
+        /// <param name="vertexCount">Total number of vertices (must be positive).</param>
+        /// <param name="startVertex">Starting vertex index.</param>
+        /// <param name="weightFunc">
+        /// Function returning the non-negative directed edge weight from <c>u</c> to <c>v</c>,
+        /// or a negative value (or <see cref="long.MaxValue"/>) if no edge exists.
+        /// </param>
+        /// <param name="targetVertex">Optional target vertex for early termination, or -1 to compute all distances.</param>
+        /// <returns>
+        /// Array of length <paramref name="vertexCount"/> containing shortest distances or -1 if unreachable (or unreached after early stop).
+        /// </returns>
+        public static long[] DenseDijkstraDistances(
+            int vertexCount,
+            int startVertex,
+            Func<int, int, long> weightFunc,
+            int targetVertex = -1)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(vertexCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(startVertex);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startVertex, vertexCount);
+            if (targetVertex < -1 || targetVertex >= vertexCount)
+                throw new ArgumentOutOfRangeException(nameof(targetVertex), "Target vertex must be -1 or a valid vertex index.");
+            ArgumentNullException.ThrowIfNull(weightFunc);
+
+            long[] dist = new long[vertexCount];
+            Array.Fill(dist, -1L);
+            bool[] visited = new bool[vertexCount];
+            dist[startVertex] = 0L;
+
+            for (int iter = 0; iter < vertexCount; iter++)
+            {
+                int u = -1;
+                long bestDist = long.MaxValue;
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    if (!visited[i] && dist[i] >= 0 && dist[i] < bestDist)
+                    {
+                        bestDist = dist[i];
+                        u = i;
+                    }
+                }
+
+                if (u == -1)
+                    break;
+                visited[u] = true;
+                if (u == targetVertex)
+                    break;
+
+                for (int v = 0; v < vertexCount; v++)
+                {
+                    if (visited[v])
+                        continue;
+                    long w = weightFunc(u, v);
+                    if (w < 0 || w == long.MaxValue)
+                        continue;
+                    if (w > long.MaxValue - 1 - bestDist)
+                        continue;
+                    long nd = bestDist + w;
+                    if (dist[v] == -1 || nd < dist[v])
+                        dist[v] = nd;
+                }
+            }
+
+            return dist;
+        }
     }
 }

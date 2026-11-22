@@ -255,6 +255,40 @@ namespace TMD.AlgoTest
             Assert.Throws<System.ArgumentOutOfRangeException>(() =>
                 Search.ZeroOnePfs(2, 0, -1, u => adj2[u]));
         }
+
+        [Test]
+        public void TestDenseDijkstraAndDistances()
+        {
+            long[,] w =
+            {
+                { 0, 10, 3, -1, -1 },
+                { -1, 0, 1, 2, -1 },
+                { -1, 4, 0, 8, -1 },
+                { -1, -1, -1, 0, -1 },
+                { -1, -1, -1, -1, 0 }
+            };
+
+            long[] dist = Search.DenseDijkstraDistances(5, 0, (u, v) => w[u, v]);
+            CollectionAssert.AreEqual(new[] { 0L, 7L, 3L, 9L, -1L }, dist);
+            Assert.AreEqual(9L, Search.DenseDijkstra(5, 0, 3, (u, v) => w[u, v]));
+            Assert.AreEqual(-1L, Search.DenseDijkstra(5, 0, 4, (u, v) => w[u, v]));
+
+            // Early stop leaves farther vertices unset (-1) if unsettled before target.
+            long[] partial = Search.DenseDijkstraDistances(5, 0, (u, v) => w[u, v], targetVertex: 2);
+            Assert.AreEqual(3L, partial[2]);
+
+            // Zero-weight path & long.MaxValue treated as no edge.
+            Assert.AreEqual(0L, Search.DenseDijkstra(3, 0, 2, (u, v) => (u, v) switch
+            {
+                (0, 1) or (1, 2) => 0L,
+                _ => long.MaxValue
+            }));
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                Search.DenseDijkstra(2, 0, -1, (_, _) => 1L));
+            Assert.Throws<System.ArgumentNullException>(() =>
+                Search.DenseDijkstra(2, 0, 1, null!));
+        }
     }
 }
 

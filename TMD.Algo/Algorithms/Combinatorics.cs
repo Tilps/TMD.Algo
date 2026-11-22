@@ -458,6 +458,39 @@ namespace TMD.Algo.Algorithms
             return true;
         }
 
+        /// <summary>
+        /// Computes the binomial coefficient C(<paramref name="n"/>, <paramref name="k"/>), saturated at
+        /// <paramref name="cap"/>, in O(min(k, n - k)) time using internal <see cref="Int128"/> arithmetic
+        /// without 64-bit intermediate overflow.
+        /// </summary>
+        /// <param name="n">Non-negative total item count.</param>
+        /// <param name="k">Number of chosen items.</param>
+        /// <param name="cap">Non-negative saturation cap.</param>
+        /// <returns>
+        /// <c>min(C(n, k), cap)</c>, or <c>0</c> if <paramref name="k"/> &lt; 0 or <paramref name="k"/> &gt; <paramref name="n"/>.
+        /// </returns>
+        public static long ChooseCapped(long n, long k, long cap)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
+            ArgumentOutOfRangeException.ThrowIfNegative(cap);
+            if (cap == 0 || k < 0 || k > n)
+                return 0L;
+            if (k == 0 || k == n)
+                return Math.Min(1L, cap);
+            if (k > n - k)
+                k = n - k;
+
+            Int128 res = 1;
+            Int128 cap128 = cap;
+            for (long i = 1; i <= k; i++)
+            {
+                res = res * (n - k + i) / i;
+                if (res >= cap128)
+                    return cap;
+            }
+            return (long)res;
+        }
+
         private static void ReverseRange<T>(IList<T> items, int left, int right)
         {
             while (left < right)

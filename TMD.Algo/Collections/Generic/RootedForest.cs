@@ -350,6 +350,183 @@ namespace TMD.Algo.Collections.Generic
                    tin[ancestor] <= tin[descendant] &&
                    tout[ancestor] >= tout[descendant];
         }
+
+        /// <summary>
+        /// Finds the one or two centers (midpoints of a longest path) of an undirected tree in O(N) time and O(N) space
+        /// iteratively, safe for arbitrarily deep paths without recursion.
+        /// </summary>
+        /// <param name="adjacency">Undirected tree adjacency list over vertices <c>0 .. N - 1</c>.</param>
+        /// <returns>
+        /// <c>(Center1, Center2)</c>, where <c>Center2</c> is <c>-1</c> if the tree has a unique center (even diameter)
+        /// or the second adjacent center vertex if the diameter is odd.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="adjacency"/> is empty or disconnected.</exception>
+        public static (int Center1, int Center2) FindTreeCenters(IReadOnlyList<IReadOnlyList<int>> adjacency)
+        {
+            ArgumentNullException.ThrowIfNull(adjacency);
+            int n = adjacency.Count;
+            if (n == 0)
+                throw new ArgumentException("Tree must contain at least one vertex.", nameof(adjacency));
+            if (n == 1)
+                return (0, -1);
+
+            int[] queue = new int[n];
+            int[] parent = new int[n];
+            int[] dist = new int[n];
+
+            (int Farthest, int Visited) Bfs(int start)
+            {
+                Array.Fill(dist, -1);
+                dist[start] = 0;
+                parent[start] = -1;
+                int head = 0;
+                int tail = 0;
+                queue[tail++] = start;
+                int farthest = start;
+                while (head < tail)
+                {
+                    int u = queue[head++];
+                    if (dist[u] > dist[farthest])
+                        farthest = u;
+                    IReadOnlyList<int> neighbors = adjacency[u];
+                    for (int i = 0; i < neighbors.Count; i++)
+                    {
+                        int v = neighbors[i];
+                        if (dist[v] == -1)
+                        {
+                            dist[v] = dist[u] + 1;
+                            parent[v] = u;
+                            queue[tail++] = v;
+                        }
+                    }
+                }
+                return (farthest, tail);
+            }
+
+            var (uEnd, visited1) = Bfs(0);
+            if (visited1 != n)
+                throw new ArgumentException("Tree is disconnected.", nameof(adjacency));
+
+            var (vEnd, _) = Bfs(uEnd);
+            int diameter = dist[vEnd];
+            int mid = vEnd;
+            int steps = diameter >> 1;
+            for (int i = 0; i < steps; i++)
+                mid = parent[mid];
+
+            return (diameter & 1) == 0 ? (mid, -1) : (mid, parent[mid]);
+        }
+
+        /// <summary>
+        /// Computes exact collision-free canonical subtree isomorphism IDs (AHU algorithm via trie interning)
+        /// for an unlabeled tree rooted at <paramref name="root"/> in O(N log N) time and O(N) space iteratively.
+        /// Two vertices have equal canonical IDs iff their rooted unlabeled subtrees are isomorphic.
+        /// </summary>
+        /// <param name="adjacency">Undirected tree adjacency list over vertices <c>0 .. N - 1</c>.</param>
+        /// <param name="root">Root vertex index in [0, N - 1].</param>
+        /// <returns>Array of canonical positive integer IDs indexed by vertex.</returns>
+        public static int[] ComputeCanonicalSubtreeIds(IReadOnlyList<IReadOnlyList<int>> adjacency, int root)
+        {
+            return ComputeCanonicalSubtreeIdsCore(adjacency, root, ReadOnlySpan<int>.Empty, hasLabels: false);
+        }
+
+        /// <summary>
+        /// Computes exact collision-free canonical subtree isomorphism IDs (AHU algorithm via trie interning)
+        /// for a vertex-labeled tree rooted at <paramref name="root"/> in O(N log N) time and O(N) space iteratively.
+        /// Two vertices have equal canonical IDs iff their rooted labeled subtrees are isomorphic.
+        /// </summary>
+        /// <param name="adjacency">Undirected tree adjacency list over vertices <c>0 .. N - 1</c>.</param>
+        /// <param name="root">Root vertex index in [0, N - 1].</param>
+        /// <param name="nodeLabels">Label for each vertex (length must equal <c>adjacency.Count</c>).</param>
+        /// <returns>Array of canonical positive integer IDs indexed by vertex.</returns>
+        public static int[] ComputeCanonicalSubtreeIds(
+            IReadOnlyList<IReadOnlyList<int>> adjacency,
+            int root,
+            ReadOnlySpan<int> nodeLabels)
+        {
+            ArgumentNullException.ThrowIfNull(adjacency);
+            if (nodeLabels.Length != adjacency.Count)
+                throw new ArgumentException("nodeLabels length must match vertex count.", nameof(nodeLabels));
+            return ComputeCanonicalSubtreeIdsCore(adjacency, root, nodeLabels, hasLabels: true);
+        }
+
+        private static int[] ComputeCanonicalSubtreeIdsCore(
+            IReadOnlyList<IReadOnlyList<int>> adjacency,
+            int root,
+            ReadOnlySpan<int> nodeLabels,
+            bool hasLabels)
+        {
+            ArgumentNullException.ThrowIfNull(adjacency);
+            int n = adjacency.Count;
+            if (n == 0)
+                throw new ArgumentException("Tree must contain at least one vertex.", nameof(adjacency));
+            ArgumentOutOfRangeException.ThrowIfNegative(root);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(root, n);
+
+            int[] parent = new int[n];
+            Array.Fill(parent, -1);
+            bool[] visited = new bool[n];
+            int[] order = new int[n];
+
+            visited[root] = true;
+            int head = 0;
+            int tail = 0;
+            order[tail++] = root;
+
+            while (head < tail)
+            {
+                int u = order[head++];
+                IReadOnlyList<int> neighbors = adjacency[u];
+                for (int i = 0; i < neighbors.Count; i++)
+                {
+                    int v = neighbors[i];
+                    if (!visited[v])
+                    {
+                        visited[v] = true;
+                        parent[v] = u;
+                        order[tail++] = v;
+                    }
+                }
+            }
+
+            if (tail != n)
+                throw new ArgumentException("Tree is disconnected.", nameof(adjacency));
+
+            Dictionary<(int State, int Key), int> trie = [with(capacity: 2 * n)];
+            int nextState = 1;
+            int StepTrie(int state, int key)
+            {
+                if (!trie.TryGetValue((state, key), out int next))
+                {
+                    next = nextState++;
+                    trie[(state, key)] = next;
+                }
+                return next;
+            }
+
+            int[] ids = new int[n];
+            List<int> childIds = [];
+            for (int idx = n - 1; idx >= 0; idx--)
+            {
+                int u = order[idx];
+                childIds.Clear();
+                IReadOnlyList<int> neighbors = adjacency[u];
+                for (int i = 0; i < neighbors.Count; i++)
+                {
+                    int v = neighbors[i];
+                    if (v != parent[u])
+                        childIds.Add(ids[v]);
+                }
+                childIds.Sort();
+
+                int state = StepTrie(0, hasLabels ? nodeLabels[u] : 0);
+                for (int i = 0; i < childIds.Count; i++)
+                    state = StepTrie(state, childIds[i]);
+                ids[u] = state;
+            }
+
+            return ids;
+        }
     }
 }
 

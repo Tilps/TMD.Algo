@@ -122,5 +122,30 @@ namespace TMD.AlgoTest
             }
             Assert.AreEqual(184756L, Combinatorics.Choose(20, 10, ref cache));
         }
+
+        [Test]
+        public void ChooseCappedTests()
+        {
+            long cap = 1_000_000_000_000_000L;
+            Assert.AreEqual(0L, Combinatorics.ChooseCapped(10, -1, cap));
+            Assert.AreEqual(0L, Combinatorics.ChooseCapped(10, 11, cap));
+            Assert.AreEqual(0L, Combinatorics.ChooseCapped(10, 3, 0L));
+            Assert.AreEqual(1L, Combinatorics.ChooseCapped(0, 0, cap));
+            Assert.AreEqual(1L, Combinatorics.ChooseCapped(100, 100, 1L));
+
+            for (int n = 0; n <= 20; n++)
+            {
+                for (int k = 0; k <= n; k++)
+                    Assert.AreEqual(Combinatorics.Choose(n, k), Combinatorics.ChooseCapped(n, k, long.MaxValue));
+            }
+
+            // Very large n without intermediate overflow and saturating at cap.
+            Assert.AreEqual(cap, Combinatorics.ChooseCapped(1_000_000_000_000_000L, 2, cap));
+            Assert.AreEqual(cap, Combinatorics.ChooseCapped(100_000L, 50, cap));
+            Assert.AreEqual(499_999_999_500_000_000L, Combinatorics.ChooseCapped(1_000_000_000L, 2, long.MaxValue));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => Combinatorics.ChooseCapped(-1, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Combinatorics.ChooseCapped(5, 2, -1));
+        }
     }
 }
