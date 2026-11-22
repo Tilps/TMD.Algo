@@ -226,6 +226,65 @@ namespace TMD.Algo.Algorithms
 
         private long[]? factCache;
         private long[]? invFactCache;
+        private long[]? derangementCache;
+
+        /// <summary>
+        /// Precomputes modular derangement counts <c>!k mod basis</c> for all <c>0 &lt;= k &lt;= maxN</c> in O(maxN) time.
+        /// Enables O(1) <see cref="Derangements(int)"/> lookups within the precomputed range.
+        /// </summary>
+        /// <param name="maxN">Maximum derangement size to precompute.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxN"/> &lt; 0.</exception>
+        public void PrecomputeDerangements(int maxN)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(maxN);
+            EnsureDerangementCache(maxN + 1);
+        }
+
+        /// <summary>
+        /// Returns the number of derangements <c>!n</c> (permutations with no fixed points) modulo the basis.
+        /// Expands an internal DP cache on demand in amortized O(1) time per entry.
+        /// </summary>
+        /// <param name="n">Number of elements, <c>n &gt;= 0</c>.</param>
+        /// <returns><c>!n mod basis</c> in [0, basis - 1].</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="n"/> &lt; 0.</exception>
+        public long Derangements(int n)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(n);
+            if (derangementCache != null && n < derangementCache.Length)
+                return derangementCache[n];
+
+            int prevLen = derangementCache?.Length ?? 0;
+            int targetLen = Math.Max(n + 1, prevLen * 2);
+            EnsureDerangementCache(targetLen);
+            return derangementCache![n];
+        }
+
+        private void EnsureDerangementCache(int targetLength)
+        {
+            int prevLen = derangementCache?.Length ?? 0;
+            if (prevLen >= targetLength)
+                return;
+
+            if (derangementCache == null)
+            {
+                derangementCache = new long[Math.Max(targetLength, 2)];
+                derangementCache[0] = 1 % basis;
+                derangementCache[1] = 0;
+                prevLen = 2;
+            }
+            else
+            {
+                Array.Resize(ref derangementCache, targetLength);
+            }
+
+            for (int i = prevLen; i < derangementCache.Length; i++)
+            {
+                long a = derangementCache[i - 1];
+                long b = derangementCache[i - 2];
+                long sum = a >= basis - b ? a - (basis - b) : a + b;
+                derangementCache[i] = Multiply(i - 1, sum);
+            }
+        }
 
         /// <summary>
         /// Computes <paramref name="value"/> raised to <paramref name="exponent"/> modulo <paramref name="basis"/>

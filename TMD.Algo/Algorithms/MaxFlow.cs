@@ -66,10 +66,10 @@ namespace TMD.Algo.Algorithms
             }
         }
 
-        private readonly int nodeCount;
-        private readonly List<Edge>[] graph;
-        private readonly int[] level;
-        private readonly int[] nextEdgePtr;
+        private int nodeCount;
+        private readonly List<List<Edge>> graph;
+        private int[] level;
+        private int[] nextEdgePtr;
         private readonly Queue<int> bfsQueue = new();
 
         /// <summary>
@@ -81,9 +81,9 @@ namespace TMD.Algo.Algorithms
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(nodeCount);
 
             this.nodeCount = nodeCount;
-            graph = new List<Edge>[nodeCount];
+            graph = new List<List<Edge>>(nodeCount);
             for (int i = 0; i < nodeCount; i++)
-                graph[i] = [];
+                graph.Add([]);
 
             level = new int[nodeCount];
             nextEdgePtr = new int[nodeCount];
@@ -93,6 +93,37 @@ namespace TMD.Algo.Algorithms
         /// Gets the total number of nodes in the flow network.
         /// </summary>
         public int NodeCount => nodeCount;
+
+        /// <summary>
+        /// Adds a single new node to the flow network while preserving all existing nodes, edges, and residual flows.
+        /// </summary>
+        /// <returns>The index of the newly added node.</returns>
+        public int AddNode()
+        {
+            int id = nodeCount;
+            nodeCount++;
+            graph.Add([]);
+            return id;
+        }
+
+        /// <summary>
+        /// Adds <paramref name="count"/> new nodes to the flow network while preserving all existing nodes, edges, and residual flows.
+        /// </summary>
+        /// <param name="count">Number of nodes to add (must be non-negative).</param>
+        /// <returns>The index of the first newly added node (or current <see cref="NodeCount"/> if <paramref name="count"/> is zero).</returns>
+        public int AddNodes(int count)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            int firstId = nodeCount;
+            if (count == 0)
+                return firstId;
+
+            graph.EnsureCapacity(nodeCount + count);
+            for (int i = 0; i < count; i++)
+                graph.Add([]);
+            nodeCount += count;
+            return firstId;
+        }
 
         /// <summary>
         /// Adds a directed edge from <paramref name="from"/> to <paramref name="to"/> with the specified capacity.
@@ -140,24 +171,43 @@ namespace TMD.Algo.Algorithms
 
         /// <summary>
         /// Computes the maximum flow from <paramref name="source"/> to <paramref name="sink"/> using Dinic's algorithm.
+        /// If called repeatedly after adding nodes or edges, augments along residual paths incrementally.
         /// </summary>
         /// <param name="source">The source node index.</param>
         /// <param name="sink">The sink node index.</param>
-        /// <returns>The maximum total flow from source to sink.</returns>
+        /// <returns>The additional flow pushed during this call.</returns>
         public int ComputeMaxFlow(int source, int sink)
+        {
+            return ComputeMaxFlow(source, sink, int.MaxValue);
+        }
+
+        /// <summary>
+        /// Computes up to <paramref name="flowLimit"/> units of additional flow from <paramref name="source"/> to
+        /// <paramref name="sink"/> using Dinic's algorithm while preserving existing residual flow.
+        /// </summary>
+        /// <param name="source">The source node index.</param>
+        /// <param name="sink">The sink node index.</param>
+        /// <param name="flowLimit">Maximum amount of flow to push during this call (must be non-negative).</param>
+        /// <returns>The amount of flow pushed during this call (at most <paramref name="flowLimit"/>).</returns>
+        public int ComputeMaxFlow(int source, int sink, int flowLimit)
         {
             ValidateNode(source, nameof(source));
             ValidateNode(sink, nameof(sink));
             if (source == sink)
                 throw new ArgumentException("Source and sink nodes must be distinct.", nameof(sink));
+            ArgumentOutOfRangeException.ThrowIfNegative(flowLimit);
 
+            if (flowLimit == 0)
+                return 0;
+
+            EnsureScratchCapacity();
             int totalFlow = 0;
-            while (Bfs(source, sink))
+            while (totalFlow < flowLimit && Bfs(source, sink))
             {
                 Array.Clear(nextEdgePtr, 0, nodeCount);
-                while (true)
+                while (totalFlow < flowLimit)
                 {
-                    int pushed = Dfs(source, sink, int.MaxValue);
+                    int pushed = Dfs(source, sink, flowLimit - totalFlow);
                     if (pushed == 0)
                         break;
                     totalFlow += pushed;
@@ -168,7 +218,7 @@ namespace TMD.Algo.Algorithms
 
         /// <summary>
         /// Determines the minimum cut partition reachable from the source in the residual graph.
-        /// Must be called after <see cref="ComputeMaxFlow"/>.
+        /// Must be called after <see cref="ComputeMaxFlow(int, int)"/>.
         /// </summary>
         /// <param name="source">The source node index.</param>
         /// <returns>A boolean array where true indicates the node belongs to the source component of the minimum cut.</returns>
@@ -196,9 +246,19 @@ namespace TMD.Algo.Algorithms
             return inSource;
         }
 
+        private void EnsureScratchCapacity()
+        {
+            if (level.Length < nodeCount)
+            {
+                int newCap = Math.Max(nodeCount, level.Length * 2);
+                level = new int[newCap];
+                nextEdgePtr = new int[newCap];
+            }
+        }
+
         private bool Bfs(int source, int sink)
         {
-            Array.Fill(level, -1);
+            Array.Fill(level, -1, 0, nodeCount);
             level[source] = 0;
             bfsQueue.Clear();
             bfsQueue.Enqueue(source);

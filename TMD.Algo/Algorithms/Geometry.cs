@@ -975,8 +975,25 @@ namespace TMD.Algo.Algorithms
         private static Int128 Cross128(Point2L o, Point2L a, Point2L b) =>
             (Int128)(a.X - o.X) * (b.Y - o.Y) - (Int128)(a.Y - o.Y) * (b.X - o.X);
 
-        private static int CompareDirectionCCW(Point2L u, Point2L v)
+        /// <summary>
+        /// Compares two integer direction vectors by counterclockwise polar angle around the origin in <c>[0, 2*pi)</c>
+        /// starting from the positive X axis, using exact <see cref="Int128"/> cross products.
+        /// Collinear vectors pointing in the same direction (or two zero vectors) compare as <c>0</c>, and a zero vector
+        /// orders before any non-zero vector.
+        /// </summary>
+        /// <param name="u">First direction vector.</param>
+        /// <param name="v">Second direction vector.</param>
+        /// <returns>
+        /// Negative if <paramref name="u"/> has smaller counterclockwise angle than <paramref name="v"/>,
+        /// positive if larger, or <c>0</c> if both share the same ray direction (or both are zero).
+        /// </returns>
+        public static int CompareDirectionCCW(Point2L u, Point2L v)
         {
+            bool zu = u.X == 0 && u.Y == 0;
+            bool zv = v.X == 0 && v.Y == 0;
+            if (zu || zv)
+                return zu == zv ? 0 : (zu ? -1 : 1);
+
             bool hu = u.Y > 0 || (u.Y == 0 && u.X > 0);
             bool hv = v.Y > 0 || (v.Y == 0 && v.X > 0);
             if (hu != hv)
@@ -1337,5 +1354,29 @@ namespace TMD.Algo.Algorithms
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Compares <see cref="Point2L"/> points by full 360-degree counterclockwise polar angle in <c>[0, 2*pi)</c>
+    /// around a specified origin using exact <see cref="Int128"/> cross products.
+    /// </summary>
+    public readonly struct PolarAngleComparer : IComparer<Point2L>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolarAngleComparer"/> struct.
+        /// </summary>
+        /// <param name="origin">Origin point relative to which polar angles are measured.</param>
+        public PolarAngleComparer(Point2L origin)
+        {
+            Origin = origin;
+        }
+
+        /// <summary>
+        /// Gets the origin point relative to which polar angles are measured.
+        /// </summary>
+        public Point2L Origin { get; }
+
+        /// <inheritdoc />
+        public int Compare(Point2L x, Point2L y) => Geometry.CompareDirectionCCW(x - Origin, y - Origin);
     }
 }

@@ -290,6 +290,37 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.MinStepInRange(5L, 1L, 5L, 4L));
         }
 
+        [Test]
+        public void DerangementsTest()
+        {
+            BigInteger[] exact = new BigInteger[21];
+            exact[0] = 1;
+            exact[1] = 0;
+            for (int n = 2; n < exact.Length; n++)
+                exact[n] = (n - 1) * (exact[n - 1] + exact[n - 2]);
+
+            long[] modBases = [1L, 1000L, 1_000_000_007L];
+            foreach (long basis in modBases)
+            {
+                Modulo mod = new Modulo(basis);
+                Modulo modPre = new Modulo(basis);
+                modPre.PrecomputeDerangements(20);
+
+                for (int n = 0; n < exact.Length; n++)
+                {
+                    long expected = (long)(exact[n] % basis);
+                    Assert.AreEqual(expected, mod.Derangements(n), $"Lazy mismatch at n={n}, basis={basis}");
+                    Assert.AreEqual(expected, modPre.Derangements(n), $"Precomputed mismatch at n={n}, basis={basis}");
+                }
+            }
+
+            Modulo largeMod = new Modulo(1_000_000_007L);
+            largeMod.PrecomputeDerangements(100);
+            Assert.That(largeMod.Derangements(100), Is.InRange(0L, 1_000_000_006L));
+            Assert.Throws<ArgumentOutOfRangeException>(() => largeMod.Derangements(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => largeMod.PrecomputeDerangements(-1));
+        }
+
         private static long BigIntegerMod(BigInteger value, long basis)
         {
             BigInteger mod = value % basis;

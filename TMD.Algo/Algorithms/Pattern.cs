@@ -127,5 +127,86 @@ namespace TMD.Algo.Algorithms
             int leftOvers = (int)((findAt - seen.Count)%length);
             return seen[pos + leftOvers];
         }
+
+        /// <summary>
+        /// Computes the Knuth-Morris-Pratt (KMP) prefix function <c>pi</c> for <paramref name="pattern"/> in O(n) time,
+        /// where <c>pi[i]</c> is the length of the longest proper prefix of <c>pattern[0..i]</c> that is also a suffix.
+        /// </summary>
+        /// <param name="pattern">Input character span.</param>
+        /// <returns>The prefix function array of length <c>pattern.Length</c>.</returns>
+        public static int[] ComputePrefixFunction(ReadOnlySpan<char> pattern)
+        {
+            return ComputePrefixFunction<char>(pattern);
+        }
+
+        /// <summary>
+        /// Computes the Knuth-Morris-Pratt (KMP) prefix function <c>pi</c> for <paramref name="pattern"/> in O(n) time,
+        /// where <c>pi[i]</c> is the length of the longest proper prefix of <c>pattern[0..i]</c> that is also a suffix.
+        /// </summary>
+        /// <typeparam name="T">Element type supporting equality comparison.</typeparam>
+        /// <param name="pattern">Input sequence span.</param>
+        /// <returns>The prefix function array of length <c>pattern.Length</c>.</returns>
+        public static int[] ComputePrefixFunction<T>(ReadOnlySpan<T> pattern) where T : IEquatable<T>
+        {
+            if (pattern.IsEmpty)
+                return [];
+
+            int[] pi = new int[pattern.Length];
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (int i = 1; i < pattern.Length; i++)
+            {
+                int j = pi[i - 1];
+                while (j > 0 && !comparer.Equals(pattern[i], pattern[j]))
+                    j = pi[j - 1];
+                if (comparer.Equals(pattern[i], pattern[j]))
+                    j++;
+                pi[i] = j;
+            }
+            return pi;
+        }
+
+        /// <summary>
+        /// Computes the Z-array for <paramref name="text"/> in O(n) time, where <c>z[i]</c> is the length of the
+        /// longest common prefix between <c>text</c> and the suffix starting at index <c>i</c> (<c>z[0] = text.Length</c>).
+        /// </summary>
+        /// <param name="text">Input character span.</param>
+        /// <returns>The Z-array of length <c>text.Length</c>.</returns>
+        public static int[] ComputeZArray(ReadOnlySpan<char> text)
+        {
+            return ComputeZArray<char>(text);
+        }
+
+        /// <summary>
+        /// Computes the Z-array for <paramref name="text"/> in O(n) time, where <c>z[i]</c> is the length of the
+        /// longest common prefix between <c>text</c> and the suffix starting at index <c>i</c> (<c>z[0] = text.Length</c>).
+        /// </summary>
+        /// <typeparam name="T">Element type supporting equality comparison.</typeparam>
+        /// <param name="text">Input sequence span.</param>
+        /// <returns>The Z-array of length <c>text.Length</c>.</returns>
+        public static int[] ComputeZArray<T>(ReadOnlySpan<T> text) where T : IEquatable<T>
+        {
+            if (text.IsEmpty)
+                return [];
+
+            int n = text.Length;
+            int[] z = new int[n];
+            z[0] = n;
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            int left = 0;
+            int right = 0;
+            for (int i = 1; i < n; i++)
+            {
+                if (i < right)
+                    z[i] = Math.Min(right - i, z[i - left]);
+                while (i + z[i] < n && comparer.Equals(text[z[i]], text[i + z[i]]))
+                    z[i]++;
+                if (i + z[i] > right)
+                {
+                    left = i;
+                    right = i + z[i];
+                }
+            }
+            return z;
+        }
     }
 }

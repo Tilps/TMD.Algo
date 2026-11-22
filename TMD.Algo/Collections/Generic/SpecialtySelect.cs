@@ -503,18 +503,17 @@ namespace TMD.Algo.Collections.Generic
         /// </returns>
         public static long FindTransition(long min, long max, Func<long, bool> stepFunc)
         {
+            if (min > max) throw new ArgumentException("Minimum must not exceed maximum.", nameof(min));
             bool start = stepFunc(min);
             bool end = stepFunc(max);
             if (start == end) throw new ArgumentException("Step function is flat, or has multiple transitions.");
-            // TODO: consider whether the chance of early out is better worth the extra 50% extra evaluations a true binary search brings vs a custom search which keeps going till min/max meet.
-            return BinarySearch(min, max - 1, value =>
+            while (min + 1 < max)
             {
-                bool first = stepFunc(value);
-                if (first == end) return 1;
-                bool second = stepFunc(value + 1);
-                if (second == start) return -1;
-                return 0;
-            });
+                long mid = LongMid(min, max);
+                if (stepFunc(mid) == end) max = mid;
+                else min = mid;
+            }
+            return min;
         }
 
         /// <summary>
@@ -545,9 +544,9 @@ namespace TMD.Algo.Collections.Generic
             return BinarySearch(min, max, delta, value =>
             {
                 bool first = stepFunc(value);
-                if (first == end) return 1;
+                if (first == end) return -1;
                 bool second = stepFunc(value + delta);
-                if (second == start) return -1;
+                if (second == start) return 1;
                 return 0;
             });
         }

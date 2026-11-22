@@ -312,5 +312,50 @@ namespace TMD.AlgoTest
             // Duplicate X coordinates (square + interior): best vertical strip is horizontal K=0 -> height 2.
             Assert.AreEqual(2.0, Geometry.MinimumVerticalStripWidth(sq), 1e-12);
         }
+
+        [Test]
+        public void PolarAngleComparerAndDirectionCCW()
+        {
+            Assert.AreEqual(0, Geometry.CompareDirectionCCW(default, default));
+            Assert.Less(Geometry.CompareDirectionCCW(default, new Point2L(1, 0)), 0);
+            Assert.Greater(Geometry.CompareDirectionCCW(new Point2L(1, 0), default), 0);
+            Assert.AreEqual(0, Geometry.CompareDirectionCCW(new Point2L(2, 4), new Point2L(3, 6)));
+            Assert.Less(Geometry.CompareDirectionCCW(new Point2L(1, 0), new Point2L(-1, 0)), 0);
+
+            Point2L origin = new(100, -50);
+            Point2L[] pts =
+            [
+                new(100, -51),  // -y axis (3pi/2)
+                new(99, -51),   // Q3 (5pi/4)
+                new(102, -50),  // +x axis (0)
+                new(101, -49),  // Q1 (pi/4)
+                new(99, -50),   // -x axis (pi)
+                new(100, -49),  // +y axis (pi/2)
+                new(99, -49),   // Q2 (3pi/4)
+                new(101, -51),  // Q4 (7pi/4)
+                origin          // zero vector first
+            ];
+            Array.Sort(pts, new PolarAngleComparer(origin));
+
+            Point2L[] expected =
+            [
+                origin,
+                new(102, -50),
+                new(101, -49),
+                new(100, -49),
+                new(99, -49),
+                new(99, -50),
+                new(99, -51),
+                new(100, -51),
+                new(101, -51)
+            ];
+            CollectionAssert.AreEqual(expected, pts);
+
+            // Large coordinates ~10^12 requiring Int128 cross product without overflow.
+            Point2L largeA = new(1_000_000_000_001L, 1_000_000_000_000L);
+            Point2L largeB = new(1_000_000_000_000L, 1_000_000_000_000L);
+            Assert.Less(Geometry.CompareDirectionCCW(largeA, largeB), 0);
+            Assert.Greater(Geometry.CompareDirectionCCW(largeB, largeA), 0);
+        }
     }
 }

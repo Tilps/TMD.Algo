@@ -111,5 +111,32 @@ namespace TMD.AlgoTest
             Assert.AreEqual(0, SpecialtySelect.LowerBound<int>(descValues, 20, desc));
             Assert.AreEqual(7, SpecialtySelect.UpperBound<int>(descValues, 0, desc));
         }
+
+        [Test]
+        public void FindTransitionTests()
+        {
+            // long overload: false -> true and true -> false, negative ranges, and boundary transitions.
+            Assert.AreEqual(-1L, SpecialtySelect.FindTransition(-1L, 0L, v => v >= 0));
+            Assert.AreEqual(0L, SpecialtySelect.FindTransition(-1L, 10L, v => v >= 1));
+            Assert.AreEqual(9L, SpecialtySelect.FindTransition(-1L, 10L, v => v >= 10));
+            Assert.AreEqual(-38L, SpecialtySelect.FindTransition(-100L, 100L, v => v >= -37));
+            Assert.AreEqual(42L, SpecialtySelect.FindTransition(-100L, 100L, v => v <= 42));
+            Assert.Throws<ArgumentException>(() => SpecialtySelect.FindTransition(0L, 10L, _ => true));
+            Assert.Throws<ArgumentException>(() => SpecialtySelect.FindTransition(5L, 2L, v => v > 3));
+
+            // double overload without explicit delta.
+            double t1 = SpecialtySelect.FindTransition(-10.0, 10.0, v => v >= 3.25);
+            Assert.AreEqual(3.25, t1, 1e-12);
+            double t2 = SpecialtySelect.FindTransition(-10.0, 10.0, v => v <= -1.5);
+            Assert.AreEqual(-1.5, t2, 1e-12);
+            Assert.Throws<ArgumentException>(() => SpecialtySelect.FindTransition(0.0, 5.0, _ => false));
+
+            // double overload with explicit delta.
+            double d1 = SpecialtySelect.FindTransition(0.0, 10.0, 1e-6, v => v >= 4.75);
+            Assert.AreEqual(4.75, d1, 1e-5);
+            double d2 = SpecialtySelect.FindTransition(-5.0, 5.0, 1e-6, v => v < -0.5);
+            Assert.AreEqual(-0.5, d2, 1e-5);
+            Assert.Throws<ArgumentException>(() => SpecialtySelect.FindTransition(0.0, 5.0, 1e-6, _ => true));
+        }
     }
 }

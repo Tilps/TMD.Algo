@@ -127,6 +127,33 @@ namespace TMD.AlgoTest
         }
 
         [Test]
+        public void IncrementalNodesAndFlowLimit()
+        {
+            var mf = new MaxFlow(2);
+            int s = 0;
+            int t = 1;
+            int a = mf.AddNode();
+            int firstBatch = mf.AddNodes(2);
+            Assert.That(a, Is.EqualTo(2));
+            Assert.That(firstBatch, Is.EqualTo(3));
+            Assert.That(mf.NodeCount, Is.EqualTo(5));
+
+            mf.AddDirectedEdge(s, a, 5);
+            mf.AddDirectedEdge(a, t, 4);
+            Assert.That(mf.ComputeMaxFlow(s, t, 2), Is.EqualTo(2));
+            Assert.That(mf.ComputeMaxFlow(s, t, 10), Is.EqualTo(2));
+
+            // Expand graph incrementally without resetting previous flow.
+            int b = mf.AddNode();
+            mf.AddDirectedEdge(s, firstBatch, 3);
+            mf.AddDirectedEdge(firstBatch, b, 3);
+            mf.AddDirectedEdge(b, t, 2);
+            Assert.That(mf.ComputeMaxFlow(s, t, 5), Is.EqualTo(2));
+            Assert.That(mf.ComputeMaxFlow(s, t, 0), Is.EqualTo(0));
+            Assert.That(mf.AddNodes(0), Is.EqualTo(mf.NodeCount));
+        }
+
+        [Test]
         public void InvalidArgumentsThrow()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new MaxFlow(0));
@@ -135,6 +162,8 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentOutOfRangeException>(() => mf.AddDirectedEdge(0, 3, 5));
             Assert.Throws<ArgumentOutOfRangeException>(() => mf.AddDirectedEdge(0, 1, -1));
             Assert.Throws<ArgumentException>(() => mf.ComputeMaxFlow(0, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => mf.ComputeMaxFlow(0, 1, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => mf.AddNodes(-1));
         }
     }
 }
