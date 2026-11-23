@@ -1379,4 +1379,132 @@ namespace TMD.Algo.Algorithms
         /// <inheritdoc />
         public int Compare(Point2L x, Point2L y) => Geometry.CompareDirectionCCW(x - Origin, y - Origin);
     }
+
+    /// <summary>
+    /// Immutable 3D point or vector with 64-bit integer coordinates and overflow-safe
+    /// <see cref="Int128"/> dot and scalar triple product helpers.
+    /// </summary>
+    public readonly struct Point3L : IEquatable<Point3L>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Point3L"/> struct.
+        /// </summary>
+        /// <param name="x">X coordinate.</param>
+        /// <param name="y">Y coordinate.</param>
+        /// <param name="z">Z coordinate.</param>
+        public Point3L(long x, long y, long z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        /// <summary>
+        /// Gets the X coordinate.
+        /// </summary>
+        public long X { get; }
+
+        /// <summary>
+        /// Gets the Y coordinate.
+        /// </summary>
+        public long Y { get; }
+
+        /// <summary>
+        /// Gets the Z coordinate.
+        /// </summary>
+        public long Z { get; }
+
+        /// <summary>
+        /// Computes the exact dot product with <paramref name="other"/> using <see cref="Int128"/> arithmetic.
+        /// </summary>
+        /// <param name="other">Other vector.</param>
+        /// <returns>Exact dot product <c>X * other.X + Y * other.Y + Z * other.Z</c>.</returns>
+        public Int128 Dot128(Point3L other) =>
+            (Int128)X * other.X + (Int128)Y * other.Y + (Int128)Z * other.Z;
+
+        /// <summary>
+        /// Computes the 3D cross product <c>this x other</c>.
+        /// </summary>
+        /// <param name="other">Right-hand vector.</param>
+        /// <returns>Cross product vector.</returns>
+        public Point3L Cross(Point3L other) => new(
+            Y * other.Z - Z * other.Y,
+            Z * other.X - X * other.Z,
+            X * other.Y - Y * other.X);
+
+        /// <summary>
+        /// Computes the exact scalar triple product <c>(a x b) . c</c> using <see cref="Int128"/> intermediates
+        /// for coordinates whose pairwise products may approach 64-bit limits.
+        /// </summary>
+        /// <param name="a">First vector.</param>
+        /// <param name="b">Second vector.</param>
+        /// <param name="c">Third vector.</param>
+        /// <returns>Exact scalar triple product <c>(a x b) . c</c>.</returns>
+        public static Int128 TripleProduct128(Point3L a, Point3L b, Point3L c)
+        {
+            Int128 cx = (Int128)a.Y * b.Z - (Int128)a.Z * b.Y;
+            Int128 cy = (Int128)a.Z * b.X - (Int128)a.X * b.Z;
+            Int128 cz = (Int128)a.X * b.Y - (Int128)a.Y * b.X;
+            return cx * c.X + cy * c.Y + cz * c.Z;
+        }
+
+        /// <summary>
+        /// Computes the L1 (Manhattan) distance to <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">Target point.</param>
+        /// <returns><c>|X - other.X| + |Y - other.Y| + |Z - other.Z|</c>.</returns>
+        public long ManhattanDistanceTo(Point3L other) =>
+            Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
+
+        /// <summary>
+        /// Negates all coordinates of a vector.
+        /// </summary>
+        public static Point3L operator -(Point3L point) => new(-point.X, -point.Y, -point.Z);
+
+        /// <summary>
+        /// Adds two 3D vectors componentwise.
+        /// </summary>
+        public static Point3L operator +(Point3L left, Point3L right) =>
+            new(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+
+        /// <summary>
+        /// Subtracts two 3D vectors componentwise.
+        /// </summary>
+        public static Point3L operator -(Point3L left, Point3L right) =>
+            new(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+
+        /// <summary>
+        /// Scales a 3D vector by a scalar.
+        /// </summary>
+        public static Point3L operator *(Point3L point, long scalar) =>
+            new(point.X * scalar, point.Y * scalar, point.Z * scalar);
+
+        /// <summary>
+        /// Scales a 3D vector by a scalar.
+        /// </summary>
+        public static Point3L operator *(long scalar, Point3L point) =>
+            new(scalar * point.X, scalar * point.Y, scalar * point.Z);
+
+        /// <inheritdoc />
+        public bool Equals(Point3L other) => X == other.X && Y == other.Y && Z == other.Z;
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) => obj is Point3L other && Equals(other);
+
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
+
+        /// <summary>
+        /// Returns whether two <see cref="Point3L"/> values are equal.
+        /// </summary>
+        public static bool operator ==(Point3L left, Point3L right) => left.Equals(right);
+
+        /// <summary>
+        /// Returns whether two <see cref="Point3L"/> values are not equal.
+        /// </summary>
+        public static bool operator !=(Point3L left, Point3L right) => !left.Equals(right);
+
+        /// <inheritdoc />
+        public override string ToString() => $"({X}, {Y}, {Z})";
+    }
 }

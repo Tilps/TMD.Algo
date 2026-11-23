@@ -357,5 +357,25 @@ namespace TMD.AlgoTest
             Assert.Less(Geometry.CompareDirectionCCW(largeA, largeB), 0);
             Assert.Greater(Geometry.CompareDirectionCCW(largeB, largeA), 0);
         }
+
+        [Test]
+        public void Point3LOperationsAndOverflowSafety()
+        {
+            Point3L a = new(1, 2, 3);
+            Point3L b = new(4, -5, 6);
+            Assert.AreEqual(new Point3L(5, -3, 9), a + b);
+            Assert.AreEqual(new Point3L(-3, 7, -3), a - b);
+            Assert.AreEqual(new Point3L(-1, -2, -3), -a);
+            Assert.AreEqual(new Point3L(2, 4, 6), 2L * a);
+            Assert.AreEqual(new Point3L(27, 6, -13), a.Cross(b));
+            Assert.AreEqual((Int128)12, a.Dot128(b));
+            Assert.AreEqual(13L, a.ManhattanDistanceTo(b));
+
+            Point3L c = new(1_000_000_000_000L, 1, 0);
+            Point3L d = new(0, 1_000_000_000_000L, 1);
+            Point3L e = new(1, 0, 1_000_000_000_000L);
+            Int128 expectedTriple = (Int128)1_000_000_000_000L * 1_000_000_000_000L * 1_000_000_000_000L + Int128.One;
+            Assert.AreEqual(expectedTriple, Point3L.TripleProduct128(c, d, e));
+        }
     }
 }

@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endregion
 
 using System;
+using System.Numerics;
 
 namespace TMD.Algo.Algorithms
 {
@@ -74,6 +75,184 @@ namespace TMD.Algo.Algorithms
                 }
             }
             return output;
+        }
+
+        /// <summary>
+        /// Computes the exact determinant of an integer square matrix using fraction-free Bareiss elimination
+        /// in O(N^3) arithmetic operations without rounding errors.
+        /// </summary>
+        /// <param name="matrix">Square integer matrix.</param>
+        /// <returns>Exact determinant as a <see cref="BigInteger"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="matrix"/> is not square.</exception>
+        public static BigInteger Determinant(long[,] matrix)
+        {
+            ArgumentNullException.ThrowIfNull(matrix);
+            int n = matrix.GetLength(0);
+            if (n != matrix.GetLength(1))
+                throw new ArgumentException("Input matrix must be square.", nameof(matrix));
+            if (n == 0)
+                return BigInteger.One;
+            if (n == 1)
+                return new BigInteger(matrix[0, 0]);
+
+            BigInteger[,] a = new BigInteger[n, n];
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    a[i, j] = new BigInteger(matrix[i, j]);
+
+            BigInteger prevPivot = BigInteger.One;
+            int sign = 1;
+
+            for (int k = 0; k < n - 1; k++)
+            {
+                int pivotRow = -1;
+                for (int r = k; r < n; r++)
+                {
+                    if (!a[r, k].IsZero)
+                    {
+                        pivotRow = r;
+                        break;
+                    }
+                }
+                if (pivotRow == -1)
+                    return BigInteger.Zero;
+
+                if (pivotRow != k)
+                {
+                    for (int c = k; c < n; c++)
+                        (a[k, c], a[pivotRow, c]) = (a[pivotRow, c], a[k, c]);
+                    sign = -sign;
+                }
+
+                BigInteger pivot = a[k, k];
+                for (int i = k + 1; i < n; i++)
+                {
+                    BigInteger aik = a[i, k];
+                    for (int j = k + 1; j < n; j++)
+                    {
+                        a[i, j] = (pivot * a[i, j] - aik * a[k, j]) / prevPivot;
+                    }
+                }
+                prevPivot = pivot;
+            }
+
+            BigInteger det = a[n - 1, n - 1];
+            return sign < 0 ? -det : det;
+        }
+
+        /// <summary>
+        /// Computes the determinant of a square integer matrix modulo a prime in O(N^3) time.
+        /// </summary>
+        /// <param name="matrix">Square integer matrix.</param>
+        /// <param name="primeModulus">Prime modulus greater than 1.</param>
+        /// <returns>The determinant reduced modulo <paramref name="primeModulus"/> in [0, primeModulus - 1].</returns>
+        /// <exception cref="ArgumentException">Thrown when the matrix is not square or the modulus is not prime.</exception>
+        public static long DeterminantMod(long[,] matrix, long primeModulus)
+        {
+            ArgumentNullException.ThrowIfNull(matrix);
+            int n = matrix.GetLength(0);
+            if (n != matrix.GetLength(1))
+                throw new ArgumentException("Input matrix must be square.", nameof(matrix));
+            if (primeModulus <= 1 || !MathFormulas.IsPrime(primeModulus))
+                throw new ArgumentException("Modulus must be a prime greater than 1.", nameof(primeModulus));
+            if (n == 0)
+                return 1 % primeModulus;
+
+            long[,] a = new long[n, n];
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    long v = matrix[i, j] % primeModulus;
+                    a[i, j] = v < 0 ? v + primeModulus : v;
+                }
+            }
+
+            long det = 1;
+            for (int k = 0; k < n; k++)
+            {
+                int pivotRow = -1;
+                for (int r = k; r < n; r++)
+                {
+                    if (a[r, k] != 0)
+                    {
+                        pivotRow = r;
+                        break;
+                    }
+                }
+                if (pivotRow == -1)
+                    return 0;
+
+                if (pivotRow != k)
+                {
+                    for (int c = k; c < n; c++)
+                        (a[k, c], a[pivotRow, c]) = (a[pivotRow, c], a[k, c]);
+                    det = det == 0 ? 0 : primeModulus - det;
+                }
+
+                long pivot = a[k, k];
+                det = Modulo.Multiply(det, pivot, primeModulus);
+                long invPivot = Modulo.Invert(pivot, primeModulus);
+                for (int i = k + 1; i < n; i++)
+                {
+                    if (a[i, k] == 0)
+                        continue;
+                    long factor = Modulo.Multiply(a[i, k], invPivot, primeModulus);
+                    for (int j = k + 1; j < n; j++)
+                    {
+                        long sub = Modulo.Multiply(factor, a[k, j], primeModulus);
+                        long val = a[i, j] - sub;
+                        a[i, j] = val < 0 ? val + primeModulus : val;
+                    }
+                }
+            }
+
+            return det;
+        }
+
+        /// <summary>
+        /// Counts the exact number of spanning trees in an undirected simple graph given its adjacency matrix
+        /// using Kirchhoff's Matrix-Tree Theorem.
+        /// </summary>
+        /// <param name="adjacency">Symmetric <c>N x N</c> adjacency matrix where <c>adjacency[i, j]</c> is true if edge (i, j) exists.</param>
+        /// <returns>Exact number of distinct spanning trees.</returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="adjacency"/> is empty, non-square, or non-symmetric.</exception>
+        public static BigInteger CountSpanningTrees(bool[,] adjacency)
+        {
+            ArgumentNullException.ThrowIfNull(adjacency);
+            int n = adjacency.GetLength(0);
+            if (n != adjacency.GetLength(1) || n == 0)
+                throw new ArgumentException("Adjacency matrix must be non-empty and square.", nameof(adjacency));
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i + 1; j < n; j++)
+                {
+                    if (adjacency[i, j] != adjacency[j, i])
+                        throw new ArgumentException("Adjacency matrix must be symmetric.", nameof(adjacency));
+                }
+            }
+
+            if (n == 1)
+                return BigInteger.One;
+
+            long[,] laplacianMinor = new long[n - 1, n - 1];
+            for (int i = 1; i < n; i++)
+            {
+                int deg = 0;
+                for (int j = 0; j < n; j++)
+                {
+                    if (i != j && adjacency[i, j])
+                    {
+                        deg++;
+                        if (j > 0)
+                            laplacianMinor[i - 1, j - 1] = -1;
+                    }
+                }
+                laplacianMinor[i - 1, i - 1] = deg;
+            }
+
+            return Determinant(laplacianMinor);
         }
 
         // Fibonacii using the 1 1 0 1 square matrix powers.
