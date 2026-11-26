@@ -481,14 +481,14 @@ namespace TMD.AlgoTest.GCJ2008
 
         #region Question 5 - The Year of Code Jam
 
-        private Func<int> Q5Solver(GCJTestCase test)
+        private Func<long> Q5Solver(GCJTestCase test)
         {
             test.Get(out int n, out int m);
             test.GetLines(n, out string[] grid);
             return () => Q5Solve(n, m, grid);
         }
 
-        private int Q5Solve(int n, int m, string[] grid)
+        private long Q5Solve(int n, int m, string[] grid)
         {
             int totalSegments = 2 * n * m + n + m;
             const int inf = 1000000;
@@ -553,7 +553,7 @@ namespace TMD.AlgoTest.GCJ2008
                 }
             }
 
-            int maxFlow = graph.MaximumFlowDinic(source, sink);
+            long maxFlow = graph.MaximumFlowDinic(source, sink);
             return totalSegments - maxFlow;
         }
 

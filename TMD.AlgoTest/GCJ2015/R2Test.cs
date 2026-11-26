@@ -225,7 +225,7 @@ namespace TMD.AlgoTest.GCJ2015
 
         #region Question 3 - Bilingual
 
-        private static Func<int> Q3Solver(GCJTestCase test)
+        private static Func<long> Q3Solver(GCJTestCase test)
         {
             test.Get(out int n);
             string[][] sentences = new string[n][];
@@ -234,7 +234,7 @@ namespace TMD.AlgoTest.GCJ2015
             return () => Q3Solver(n, sentences);
         }
 
-        private static int Q3Solver(int n, string[][] sentences)
+        private static long Q3Solver(int n, string[][] sentences)
         {
             Dictionary<string, int> wordIds = new(StringComparer.Ordinal);
             List<int>[] sentenceWordIds = new List<int>[n];

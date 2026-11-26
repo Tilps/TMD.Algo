@@ -377,5 +377,48 @@ namespace TMD.AlgoTest
             Int128 expectedTriple = (Int128)1_000_000_000_000L * 1_000_000_000_000L * 1_000_000_000_000L + Int128.One;
             Assert.AreEqual(expectedTriple, Point3L.TripleProduct128(c, d, e));
         }
+
+        [Test]
+        public void ExtractPlanarFacesCoversTrianglesSquaresBridgesAndDisconnected()
+        {
+            // Single triangle: 1 CCW interior face (+12) and 1 CW outer face (-12).
+            Point2L[] triPts = [new(0, 0), new(4, 0), new(0, 3)];
+            (int, int)[] triEdges = [(0, 1), (1, 2), (2, 0)];
+            List<PlanarFace> triFaces = Geometry.ExtractPlanarFaces(triPts, triEdges);
+            Assert.AreEqual(2, triFaces.Count);
+            Int128 triSum = 0;
+            foreach (PlanarFace f in triFaces)
+                triSum += f.TwiceSignedArea;
+            Assert.AreEqual((Int128)0, triSum);
+            Assert.AreEqual(1, triFaces.FindAll(f => f.TwiceSignedArea == 12).Count);
+            Assert.AreEqual(1, triFaces.FindAll(f => f.TwiceSignedArea == -12).Count);
+
+            // Square with diagonal and an internal degree-1 bridge from vertex 0 to 4:
+            // Triangle (0, 2, 3) with interior spur (0, 4): TwiceSignedArea > 0
+            // Triangle (0, 1, 2): TwiceSignedArea > 0
+            // Outer square (0, 3, 2, 1): TwiceSignedArea < 0
+            Point2L[] sqPts = [new(0, 0), new(10, 0), new(10, 10), new(0, 10), new(2, 5)];
+            (int, int)[] sqEdges = [(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (0, 4)];
+            List<PlanarFace> sqFaces = Geometry.ExtractPlanarFaces(sqPts, sqEdges);
+            Assert.AreEqual(3, sqFaces.Count);
+            Int128 sqSum = 0;
+            foreach (PlanarFace f in sqFaces)
+                sqSum += f.TwiceSignedArea;
+            Assert.AreEqual((Int128)0, sqSum);
+            Assert.AreEqual(2, sqFaces.FindAll(f => f.TwiceSignedArea == 100).Count);
+            Assert.AreEqual(1, sqFaces.FindAll(f => f.TwiceSignedArea == -200).Count);
+            PlanarFace spurFace = sqFaces.Find(f => f.Edges.Count == 5)!;
+            Assert.IsNotNull(spurFace);
+            Assert.AreEqual((Int128)100, spurFace.TwiceSignedArea);
+
+            // Disconnected bridge + triangle.
+            Point2L[] discPts = [new(0, 0), new(1, 0), new(10, 0), new(12, 0), new(10, 2)];
+            (int, int)[] discEdges = [(0, 1), (2, 3), (3, 4), (4, 2)];
+            List<PlanarFace> discFaces = Geometry.ExtractPlanarFaces(discPts, discEdges);
+            Assert.AreEqual(3, discFaces.Count);
+            Assert.AreEqual(1, discFaces.FindAll(f => f.TwiceSignedArea == 0).Count);
+            Assert.AreEqual(1, discFaces.FindAll(f => f.TwiceSignedArea == 4).Count);
+            Assert.AreEqual(1, discFaces.FindAll(f => f.TwiceSignedArea == -4).Count);
+        }
     }
 }

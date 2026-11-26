@@ -36,8 +36,8 @@ namespace TMD.AlgoTest
             mf.AddDirectedEdge(1, 3, 4);
             mf.AddDirectedEdge(2, 3, 9);
 
-            int flow = mf.ComputeMaxFlow(0, 3);
-            Assert.That(flow, Is.EqualTo(13));
+            long flow = mf.ComputeMaxFlow(0, 3);
+            Assert.That(flow, Is.EqualTo(13L));
 
             bool[] minCut = mf.GetMinCut(0);
             Assert.That(minCut[0], Is.True);
@@ -51,8 +51,8 @@ namespace TMD.AlgoTest
             mf.AddDirectedEdge(0, 1, 100);
             mf.AddDirectedEdge(1, 2, 5);
 
-            int flow = mf.ComputeMaxFlow(0, 2);
-            Assert.That(flow, Is.EqualTo(5));
+            long flow = mf.ComputeMaxFlow(0, 2);
+            Assert.That(flow, Is.EqualTo(5L));
 
             bool[] minCut = mf.GetMinCut(0);
             Assert.That(minCut[0], Is.True);
@@ -67,8 +67,8 @@ namespace TMD.AlgoTest
             mf.AddDirectedEdge(0, 1, 10);
             mf.AddDirectedEdge(2, 3, 10);
 
-            int flow = mf.ComputeMaxFlow(0, 3);
-            Assert.That(flow, Is.EqualTo(0));
+            long flow = mf.ComputeMaxFlow(0, 3);
+            Assert.That(flow, Is.EqualTo(0L));
 
             bool[] minCut = mf.GetMinCut(0);
             Assert.That(minCut[0], Is.True);
@@ -85,8 +85,8 @@ namespace TMD.AlgoTest
             mf.AddUndirectedEdge(1, 2, 3);
             mf.AddUndirectedEdge(2, 3, 5);
 
-            int flow = mf.ComputeMaxFlow(0, 3);
-            Assert.That(flow, Is.EqualTo(3));
+            long flow = mf.ComputeMaxFlow(0, 3);
+            Assert.That(flow, Is.EqualTo(3L));
         }
 
         [Test]
@@ -104,11 +104,17 @@ namespace TMD.AlgoTest
             g.AddDirectedEdge(b, t, 8);
             g.AddDirectedEdge(a, b, 4);
 
-            int flow = g.MaximumFlowDinic(s, t, cap => cap);
-            Assert.That(flow, Is.EqualTo(15));
+            long flow = g.MaximumFlowDinic(s, t, cap => cap);
+            Assert.That(flow, Is.EqualTo(15L));
 
-            int flowDefault = g.MaximumFlowDinic(s, t);
-            Assert.That(flowDefault, Is.EqualTo(15));
+            long flowDefault = g.MaximumFlowDinic(s, t);
+            Assert.That(flowDefault, Is.EqualTo(15L));
+
+            var gl = new Graph<string, long>();
+            int sl = gl.AddVertex("S");
+            int tl = gl.AddVertex("T");
+            gl.AddDirectedEdge(sl, tl, 5_000_000_000_000L);
+            Assert.That(gl.MaximumFlowDinic(sl, tl), Is.EqualTo(5_000_000_000_000L));
         }
 
         [Test]
@@ -164,6 +170,52 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentException>(() => mf.ComputeMaxFlow(0, 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => mf.ComputeMaxFlow(0, 1, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => mf.AddNodes(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => mf.GetEdges(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => mf.GetEdges(3));
+        }
+
+        [Test]
+        public void Large64BitCapacitiesExceedIntMax()
+        {
+            const long CapA = 1_000_000_000_000_000L; // 10^15
+            const long CapB = 2_000_000_000_000_000L; // 2 * 10^15
+            MaxFlow mf = new(4);
+            mf.AddDirectedEdge(0, 1, CapA);
+            mf.AddDirectedEdge(0, 2, CapB);
+            mf.AddDirectedEdge(1, 2, 123_456_789_012L);
+            mf.AddDirectedEdge(1, 3, 400_000_000_000_000L);
+            mf.AddDirectedEdge(2, 3, 2_500_000_000_000_000L);
+
+            long flow = mf.ComputeMaxFlow(0, 3);
+            Assert.That(flow, Is.EqualTo(400_000_000_000_000L + 2_000_000_000_000_000L + 123_456_789_012L));
+
+            bool[] cut = mf.GetMinCut(0);
+            Assert.That(cut[0], Is.True);
+            Assert.That(cut[1], Is.True);
+            Assert.That(cut[2], Is.False);
+            Assert.That(cut[3], Is.False);
+        }
+
+        [Test]
+        public void UndirectedEdgesFlowLimitAndGetEdges()
+        {
+            MaxFlow mf = new(3);
+            mf.AddUndirectedEdge(0, 1, 5_000_000_000L);
+            mf.AddDirectedEdge(1, 2, 8_000_000_000L);
+
+            Assert.That(mf.ComputeMaxFlow(0, 2, 3_000_000_000L), Is.EqualTo(3_000_000_000L));
+            Assert.That(mf.ComputeMaxFlow(0, 2), Is.EqualTo(2_000_000_000L));
+
+            int node3 = mf.AddNode();
+            Assert.That(node3, Is.EqualTo(3));
+            mf.AddDirectedEdge(0, node3, 6_000_000_000L);
+            mf.AddDirectedEdge(node3, 2, 4_000_000_000L);
+            Assert.That(mf.ComputeMaxFlow(0, 2), Is.EqualTo(4_000_000_000L));
+
+            long totalOutFromSource = 0;
+            foreach (MaxFlow.Edge e in mf.GetEdges(0))
+                totalOutFromSource += e.Flow;
+            Assert.That(totalOutFromSource, Is.EqualTo(9_000_000_000L));
         }
     }
 }

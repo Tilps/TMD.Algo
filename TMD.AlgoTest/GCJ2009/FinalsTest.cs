@@ -428,14 +428,14 @@ namespace TMD.AlgoTest.GCJ2009
 
         #region Question 4 - Wi-fi Towers
 
-        private static Func<int> Q4Solver(GCJTestCase test)
+        private static Func<long> Q4Solver(GCJTestCase test)
         {
             test.Get(out int n);
             test.GetLines(n, out (int X, int Y, int R, int S)[] towers);
             return () => Q4Solver(towers);
         }
 
-        private static int Q4Solver((int X, int Y, int R, int S)[] towers)
+        private static long Q4Solver((int X, int Y, int R, int S)[] towers)
         {
             int n = towers.Length;
             int source = n;

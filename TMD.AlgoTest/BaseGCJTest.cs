@@ -108,6 +108,14 @@ namespace TMD.AlgoTest
             customValidator(input, expectedOutput, result);
         }
 
+        protected static void InteractiveTest(
+            Action<GCJInteractiveChannel> solver,
+            Action<GCJInteractiveChannel> judge,
+            TimeSpan? timeout = null)
+        {
+            GCJInteractive.Run(solver, judge, timeout);
+        }
+
         protected string Load(string fileName)
         {
             var assembly = Assembly.GetExecutingAssembly();

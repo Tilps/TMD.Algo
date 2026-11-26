@@ -292,10 +292,10 @@ namespace TMD.AlgoTest.GCJ2015
             }
             int d0 = dist[n - 1];
 
-            int inf = k + 2;
+            long inf = k + 2;
             MaxFlow flow = new(1);
             const int superSink = 0;
-            int totalFlow = 0;
+            long totalFlow = 0;
             int prevBase = -1;
             int source = -1;
 

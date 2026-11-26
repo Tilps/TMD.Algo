@@ -21,7 +21,7 @@ using System.Collections.Generic;
 namespace TMD.Algo.Algorithms
 {
     /// <summary>
-    /// Computes maximum flow and minimum cut on directed and undirected flow networks using Dinic's algorithm.
+    /// Computes 64-bit maximum flow and minimum cut on directed and undirected flow networks using Dinic's algorithm.
     /// Runs in O(V^2 * E) on general networks and O(E * sqrt(V)) on unit networks and bipartite graphs.
     /// </summary>
     public class MaxFlow
@@ -44,19 +44,19 @@ namespace TMD.Algo.Algorithms
             /// <summary>
             /// Gets the total capacity of the edge.
             /// </summary>
-            public int Capacity { get; }
+            public long Capacity { get; }
 
             /// <summary>
             /// Gets the current flow along the edge.
             /// </summary>
-            public int Flow { get; internal set; }
+            public long Flow { get; internal set; }
 
             /// <summary>
             /// Gets the index of the reverse edge in the target node's adjacency list.
             /// </summary>
             internal int ReverseIndex { get; }
 
-            internal Edge(int from, int to, int capacity, int reverseIndex)
+            internal Edge(int from, int to, long capacity, int reverseIndex)
             {
                 From = from;
                 To = to;
@@ -131,7 +131,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="from">The source node index.</param>
         /// <param name="to">The destination node index.</param>
         /// <param name="capacity">The edge capacity, which must be non-negative.</param>
-        public void AddDirectedEdge(int from, int to, int capacity)
+        public void AddDirectedEdge(int from, int to, long capacity)
         {
             ValidateNode(from, nameof(from));
             ValidateNode(to, nameof(to));
@@ -153,7 +153,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="u">The first node index.</param>
         /// <param name="v">The second node index.</param>
         /// <param name="capacity">The edge capacity, which must be non-negative.</param>
-        public void AddUndirectedEdge(int u, int v, int capacity)
+        public void AddUndirectedEdge(int u, int v, long capacity)
         {
             ValidateNode(u, nameof(u));
             ValidateNode(v, nameof(v));
@@ -170,15 +170,26 @@ namespace TMD.Algo.Algorithms
         }
 
         /// <summary>
+        /// Returns the adjacency list of residual edges originating at <paramref name="node"/>.
+        /// </summary>
+        /// <param name="node">The node index.</param>
+        /// <returns>Read-only list of outgoing residual edges for <paramref name="node"/>.</returns>
+        public IReadOnlyList<Edge> GetEdges(int node)
+        {
+            ValidateNode(node, nameof(node));
+            return graph[node];
+        }
+
+        /// <summary>
         /// Computes the maximum flow from <paramref name="source"/> to <paramref name="sink"/> using Dinic's algorithm.
         /// If called repeatedly after adding nodes or edges, augments along residual paths incrementally.
         /// </summary>
         /// <param name="source">The source node index.</param>
         /// <param name="sink">The sink node index.</param>
         /// <returns>The additional flow pushed during this call.</returns>
-        public int ComputeMaxFlow(int source, int sink)
+        public long ComputeMaxFlow(int source, int sink)
         {
-            return ComputeMaxFlow(source, sink, int.MaxValue);
+            return ComputeMaxFlow(source, sink, long.MaxValue);
         }
 
         /// <summary>
@@ -189,7 +200,7 @@ namespace TMD.Algo.Algorithms
         /// <param name="sink">The sink node index.</param>
         /// <param name="flowLimit">Maximum amount of flow to push during this call (must be non-negative).</param>
         /// <returns>The amount of flow pushed during this call (at most <paramref name="flowLimit"/>).</returns>
-        public int ComputeMaxFlow(int source, int sink, int flowLimit)
+        public long ComputeMaxFlow(int source, int sink, long flowLimit)
         {
             ValidateNode(source, nameof(source));
             ValidateNode(sink, nameof(sink));
@@ -201,13 +212,13 @@ namespace TMD.Algo.Algorithms
                 return 0;
 
             EnsureScratchCapacity();
-            int totalFlow = 0;
+            long totalFlow = 0;
             while (totalFlow < flowLimit && Bfs(source, sink))
             {
                 Array.Clear(nextEdgePtr, 0, nodeCount);
                 while (totalFlow < flowLimit)
                 {
-                    int pushed = Dfs(source, sink, flowLimit - totalFlow);
+                    long pushed = Dfs(source, sink, flowLimit - totalFlow);
                     if (pushed == 0)
                         break;
                     totalFlow += pushed;
@@ -278,7 +289,7 @@ namespace TMD.Algo.Algorithms
             return level[sink] >= 0;
         }
 
-        private int Dfs(int u, int sink, int pushed)
+        private long Dfs(int u, int sink, long pushed)
         {
             if (pushed == 0 || u == sink)
                 return pushed;
@@ -287,10 +298,11 @@ namespace TMD.Algo.Algorithms
             {
                 Edge edge = graph[u][nextEdgePtr[u]];
                 int v = edge.To;
-                if (level[u] + 1 != level[v] || edge.Capacity - edge.Flow == 0)
+                long residual = edge.Capacity - edge.Flow;
+                if (level[u] + 1 != level[v] || residual <= 0)
                     continue;
 
-                int trPushed = Dfs(v, sink, Math.Min(pushed, edge.Capacity - edge.Flow));
+                long trPushed = Dfs(v, sink, Math.Min(pushed, residual));
                 if (trPushed == 0)
                     continue;
 
@@ -308,4 +320,3 @@ namespace TMD.Algo.Algorithms
         }
     }
 }
-

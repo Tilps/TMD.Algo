@@ -1308,6 +1308,137 @@ namespace TMD.Algo.Algorithms
             for (int i = 0; i < b.Count; i++) arrB[i] = b[i];
             return MinkowskiSum(arrA.AsSpan(), arrB.AsSpan());
         }
+
+        /// <summary>
+        /// Extracts all faces (cycles of directed half-edges) from a planar straight-line graph using exact
+        /// counterclockwise angular ordering around each vertex via <see cref="CompareDirectionCCW"/>.
+        /// Bounded interior faces are returned in counterclockwise order (<see cref="PlanarFace.TwiceSignedArea"/> &gt; 0),
+        /// unbounded outer faces in clockwise order (&lt; 0), and bridge/tree components have area <c>0</c>.
+        /// </summary>
+        /// <param name="points">Coordinates of the graph vertices indexed <c>0 .. points.Length - 1</c>.</param>
+        /// <param name="edges">Undirected edges between distinct vertices.</param>
+        /// <returns>List of extracted planar faces partitioning all directed half-edges.</returns>
+        public static List<PlanarFace> ExtractPlanarFaces(
+            ReadOnlySpan<Point2L> points,
+            ReadOnlySpan<(int U, int V)> edges)
+        {
+            int n = points.Length;
+            int m = edges.Length;
+            if (m == 0)
+                return [];
+
+            int halfCount = m * 2;
+            int[] from = new int[halfCount];
+            int[] to = new int[halfCount];
+            List<int>[] adj = new List<int>[n];
+            for (int i = 0; i < n; i++)
+                adj[i] = [];
+
+            for (int i = 0; i < m; i++)
+            {
+                var (u, v) = edges[i];
+                if ((uint)u >= (uint)n)
+                    throw new ArgumentOutOfRangeException(nameof(edges), $"Vertex index {u} at edge {i} is out of range [0, {n - 1}].");
+                if ((uint)v >= (uint)n)
+                    throw new ArgumentOutOfRangeException(nameof(edges), $"Vertex index {v} at edge {i} is out of range [0, {n - 1}].");
+                if (u == v)
+                    throw new ArgumentException($"Self-loop at vertex {u} (edge {i}) is not allowed.", nameof(edges));
+
+                int heFwd = i * 2;
+                int heRev = heFwd + 1;
+                from[heFwd] = u;
+                to[heFwd] = v;
+                from[heRev] = v;
+                to[heRev] = u;
+                adj[u].Add(heFwd);
+                adj[v].Add(heRev);
+            }
+
+            Point2L[] pts = points.ToArray();
+            int[] posInAdj = new int[halfCount];
+            for (int u = 0; u < n; u++)
+            {
+                List<int> list = adj[u];
+                if (list.Count > 1)
+                {
+                    Point2L origin = pts[u];
+                    list.Sort((a, b) =>
+                    {
+                        int cmp = CompareDirectionCCW(pts[to[a]] - origin, pts[to[b]] - origin);
+                        return cmp != 0 ? cmp : a.CompareTo(b);
+                    });
+                }
+
+                for (int i = 0; i < list.Count; i++)
+                    posInAdj[list[i]] = i;
+            }
+
+            bool[] visited = new bool[halfCount];
+            List<PlanarFace> faces = [];
+            for (int start = 0; start < halfCount; start++)
+            {
+                if (visited[start])
+                    continue;
+
+                List<int> verts = [];
+                List<int> faceEdges = [];
+                Int128 twiceArea = 0;
+                int cur = start;
+                while (!visited[cur])
+                {
+                    visited[cur] = true;
+                    int u = from[cur];
+                    int v = to[cur];
+                    verts.Add(u);
+                    faceEdges.Add(cur >> 1);
+                    twiceArea += (Int128)pts[u].X * pts[v].Y - (Int128)pts[u].Y * pts[v].X;
+
+                    int twin = cur ^ 1;
+                    List<int> list = adj[v];
+                    int nextPos = posInAdj[twin] - 1;
+                    if (nextPos < 0)
+                        nextPos += list.Count;
+                    cur = list[nextPos];
+                }
+
+                if (cur != start)
+                    throw new InvalidOperationException("Planar face walk failed to close cleanly on start half-edge.");
+
+                faces.Add(new PlanarFace(verts, faceEdges, twiceArea));
+            }
+
+            return faces;
+        }
+    }
+
+    /// <summary>
+    /// Represents a face extracted from a planar straight-line graph by <see cref="Geometry.ExtractPlanarFaces"/>.
+    /// </summary>
+    public sealed class PlanarFace
+    {
+        internal PlanarFace(IReadOnlyList<int> vertices, IReadOnlyList<int> edges, Int128 twiceSignedArea)
+        {
+            Vertices = vertices;
+            Edges = edges;
+            TwiceSignedArea = twiceSignedArea;
+        }
+
+        /// <summary>
+        /// Gets the ordered vertex indices along the face boundary cycle.
+        /// </summary>
+        public IReadOnlyList<int> Vertices { get; }
+
+        /// <summary>
+        /// Gets the ordered undirected edge indices connecting consecutive vertices in <see cref="Vertices"/>.
+        /// </summary>
+        public IReadOnlyList<int> Edges { get; }
+
+        /// <summary>
+        /// Gets twice the exact signed area of the face boundary using <see cref="Int128"/> arithmetic.
+        /// Positive for counterclockwise bounded interior faces, negative for clockwise outer faces,
+        /// and <c>0</c> for degenerate bridge-only faces.
+        /// </summary>
+        public Int128 TwiceSignedArea { get; }
     }
 
     /// <summary>

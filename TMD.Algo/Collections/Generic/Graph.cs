@@ -955,17 +955,19 @@ namespace TMD.Algo.Collections.Generic
         /// <param name="source">Source vertex id.</param>
         /// <param name="sink">Sink vertex id.</param>
         /// <returns>The maximum flow value.</returns>
-        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, int})"/>
+        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, long})"/>
         /// <seealso cref="MaximumFlowFordFulkersonBfs(int, int)"/>
-        public int MaximumFlowDinic(int source, int sink)
+        public long MaximumFlowDinic(int source, int sink)
         {
+            if (typeof(TEdge) == typeof(long))
+                return MaximumFlowDinic(source, sink, edge => (long)(object)edge!);
             if (typeof(TEdge) == typeof(int))
                 return MaximumFlowDinic(source, sink, edge => (int)(object)edge!);
-            return MaximumFlowDinic(source, sink, edge => Convert.ToInt32(edge));
+            return MaximumFlowDinic(source, sink, edge => Convert.ToInt64(edge));
         }
 
         /// <summary>
-        /// Calculates the maximum flow using Dinic's algorithm given a function to select edge capacities as integers.
+        /// Calculates the maximum flow using Dinic's algorithm given a function to select edge capacities as 64-bit integers.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -985,11 +987,11 @@ namespace TMD.Algo.Collections.Generic
         /// </remarks>
         /// <param name="source">Source vertex id.</param>
         /// <param name="sink">Sink vertex id.</param>
-        /// <param name="capacitySelector">Function extracting integer capacity from edge data.</param>
+        /// <param name="capacitySelector">Function extracting 64-bit integer capacity from edge data.</param>
         /// <returns>The maximum flow value.</returns>
         /// <seealso cref="MaximumFlowDinic(int, int)"/>
         /// <seealso cref="MaximumFlowFordFulkersonBfs(int, int, IComparer{TEdge}, IAdder{TEdge})"/>
-        public int MaximumFlowDinic(int source, int sink, Func<TEdge, int> capacitySelector)
+        public long MaximumFlowDinic(int source, int sink, Func<TEdge, long> capacitySelector)
         {
             ArgumentNullException.ThrowIfNull(capacitySelector);
             var maxFlow = new TMD.Algo.Algorithms.MaxFlow(vertices.Count);
@@ -1071,7 +1073,7 @@ namespace TMD.Algo.Collections.Generic
         /// <returns>
         /// The maximum flow if a flow could be found, otherwise flowSummer.Zero.
         /// </returns>
-        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, int})"/>
+        /// <seealso cref="MaximumFlowDinic(int, int, Func{TEdge, long})"/>
         public TEdge MaximumFlowFordFulkersonBfs(int source, int sink, IComparer<TEdge> flowComparer,
             IAdder<TEdge> flowSummer)
         {
