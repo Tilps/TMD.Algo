@@ -77,5 +77,61 @@ namespace TMD.AlgoTest
             Assert.IsTrue(slightlyLess != half);
             Assert.AreEqual(new BigFraction(1, 2).GetHashCode(), new BigFraction(-2, -4).GetHashCode());
         }
+
+        [Test]
+        public void SimplestBetweenAgainstBruteForceAndLargeBounds()
+        {
+            Assert.AreEqual(new BigFraction(3, 5), BigFraction.SimplestBetween(new BigFraction(1, 2), new BigFraction(2, 3)));
+            Assert.AreEqual(new BigFraction(2, 5), BigFraction.SimplestBetween(new BigFraction(1, 3), new BigFraction(1, 2)));
+            Assert.AreEqual(new BigFraction(1, 2), BigFraction.SimplestBetween(BigFraction.Zero, BigFraction.One));
+            Assert.AreEqual(new BigFraction(1, 3), BigFraction.SimplestBetween(new BigFraction(1, 4), new BigFraction(1, 2)));
+            Assert.AreEqual(new BigFraction(2, 1), BigFraction.SimplestBetween(new BigFraction(3, 2), null));
+            Assert.AreEqual(new BigFraction(1, 1), BigFraction.SimplestBetween(BigFraction.Zero, null));
+
+            for (int b = 1; b <= 12; b++)
+            {
+                for (int a = 0; a <= 24; a++)
+                {
+                    BigFraction low = new(a, b);
+                    for (int d = 1; d <= 12; d++)
+                    {
+                        for (int c = 1; c <= 24; c++)
+                        {
+                            BigFraction high = new(c, d);
+                            if (low >= high)
+                                continue;
+
+                            BigFraction actual = BigFraction.SimplestBetween(low, high);
+                            Assert.IsTrue(low < actual && actual < high);
+
+                            BigFraction? brute = null;
+                            for (int den = 1; den <= 150 && !brute.HasValue; den++)
+                            {
+                                for (int num = 1; num <= 300; num++)
+                                {
+                                    BigFraction cand = new(num, den);
+                                    if (cand > low && cand < high)
+                                    {
+                                        brute = cand;
+                                        break;
+                                    }
+                                }
+                            }
+                            Assert.AreEqual(brute, actual, $"Interval ({low}, {high}) mismatch.");
+                        }
+                    }
+                }
+            }
+
+            BigInteger p30 = BigInteger.Pow(10, 30);
+            BigFraction tightLow = new(p30, p30 + 1);
+            BigFraction tightHigh = new(p30 + 1, p30 + 2);
+            BigFraction between = BigFraction.SimplestBetween(tightLow, tightHigh);
+            Assert.AreEqual(new BigFraction(2 * p30 + 1, 2 * p30 + 3), between);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => BigFraction.SimplestBetween(new BigFraction(-1, 2), BigFraction.One));
+            Assert.Throws<ArgumentException>(() => BigFraction.SimplestBetween(BigFraction.One, BigFraction.One));
+            Assert.Throws<ArgumentException>(() => BigFraction.SimplestBetween(new BigFraction(2, 1), BigFraction.One));
+        }
     }
 }

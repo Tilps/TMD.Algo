@@ -375,5 +375,40 @@ namespace TMD.AlgoTest
             Assert.IsFalse(g.TryLexicographicalTopologicalSort(out _));
             Assert.Throws<InvalidOperationException>(() => g.LexicographicalTopologicalSort());
         }
+
+        [Test]
+        public void TestDeepChainDfsTopoSortAndScc()
+        {
+            const int n = 100_000;
+            var g = new Graph<int, int>();
+            for (int i = 0; i < n; i++)
+                g.AddVertex(i);
+            for (int i = 0; i + 1 < n; i++)
+                g.AddDirectedEdge(i, i + 1, 1);
+
+            int preCount = 0;
+            int postCount = 0;
+            g.DepthFirstSearch((node, prev, depth, postOrder) =>
+            {
+                if (postOrder)
+                    postCount++;
+                else
+                    preCount++;
+                return false;
+            });
+            Assert.AreEqual(n, preCount);
+            Assert.AreEqual(n, postCount);
+
+            List<int> topo = g.TopologicalSort();
+            Assert.AreEqual(n, topo.Count);
+            Assert.AreEqual(0, topo[0]);
+            Assert.AreEqual(n - 1, topo[^1]);
+
+            // Close into a single SCC of size 100,000
+            g.AddDirectedEdge(n - 1, 0, 1);
+            var sccs = g.GetStronglyConnectedComponents();
+            Assert.AreEqual(1, sccs.Count);
+            Assert.AreEqual(n, sccs[0].Count);
+        }
     }
 }

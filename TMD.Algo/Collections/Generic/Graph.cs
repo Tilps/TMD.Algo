@@ -188,22 +188,58 @@ namespace TMD.Algo.Collections.Generic
             }
         }
 
+        private struct DfsFrame
+        {
+            public int Vertex;
+            public int Prev;
+            public int Depth;
+            public int AdjIndex;
+        }
+
         private bool DFSVisit(int startingVertexId, DfsSearchVisitor visitor, int[] searchState, int prev, int depth)
         {
             if (visitor(startingVertexId, prev, depth, false))
                 return true;
             searchState[startingVertexId] = 1;
-            foreach (KeyValuePair<int, int> edge in adjacencyList[startingVertexId])
+            Stack<DfsFrame> stack = new();
+            stack.Push(new DfsFrame
             {
-                if (searchState[edge.Key] == 0)
+                Vertex = startingVertexId,
+                Prev = prev,
+                Depth = depth,
+                AdjIndex = 0
+            });
+
+            while (stack.Count > 0)
+            {
+                DfsFrame top = stack.Pop();
+                List<KeyValuePair<int, int>> adj = adjacencyList[top.Vertex];
+                if (top.AdjIndex < adj.Count)
                 {
-                    if (DFSVisit(edge.Key, visitor, searchState, startingVertexId, depth + 1))
+                    int nextVertex = adj[top.AdjIndex].Key;
+                    top.AdjIndex++;
+                    stack.Push(top);
+                    if (searchState[nextVertex] == 0)
+                    {
+                        if (visitor(nextVertex, top.Vertex, top.Depth + 1, false))
+                            return true;
+                        searchState[nextVertex] = 1;
+                        stack.Push(new DfsFrame
+                        {
+                            Vertex = nextVertex,
+                            Prev = top.Vertex,
+                            Depth = top.Depth + 1,
+                            AdjIndex = 0
+                        });
+                    }
+                }
+                else
+                {
+                    searchState[top.Vertex] = 2;
+                    if (visitor(top.Vertex, top.Prev, top.Depth, true))
                         return true;
                 }
             }
-            searchState[startingVertexId] = 2;
-            if (visitor(startingVertexId, prev, depth, true))
-                return true;
             return false;
         }
 

@@ -737,5 +737,98 @@ namespace TMD.Algo.Algorithms
             BigInteger? q = MinStepPositiveBig(s, nextS, l % s, r % s);
             return q.HasValue ? (q.Value * m + l + s - 1) / s : null;
         }
+
+        /// <summary>
+        /// Solves the system of two congruences <c>x ≡ r1 (mod m1)</c> and <c>x ≡ r2 (mod m2)</c>
+        /// using the generalized Chinese Remainder Theorem in O(log max(m1, m2)) time without 64-bit overflow.
+        /// </summary>
+        /// <param name="r1">First remainder (may be negative or larger than <paramref name="m1"/>).</param>
+        /// <param name="m1">First positive modulus.</param>
+        /// <param name="r2">Second remainder (may be negative or larger than <paramref name="m2"/>).</param>
+        /// <param name="m2">Second positive modulus.</param>
+        /// <param name="remainder">
+        /// When this method returns true, contains the unique solution in <c>[0, modulus - 1]</c>; otherwise 0.
+        /// </param>
+        /// <param name="modulus">
+        /// When this method returns true, contains <c>lcm(m1, m2)</c>; otherwise 0.
+        /// </param>
+        /// <returns>
+        /// True if a solution exists and <c>lcm(m1, m2)</c> fits in signed 64-bit integer range; otherwise false.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown when <paramref name="m1"/> &lt;= 0 or <paramref name="m2"/> &lt;= 0.
+        /// </exception>
+        public static bool TryChineseRemainder(long r1, long m1, long r2, long m2, out long remainder, out long modulus)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(m1);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(m2);
+
+            long a1 = NormalizeMod(r1, m1);
+            long a2 = NormalizeMod(r2, m2);
+            long g = MathFormulas.ExtendedGcd(m1, m2, out long x, out _);
+            if ((a2 - a1) % g != 0)
+            {
+                remainder = 0;
+                modulus = 0;
+                return false;
+            }
+
+            long m2DivG = m2 / g;
+            Int128 lcm128 = (Int128)(m1 / g) * m2;
+            if (lcm128 > long.MaxValue)
+            {
+                remainder = 0;
+                modulus = 0;
+                return false;
+            }
+
+            Int128 diffDivG = ((Int128)a2 - a1) / g;
+            long dMod = (long)(((diffDivG % m2DivG) + m2DivG) % m2DivG);
+            long xMod = ((x % m2DivG) + m2DivG) % m2DivG;
+            long k = (long)(((Int128)dMod * xMod) % m2DivG);
+            remainder = (long)((Int128)a1 + (Int128)m1 * k);
+            modulus = (long)lcm128;
+            return true;
+        }
+
+        /// <summary>
+        /// Solves a system of congruences <c>x ≡ r_i (mod m_i)</c> using the generalized Chinese Remainder Theorem.
+        /// An empty span yields <c>remainder = 0</c> and <c>modulus = 1</c>.
+        /// </summary>
+        /// <param name="congruences">Sequence of <c>(Remainder, Modulus)</c> pairs with strictly positive moduli.</param>
+        /// <param name="remainder">
+        /// When this method returns true, contains the unique solution in <c>[0, modulus - 1]</c>; otherwise 0.
+        /// </param>
+        /// <param name="modulus">
+        /// When this method returns true, contains the least common multiple of all moduli; otherwise 0.
+        /// </param>
+        /// <returns>
+        /// True if all congruences are mutually consistent and the combined modulus fits in 64-bit signed range; otherwise false.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when any congruence has modulus &lt;= 0.</exception>
+        public static bool TryChineseRemainder(
+            ReadOnlySpan<(long Remainder, long Modulus)> congruences,
+            out long remainder,
+            out long modulus)
+        {
+            for (int i = 0; i < congruences.Length; i++)
+                ArgumentOutOfRangeException.ThrowIfNegativeOrZero(congruences[i].Modulus);
+
+            long curRem = 0;
+            long curMod = 1;
+            for (int i = 0; i < congruences.Length; i++)
+            {
+                if (!TryChineseRemainder(curRem, curMod, congruences[i].Remainder, congruences[i].Modulus, out curRem, out curMod))
+                {
+                    remainder = 0;
+                    modulus = 0;
+                    return false;
+                }
+            }
+
+            remainder = curRem;
+            modulus = curMod;
+            return true;
+        }
     }
 }

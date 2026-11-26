@@ -218,6 +218,52 @@ namespace TMD.Algo.Algorithms
         /// </summary>
         public static implicit operator BigFraction(long value) => new(new BigInteger(value));
 
+        /// <summary>
+        /// Finds the simplest strictly positive rational number inside the open interval
+        /// (<paramref name="lowerExclusive"/>, <paramref name="upperExclusive"/>), or inside
+        /// (<paramref name="lowerExclusive"/>, +infinity) when <paramref name="upperExclusive"/> is <c>null</c>,
+        /// minimizing the denominator first and then the numerator (via the Stern-Brocot / continued-fraction tree).
+        /// </summary>
+        /// <param name="lowerExclusive">Non-negative exclusive lower bound.</param>
+        /// <param name="upperExclusive">Optional exclusive upper bound strictly greater than <paramref name="lowerExclusive"/>.</param>
+        /// <returns>The simplest strictly positive <see cref="BigFraction"/> strictly between the bounds.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="lowerExclusive"/> is negative.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="upperExclusive"/> is provided and is less than or equal to <paramref name="lowerExclusive"/>.
+        /// </exception>
+        public static BigFraction SimplestBetween(BigFraction lowerExclusive, BigFraction? upperExclusive)
+        {
+            if (lowerExclusive.Sign < 0)
+                throw new ArgumentOutOfRangeException(nameof(lowerExclusive), "Lower bound must be non-negative.");
+
+            if (!upperExclusive.HasValue)
+                return new BigFraction(lowerExclusive.Numerator / lowerExclusive.Denominator + BigInteger.One);
+
+            BigFraction upper = upperExclusive.Value;
+            if (lowerExclusive >= upper)
+                throw new ArgumentException("Lower bound must be strictly less than upper bound.", nameof(upperExclusive));
+
+            return SimplestPositiveBetween(lowerExclusive.Numerator, lowerExclusive.Denominator, upper.Numerator, upper.Denominator);
+        }
+
+        private static BigFraction SimplestPositiveBetween(BigInteger a, BigInteger b, BigInteger c, BigInteger d)
+        {
+            BigInteger k = a / b;
+            if ((k + BigInteger.One) * d < c)
+                return new BigFraction(k + BigInteger.One);
+
+            BigInteger aRem = a - k * b;
+            BigInteger cRem = c - k * d;
+            if (aRem.IsZero)
+            {
+                BigInteger q = d / cRem + BigInteger.One;
+                return new BigFraction(k * q + BigInteger.One, q, true);
+            }
+
+            BigFraction inv = SimplestPositiveBetween(d, cRem, b, aRem);
+            return new BigFraction(k * inv.Numerator + inv.Denominator, inv.Numerator, true);
+        }
+
         /// <inheritdoc />
         public override string ToString() => $"{Numerator}/{Denominator}";
     }

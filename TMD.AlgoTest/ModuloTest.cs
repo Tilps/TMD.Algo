@@ -321,6 +321,44 @@ namespace TMD.AlgoTest
             Assert.Throws<ArgumentOutOfRangeException>(() => largeMod.PrecomputeDerangements(-1));
         }
 
+        [Test]
+        public void TryChineseRemainderTest()
+        {
+            Assert.IsTrue(Modulo.TryChineseRemainder(ReadOnlySpan<(long, long)>.Empty, out long emptyRem, out long emptyMod));
+            Assert.AreEqual(0L, emptyRem);
+            Assert.AreEqual(1L, emptyMod);
+
+            Assert.IsTrue(Modulo.TryChineseRemainder(2, 3, 3, 5, out long r, out long m));
+            Assert.AreEqual(8L, r);
+            Assert.AreEqual(15L, m);
+
+            // Non-coprime consistent system with negative remainders: x = -1 (mod 6), x = 7 (mod 10) -> x = 17 (mod 30)
+            Assert.IsTrue(Modulo.TryChineseRemainder(-1, 6, 7, 10, out r, out m));
+            Assert.AreEqual(17L, r);
+            Assert.AreEqual(30L, m);
+
+            // Inconsistent non-coprime system
+            Assert.IsFalse(Modulo.TryChineseRemainder(1, 6, 2, 9, out r, out m));
+            Assert.AreEqual(0L, r);
+            Assert.AreEqual(0L, m);
+
+            // Golf Gophers moduli product > 10^6
+            long target = 987654L;
+            long[] gopherMods = [5L, 7L, 9L, 11L, 13L, 16L, 17L];
+            var eqs = new (long Remainder, long Modulus)[gopherMods.Length];
+            for (int i = 0; i < gopherMods.Length; i++)
+                eqs[i] = (target % gopherMods[i], gopherMods[i]);
+            Assert.IsTrue(Modulo.TryChineseRemainder(eqs, out r, out m));
+            Assert.AreEqual(target, r);
+            Assert.AreEqual(12252240L, m);
+
+            // Overflow of combined LCM exceeding long.MaxValue returns false safely
+            Assert.IsFalse(Modulo.TryChineseRemainder(1L, 1_000_000_000_000_000_003L, 2L, 1_000_000_000_000_000_009L, out r, out m));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.TryChineseRemainder(0, 0, 1, 2, out _, out _));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Modulo.TryChineseRemainder([(1L, 5L), (0L, -3L)], out _, out _));
+        }
+
         private static long BigIntegerMod(BigInteger value, long basis)
         {
             BigInteger mod = value % basis;
